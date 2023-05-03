@@ -1,5 +1,5 @@
 {
-	"id": "obsidian-api-request",
+	"id": "api-request",
 	"name": "APIRequest",
 	"version": "0.0.1",
 	"minAppVersion": "0.15.0",

@@ -1,5 +1,5 @@
 {
-	"name": "obsidian-api-request",
+	"name": "api-request",
 	"version": "0.0.1",
 	"description": "This is a plugin for Obsidian that allows you to make API requests and get the response in the form of a JSON file",
 	"main": "main.js",
