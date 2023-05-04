@@ -29,8 +29,8 @@ export default class MainAPIR extends Plugin {
 			id: 'response-in-document',
 			name: 'Paste response in current document',
 			editorCallback: (editor: Editor, view: MarkdownView) => {
-				fetch(this.settings.URL)
-				  .then(response => response.json())
+				requestUrl(this.settings.URL)
+				  .then(response => response.json)
 				  .then(data => {
 				  	if (this.settings.FormatOut == "variable") {
 				    	editor.replaceSelection("json:: "+JSON.stringify(data)+"\n")
@@ -72,8 +72,8 @@ class ShowOutputModal extends Modal {
 	onOpen() {
 		const {contentEl} = this;
 		const { URL } = this.props;
-		fetch(URL)
-		  .then(response => response.json())
+		requestUrl(URL)
+		  .then(response => response.json)
 		  .then(data => {
 		    contentEl.createEl('b', {text: `${JSON.stringify(data)}`});
 		  })
