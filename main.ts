@@ -1,18 +1,18 @@
 import { App, Editor, MarkdownView, Modal, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 
-interface ARSettings {
+interface LoadAPIRSettings {
 	URL: string;
 	FormatOut: string;
 }
 
-const DEFAULT_SETTINGS: ARSettings = {
-	URL: 'https://example.com/json',
+const DEFAULT_SETTINGS: LoadAPIRSettings = {
+	URL: 'https://jsonplaceholder.typicode.com/todos/1',
 	FormatOut: 'json'
 }
 
-export default class MyPlugin extends Plugin {
-	settings: ARSettings;
+export default class MainAPIR extends Plugin {
+	settings: LoadAPIRSettings;
 
 	async onload() {
 		await this.loadSettings();
@@ -21,7 +21,7 @@ export default class MyPlugin extends Plugin {
 			id: 'show-response-in-modal',
 			name: 'Show response in Modal',
 			callback: () => {
-				new SampleModal(this.app, this.settings.URL).open();
+				new ShowOutputModal(this.app, this.settings.URL).open();
 			}
 		});
 
@@ -45,11 +45,7 @@ export default class MyPlugin extends Plugin {
 			}
 		});
 
-		this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
-		});
+		this.addSettingTab(new APRSettings(this.app, this));
 
 		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
 	}
@@ -67,7 +63,7 @@ export default class MyPlugin extends Plugin {
 	}
 }
 
-class SampleModal extends Modal {
+class ShowOutputModal extends Modal {
 	constructor(app: App, URL: string) {
 		super(app);
     	this.props = { URL };
@@ -79,7 +75,6 @@ class SampleModal extends Modal {
 		fetch(URL)
 		  .then(response => response.json())
 		  .then(data => {
-		  	console.log(JSON.stringify(data));
 		    contentEl.createEl('b', {text: `${JSON.stringify(data)}`});
 		  })
 		  .catch(error => {
@@ -93,10 +88,10 @@ class SampleModal extends Modal {
 	}
 }
 
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+class APRSettings extends PluginSettingTab {
+	plugin: MainAPIR;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: MainAPIR) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}

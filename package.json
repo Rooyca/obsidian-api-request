@@ -1,7 +1,7 @@
 {
 	"name": "api-request",
 	"version": "0.0.1",
-	"description": "This is a plugin for Obsidian that allows you to make API requests and get the response in the form of a JSON file",
+	"description": "Request and retrieve data from APIs. The responses are delivered in a JSON format for easy integration with your notes.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
