@@ -2,6 +2,8 @@
 
 The "API Request" is an Obsidian plugin that allows you to make GET requests to APIs and receive responses in the format of a JSON block or an Obsidian variable. We plan to add more request types in the future.
 
+![conf_img](config_img.png)
+
 ## Maunal Installation
 
 - Copy over `main.js` and `manifest.json` to your vault. `VaultFolder/.obsidian/plugins/obsidian-api-request/`.
