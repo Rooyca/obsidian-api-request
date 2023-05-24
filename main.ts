@@ -37,7 +37,7 @@ export default class MainAPIR extends Plugin {
 			editorCallback: (editor: Editor, view: MarkdownView) => {
 			  fetch(this.settings.URL, {
 			    method: this.settings.MethodRequest,
-			    body: JSON.stringify(this.settings.DataRequest),
+			    body: this.settings.DataRequest,
 			  })
 			    .then(response => {
 			      if (!response.ok) {
@@ -70,7 +70,6 @@ export default class MainAPIR extends Plugin {
 					})
 			    .catch(error => {
 			      console.error(error);
-			      contentEl.createEl('b', { text: "Error: " + error.message });
 			    });
 			}
 		});

@@ -1,6 +1,6 @@
-# APIR (Api Request)
+# APIR - Api Request
 
-APIR is an Obsidian plugin that allows you to make GET requests to APIs and receive responses in the format of a JSON block or an Obsidian variable. We plan to add more request types in the future.
+Obsidian plugin that allows you to make requests to APIs and receive responses in the format of a JSON block or an Obsidian variable. 
 
 ![conf_img](config_img.png)
 
@@ -23,10 +23,13 @@ The plugin has a few settings that you can configure:
 
 - **URL**: The URL to send the request to.
 - **Output format**: Choose between JSON block or Obsidian variable.
+- **Request Method**: Choose between GET, POST, PUT & DELETE.
+- **Request Data**: The data to send with the request. Data should by in JSON format.
+- **Response Data**: The response data to display. If empty all data will be display.
 
 ## To-do
 
-- [x] Add more request types (POST, PUT, DELETE, etc.)
+- [x] Add more request types (POST, PUT, DELETE)
 - [ ] Add support for authentication
 - [x] Add customizability for modal output (e.g. show only specific fields, change color scheme, add custom CSS)
 - [x] Add customizability for variable output (e.g. show only specific fields, change variable name)
