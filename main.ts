@@ -4,11 +4,17 @@ import { App, Editor, MarkdownView, Modal, Plugin, PluginSettingTab, Setting } f
 interface LoadAPIRSettings {
 	URL: string;
 	FormatOut: string;
+	MethodRequest: string;
+	DataRequest: string;
+	DataResponse: string;
 }
 
 const DEFAULT_SETTINGS: LoadAPIRSettings = {
 	URL: 'https://jsonplaceholder.typicode.com/todos/1',
-	FormatOut: 'json'
+	FormatOut: 'json',
+	MethodRequest: 'GET',
+	DataRequest: 'None',
+	DataResponse: ''
 }
 
 export default class MainAPIR extends Plugin {
@@ -21,7 +27,7 @@ export default class MainAPIR extends Plugin {
 			id: 'show-response-in-modal',
 			name: 'Show response in Modal',
 			callback: () => {
-				new ShowOutputModal(this.app, this.settings.URL).open();
+				new ShowOutputModal(this.app, this.settings.URL, this.settings.MethodRequest, this.settings.DataRequest, this.settings.DataResponse).open();
 			}
 		});
 
@@ -29,19 +35,43 @@ export default class MainAPIR extends Plugin {
 			id: 'response-in-document',
 			name: 'Paste response in current document',
 			editorCallback: (editor: Editor, view: MarkdownView) => {
-				requestUrl(this.settings.URL)
-				  .then(response => response.json)
-				  .then(data => {
-				  	if (this.settings.FormatOut == "variable") {
-				    	editor.replaceSelection("json:: "+JSON.stringify(data)+"\n")
-				  	}
-				  	if (this.settings.FormatOut == "json") {
-				  		editor.replaceSelection("```json\n"+JSON.stringify(data)+"\n```\n")
-				  	}
-				  })
-				  .catch(error => {
-				    console.error(error);
-				  });
+			  fetch(this.settings.URL, {
+			    method: this.settings.MethodRequest,
+			    body: JSON.stringify(this.settings.DataRequest),
+			  })
+			    .then(response => {
+			      if (!response.ok) {
+			        throw new Error(`Request failed with status ${response.status}`);
+			      }
+			      return response.json();
+			    })
+					.then(data => {
+					  if (this.settings.DataResponse !== "") {
+					    const DataResponseArray = this.settings.DataResponse.split(",");
+					    for (let i = 0; i < DataResponseArray.length; i++) {
+					      const key = DataResponseArray[i];
+					      const value = JSON.stringify(data[key]);
+
+					      if (this.settings.FormatOut === "variable") {
+					        editor.replaceSelection(`json:: ${key} : ${value}\n`);
+					      }
+					      if (this.settings.FormatOut === "json") {
+					        editor.replaceSelection("```json\n" + `${key} : ${value}\n` + "```\n");
+					      }
+					    }
+					  } else {
+					    if (this.settings.FormatOut === "variable") {
+					      editor.replaceSelection(`json:: ${JSON.stringify(data)}\n`);
+					    }
+					    if (this.settings.FormatOut === "json") {
+					      editor.replaceSelection("```json\n" + `${JSON.stringify(data)}\n` + "```\n");
+					    }
+					  }
+					})
+			    .catch(error => {
+			      console.error(error);
+			      contentEl.createEl('b', { text: "Error: " + error.message });
+			    });
 			}
 		});
 
@@ -64,28 +94,82 @@ export default class MainAPIR extends Plugin {
 }
 
 class ShowOutputModal extends Modal {
-	constructor(app: App, URL: string) {
-		super(app);
-    	this.props = { URL };
-	}
+  constructor(app: App, URL: string, MethodRequest: string, DataRequest: string, DataResponse: string) {
+    super(app);
+    this.props = {
+      URL,
+      MethodRequest,
+      DataRequest,
+      DataResponse,
+    };
+  }
 
-	onOpen() {
-		const {contentEl} = this;
-		const { URL } = this.props;
-		requestUrl(URL)
-		  .then(response => response.json)
-		  .then(data => {
-		    contentEl.createEl('b', {text: `${JSON.stringify(data)}`});
-		  })
-		  .catch(error => {
-		    console.error(error);
-		  });		
-	}
+onOpen() {
+  const { contentEl } = this;
+  const { URL, MethodRequest, DataRequest, DataResponse } = this.props;
 
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
-	}
+  if (MethodRequest === "GET") {
+    fetch(URL, {
+      method: MethodRequest,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (DataResponse !== "") {
+          const DataResponseArray = DataResponse.split(",");
+          for (let i = 0; i < DataResponseArray.length; i++) {
+            contentEl.createEl('b', { text: DataResponseArray[i] + " : " + `${JSON.stringify(data[DataResponseArray[i]])}` });
+          }
+        } else {
+          contentEl.createEl('b', { text: `${JSON.stringify(data)}` });
+        }
+      })
+      .catch(error => {
+        console.error(error);
+        contentEl.createEl('b', { text: "Error: " + error.message });
+      });
+  } else {
+    fetch(URL, {
+      method: MethodRequest,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: DataRequest
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (DataResponse !== "") {
+          const DataResponseArray = DataResponse.split(",");
+          for (let i = 0; i < DataResponseArray.length; i++) {
+            contentEl.createEl('b', { text: DataResponseArray[i] + " : " + `${JSON.stringify(data[DataResponseArray[i]])}` });
+          }
+        } else {
+          contentEl.createEl('b', { text: `${JSON.stringify(data)}` });
+        }
+      })
+      .catch(error => {
+        console.error(error);
+        contentEl.createEl('b', { text: "Error: " + error.message });
+      });
+  }
+}
+
+  onClose() {
+    const { contentEl } = this;
+    contentEl.empty();
+  }
 }
 
 class APRSettings extends PluginSettingTab {
@@ -125,6 +209,40 @@ class APRSettings extends PluginSettingTab {
 	          await this.plugin.saveSettings();
 	        });
 	      });
+	    new Setting(containerEl)
+	      .setName('Request method')
+	      .setDesc("Select the desired request method")
+	      .addDropdown(dropDown => {
+	        dropDown.addOption("GET", "GET");
+	        dropDown.addOption("POST", "POST");
+	        dropDown.addOption("POST", "PUT");
+	        dropDown.addOption("DELETE", "DELETE");
+	        dropDown.setValue(this.plugin.settings.MethodRequest)
+	        dropDown.onChange(async value => {
+	          this.plugin.settings.MethodRequest = value;
+	          await this.plugin.saveSettings();
+	        });
+	      });
+	    new Setting(containerEl)
+	      .setName('Data to send')
+	      .setDesc("Data to send in the request")
+	      .addTextArea(text => text
+	      	.setPlaceholder('{"data": "data"}')
+	      	.setValue(this.plugin.settings.DataRequest)
+	      	.onChange(async (value) => {
+	      		this.plugin.settings.DataRequest = value;
+	      		await this.plugin.saveSettings();
+	      }));
+	    new Setting(containerEl)
+	      .setName('Data to show in modal')
+	      .setDesc("Write the name of the variable to show in the modal (space by comma)")
+	      .addTextArea(text => text
+	      	.setPlaceholder('Variable Name')
+	      	.setValue(this.plugin.settings.DataResponse)
+	      	.onChange(async (value) => {
+	      		this.plugin.settings.DataResponse = value;
+	      		await this.plugin.saveSettings();
+	      }));
 
 	}
 }
