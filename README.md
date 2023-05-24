@@ -10,7 +10,7 @@ Obsidian plugin that allows you to make requests to APIs and receive responses i
 
 ## Usage
 
-To use the plugin, press `Ctrl+P` and search for APIR. The plugin will present you with two options:
+To use the plugin, press `Ctrl+P` and search for "API Request". The plugin will present you with two options:
 
 1. Show response in modal
 2. Paste response in current document (at current line)
