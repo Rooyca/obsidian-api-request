@@ -184,8 +184,6 @@ class APRSettings extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h1', {text: 'General Settings'});
-
 		new Setting(containerEl)
 			.setName('URL')
 			.setDesc('Endpoint to fetch data from')
