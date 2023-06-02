@@ -35,22 +35,17 @@ export default class MainAPIR extends Plugin {
 			id: 'response-in-document',
 			name: 'Paste response in current document',
 			editorCallback: (editor: Editor, view: MarkdownView) => {
-			  fetch(this.settings.URL, {
+			requestUrl({
+			  	url: this.settings.URL,
 			    method: this.settings.MethodRequest,
 			    body: this.settings.DataRequest,
 			  })
-			    .then(response => {
-			      if (!response.ok) {
-			        throw new Error(`Request failed with status ${response.status}`);
-			      }
-			      return response.json();
-			    })
 					.then(data => {
 					  if (this.settings.DataResponse !== "") {
 					    const DataResponseArray = this.settings.DataResponse.split(",");
 					    for (let i = 0; i < DataResponseArray.length; i++) {
 					      const key = DataResponseArray[i];
-					      const value = JSON.stringify(data[key]);
+					      const value = JSON.stringify(data.json[key]);
 
 					      if (this.settings.FormatOut === "variable") {
 					        editor.replaceSelection(`json:: ${key} : ${value}\n`);
@@ -61,10 +56,10 @@ export default class MainAPIR extends Plugin {
 					    }
 					  } else {
 					    if (this.settings.FormatOut === "variable") {
-					      editor.replaceSelection(`json:: ${JSON.stringify(data)}\n`);
+					      editor.replaceSelection(`json:: ${JSON.stringify(data.json)}\n`);
 					    }
 					    if (this.settings.FormatOut === "json") {
-					      editor.replaceSelection("```json\n" + `${JSON.stringify(data)}\n` + "```\n");
+					      editor.replaceSelection("```json\n" + `${JSON.stringify(data.json)}\n` + "```\n");
 					    }
 					  }
 					})
@@ -108,26 +103,21 @@ onOpen() {
   const { URL, MethodRequest, DataRequest, DataResponse } = this.props;
 
   if (MethodRequest === "GET") {
-    fetch(URL, {
+    requestUrl({
+    	url: URL,
       method: MethodRequest,
       headers: {
         'Content-Type': 'application/json'
       }
     })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Request failed with status ${response.status}`);
-        }
-        return response.json();
-      })
       .then(data => {
         if (DataResponse !== "") {
           const DataResponseArray = DataResponse.split(",");
           for (let i = 0; i < DataResponseArray.length; i++) {
-            contentEl.createEl('b', { text: DataResponseArray[i] + " : " + `${JSON.stringify(data[DataResponseArray[i]])}` });
+            contentEl.createEl('b', { text: DataResponseArray[i] + " : " + `${JSON.stringify(data.json[DataResponseArray[i]])}` });
           }
         } else {
-          contentEl.createEl('b', { text: `${JSON.stringify(data)}` });
+          contentEl.createEl('b', { text: `${JSON.stringify(data.json)}` });
         }
       })
       .catch(error => {
@@ -135,27 +125,22 @@ onOpen() {
         contentEl.createEl('b', { text: "Error: " + error.message });
       });
   } else {
-    fetch(URL, {
+    requestUrl({
+    	url: URL,
       method: MethodRequest,
       headers: {
         'Content-Type': 'application/json'
       },
       body: DataRequest
     })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Request failed with status ${response.status}`);
-        }
-        return response.json();
-      })
       .then(data => {
         if (DataResponse !== "") {
           const DataResponseArray = DataResponse.split(",");
           for (let i = 0; i < DataResponseArray.length; i++) {
-            contentEl.createEl('b', { text: DataResponseArray[i] + " : " + `${JSON.stringify(data[DataResponseArray[i]])}` });
+            contentEl.createEl('b', { text: DataResponseArray[i] + " : " + `${JSON.stringify(data.json[DataResponseArray[i]])}` });
           }
         } else {
-          contentEl.createEl('b', { text: `${JSON.stringify(data)}` });
+          contentEl.createEl('b', { text: `${JSON.stringify(data.json)}` });
         }
       })
       .catch(error => {
