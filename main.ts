@@ -70,8 +70,6 @@ export default class MainAPIR extends Plugin {
 		});
 
 		this.addSettingTab(new APRSettings(this.app, this));
-
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
 	}
 
 	onunload() {
