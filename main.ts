@@ -31,6 +31,32 @@ export default class MainAPIR extends Plugin {
 			}
 		});
 
+    this.registerMarkdownCodeBlockProcessor("apir", (source, el, ctx) => {
+        const SourceSplit = source.split("\n")
+
+        for (let i = 0; i < SourceSplit.length; i++) {
+					if (SourceSplit[i].includes("URL: ") || SourceSplit[i].includes("url: ")) {
+						var URL = SourceSplit[i].replace("URL: ", "").replace("url: ", "");
+					}
+					if (SourceSplit[i].includes("ShowThis: ") || SourceSplit[i].includes("showthis: ")) {
+						var ShowThis = SourceSplit[i].replace("ShowThis: ", "").replace("showthis: ", "");
+					}
+				}
+
+        requestUrl({url: URL})
+				.then(data => {
+					if (!ShowThis) {
+						el.innerHTML = JSON.stringify(data.json);
+					} else {
+						el.innerHTML = JSON.stringify(data.json[ShowThis]);
+					}
+				})
+				.catch(error => {
+					console.error(error);
+					el.innerHTML = "Error: " + error.message;
+				});
+    });
+
 		this.addCommand({
 			id: 'response-in-document',
 			name: 'Paste response in current document',

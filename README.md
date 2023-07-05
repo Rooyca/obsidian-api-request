@@ -4,11 +4,21 @@ Obsidian plugin that allows you to make requests to APIs and receive responses i
 
 ![conf_img](config_img.png)
 
+## Obsidian Community Plugin Browser
+
+- Go to Settings -> Third-party plugin
+- Make sure Restricted mode is **off**
+- Click Browse community plugins
+- Search for "API Request"
+- Click Install
+
 ## Maunal Installation
 
 - Copy over `main.js` and `manifest.json` to your vault. `VaultFolder/.obsidian/plugins/obsidian-api-request/`.
 
 ## Usage
+
+### With Configuration
 
 To use the plugin, press `Ctrl+P` and search for "API Request". The plugin will present you with two options:
 
@@ -16,6 +26,17 @@ To use the plugin, press `Ctrl+P` and search for "API Request". The plugin will 
 2. Paste response in current document (at current line)
 
 Select the option that suits your needs. Additionally, you can configure the plugin to output the response in either JSON block format or as an Obsidian variable. This option can be accessed through the plugin's settings.
+
+### With Markdown Block
+
+To use the plugin, create a code block with the language set to `apir`. Inside the code block, you can specify the url and what to show from that request. The plugin will automatically replace the code block with the response from the API. A quick example:
+
+```apir
+url: https://jsonplaceholder.typicode.com/todos/1
+showthis: title
+```
+
+Or you can input only the url and the plugin will show the whole response.
 
 ## Settings
 
