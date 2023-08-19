@@ -4,7 +4,7 @@ Obsidian plugin that allows you to make requests to APIs and receive responses i
 
 > **NOTE:** At the moment only JSON responses are supported.
 
-[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/rooyca/obsidian-api-request?logo=github&color=ee8449&style=flat-square)](https://github.com/LBF38/obsidian-api-request/releases/latest)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/rooyca/obsidian-api-request?logo=github&color=ee8449&style=flat-square)](https://github.com/rooyca/obsidian-api-request/releases/latest)
 [![Obsidian plugin release](https://img.shields.io/badge/Obsidian%20plugin%20release-purple?logo=obsidian&style=flat-square)](https://obsidian.md/plugins?id=api-request)
 
 ![conf_img](config_img.png)
