@@ -17,6 +17,19 @@ const DEFAULT_SETTINGS: LoadAPIRSettings = {
 	DataResponse: ''
 }
 
+function nestedValue(data: any, key: string) {
+		const keySplit = key.split("->").map((item) => item.trim());
+		var value = "";
+		for (let i = 0; i < keySplit.length; i++) {
+			if (i === 0) {
+				value = data.json[keySplit[i]];
+		} else {
+			value = value[keySplit[i]];
+			}
+		}
+		return value;
+	}
+
 export default class MainAPIR extends Plugin {
 	settings: LoadAPIRSettings;
 
@@ -50,6 +63,9 @@ export default class MainAPIR extends Plugin {
 						el.innerHTML = JSON.stringify(data.json);
 					} else {
 						el.innerHTML = JSON.stringify(data.json[ShowThis]);
+						if (ShowThis.includes("->")) {
+							el.innerHTML = JSON.stringify(nestedValue(data, ShowThis));
+						}
 					}
 				})
 				.catch((error: Error) => {
@@ -71,14 +87,23 @@ export default class MainAPIR extends Plugin {
 					  if (this.settings.DataResponse !== "") {
 					    const DataResponseArray = this.settings.DataResponse.split(",");
 					    for (let i = 0; i < DataResponseArray.length; i++) {
-					      const key = DataResponseArray[i];
-					      const value = JSON.stringify(data.json[key]);
+					    	const key = DataResponseArray[i].trim();
 
+					    	var value = JSON.stringify(data.json[key]);
+
+								if (key.includes("->")) {
+					    		value = nestedValue(data, key);
+					    	}
+					      
 					      if (this.settings.FormatOut === "variable") {
-					        editor.replaceSelection(`json:: ${key} : ${value}\n`);
+					      	value = JSON.stringify(value);
+					        editor.replaceSelection(`json:: ${key.split("->").pop()} : ${value}\n`);
 					      }
 					      if (this.settings.FormatOut === "json") {
-					        editor.replaceSelection("```json\n" + `${key} : ${value}\n` + "```\n");
+					      	if (key.includes("->")) {
+					      		value = JSON.stringify(value);
+					      		}
+					        editor.replaceSelection("```json\n" + `${key.split("->").pop()} : ${value}\n` + "```\n\n");
 					      }
 					    }
 					  } else {
@@ -139,7 +164,11 @@ onOpen() {
         if (DataResponse !== "") {
           const DataResponseArray = DataResponse.split(",");
           for (let i = 0; i < DataResponseArray.length; i++) {
-            contentEl.createEl('b', { text: DataResponseArray[i] + " : " + `${JSON.stringify(data.json[DataResponseArray[i]])}` });
+          	if (DataResponseArray[i].includes("->")) {
+          		contentEl.createEl('b', { text: DataResponseArray[i] + " : " + `${JSON.stringify(nestedValue(data, DataResponseArray[i]))}` });
+						} else {
+							contentEl.createEl('b', { text: DataResponseArray[i] + " : " + `${JSON.stringify(data.json[DataResponseArray[i]])}` });
+						}
           }
         } else {
           contentEl.createEl('b', { text: `${JSON.stringify(data.json)}` });
