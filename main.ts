@@ -18,9 +18,9 @@ const DEFAULT_SETTINGS: LoadAPIRSettings = {
 }
 
 function nestedValue(data: any, key: string) {
-		const keySplit = key.split("->").map((item) => item.trim());
-		var value = "";
-		for (let i = 0; i < keySplit.length; i++) {
+		const keySplit: string[] = key.split("->").map((item) => item.trim());
+		var value: any = "";
+		for (let i: number = 0; i < keySplit.length; i++) {
 			if (i === 0) {
 				value = data.json[keySplit[i]];
 		} else {
