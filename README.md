@@ -38,7 +38,18 @@ url: https://jsonplaceholder.typicode.com/todos/1
 showthis: title
 ```
 
-Or you can input only the url and the plugin will show the whole response.
+If you want to show data from nested objects, you can do that by using a right arrow `->`. For example, if you want to show the `last` from the `chess_daily` object, you can do that like this:
+
+```apir
+url: https://api.chess.com/pub/player/hikaru/stats
+showthis: chess_daily -> last
+```
+
+You can also show the entire response by only specifying the url:
+
+```apir
+url: https://jsonplaceholder.typicode.com/todos/1
+```
 
 > **NOTE:** The plugin only makes GET requests at the moment.
 
@@ -59,7 +70,7 @@ The plugin has a few settings that you can configure:
 - **Output format**: Choose between JSON block or Obsidian variable.
 - **Request Method**: Choose between GET, POST, PUT & DELETE.
 - **Request Data**: The data to send with the request. Data should by in JSON format.
-- **Response Data**: The response data to display. If empty all data will be display.
+- **Response Data**: The response data to display. If empty all data will be display. You can use a right arrow `->` to access nested objects. For example, if you want to show the `title` from the `user` object, you can do that like this: `user -> title`.
 
 ## To-do
 
