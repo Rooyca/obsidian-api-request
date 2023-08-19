@@ -1,10 +1,16 @@
 # APIR - Api Request
 
-Obsidian plugin that allows you to make requests to APIs and receive responses in the format of a JSON block or an Obsidian variable. 
+Obsidian plugin that allows you to make requests to APIs and receive responses in the format of a JSON block or an Obsidian variable.
+
+> **NOTE:** At the moment only JSON responses are supported.
 
 ![conf_img](config_img.png)
 
-## Obsidian Community Plugin Browser
+## Installation
+
+The plugin can be installed from within Obsidian or manually.
+
+### Obsidian Community Plugin Browser (Recommended)
 
 - Go to Settings -> Third-party plugin
 - Make sure Restricted mode is **off**
@@ -12,22 +18,15 @@ Obsidian plugin that allows you to make requests to APIs and receive responses i
 - Search for "API Request"
 - Click Install
 
-## Maunal Installation
+### Maunal Installation
 
 - Copy over `main.js` and `manifest.json` to your vault. `VaultFolder/.obsidian/plugins/obsidian-api-request/`.
 
 ## Usage
 
-### With Configuration
+There are two ways to use the plugin:
 
-To use the plugin, press `Ctrl+P` and search for "API Request". The plugin will present you with two options:
-
-1. Show response in modal
-2. Paste response in current document (at current line)
-
-Select the option that suits your needs. Additionally, you can configure the plugin to output the response in either JSON block format or as an Obsidian variable. This option can be accessed through the plugin's settings.
-
-### With Markdown Block
+### With Markdown Block (Easier)
 
 To use the plugin, create a code block with the language set to `apir`. Inside the code block, you can specify the url and what to show from that request. The plugin will automatically replace the code block with the response from the API. A quick example:
 
@@ -38,7 +37,18 @@ showthis: title
 
 Or you can input only the url and the plugin will show the whole response.
 
-## Settings
+> **NOTE:** The plugin only makes GET requests at the moment.
+
+### With Configuration
+
+To use the plugin, press `Ctrl+P` and search for "APIR". The plugin will present you with two options:
+
+1. Show response in modal
+2. Paste response in current document (at current line)
+
+Select the option that suits your needs. Additionally, you can configure the plugin to output the response in either JSON block format or as an Obsidian variable. This option can be accessed through the plugin's settings.
+
+#### Settings
 
 The plugin has a few settings that you can configure:
 
@@ -51,7 +61,7 @@ The plugin has a few settings that you can configure:
 ## To-do
 
 - [x] Add more request types (POST, PUT, DELETE)
-- [ ] Add support for authentication
+- [ ] ~Add support for authentication~
 - [x] Add customizability for modal output (e.g. show only specific fields, change color scheme, add custom CSS)
 - [x] Add customizability for variable output (e.g. show only specific fields, change variable name)
 - [ ] Improve error handling and provide meaningful error messages
