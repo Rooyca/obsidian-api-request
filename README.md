@@ -15,11 +15,11 @@ The plugin can be installed from within Obsidian or manually.
 
 ### Obsidian Community Plugin Browser (Recommended)
 
-- Go to Settings -> Third-party plugin
-- Make sure Restricted mode is **off**
-- Click Browse community plugins
-- Search for "API Request"
-- Click Install
+- Go to `Settings` -> `Community plugins`
+- Make sure `Restricted mode` is **off**
+- Click `Browse`
+- Search for `APIRequest`
+- Click `Install` and then `Enable`
 
 ### Maunal Installation
 
