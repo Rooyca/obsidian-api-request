@@ -7,14 +7,18 @@ interface LoadAPIRSettings {
 	MethodRequest: string;
 	DataRequest: string;
 	DataResponse: string;
+	URLs: string[];
+	Name: string;
 }
 
 const DEFAULT_SETTINGS: LoadAPIRSettings = {
 	URL: 'https://jsonplaceholder.typicode.com/todos/1',
 	FormatOut: 'json',
 	MethodRequest: 'GET',
-	DataRequest: 'None',
-	DataResponse: ''
+	DataRequest: '',
+	DataResponse: '',
+	URLs: [],
+	Name: '',
 }
 
 function nestedValue(data: any, key: string) {
@@ -30,6 +34,49 @@ function nestedValue(data: any, key: string) {
 		return value;
 	}
 
+function toDocument(settings: any, editor: Editor) {
+			requestUrl({
+			  	url: settings.URL,
+			    method: settings.MethodRequest,
+			    body: settings.DataRequest,
+			  })
+					.then((data: JSON) => {
+					  if (settings.DataResponse !== "") {
+					    const DataResponseArray = settings.DataResponse.split(",");
+					    for (let i = 0; i < DataResponseArray.length; i++) {
+					    	const key = DataResponseArray[i].trim();
+
+					    	var value = JSON.stringify(data.json[key]);
+
+								if (key.includes("->")) {
+					    		value = nestedValue(data, key);
+					    	}
+					      
+					      if (settings.FormatOut === "variable") {
+					      	value = JSON.stringify(value);
+					        editor.replaceSelection(`${key.split("->").pop()} : ${value}\n`);
+					      }
+					      if (settings.FormatOut === "json") {
+					      	if (key.includes("->")) {
+					      		value = JSON.stringify(value);
+					      		}
+					        editor.replaceSelection("```json\n" + `${key.split("->").pop()} : ${value}\n` + "```\n\n");
+					      }
+					    }
+					  } else {
+					    if (settings.FormatOut === "variable") {
+					      editor.replaceSelection(`${JSON.stringify(data.json)}\n`);
+					    }
+					    if (settings.FormatOut === "json") {
+					      editor.replaceSelection("```json\n" + `${JSON.stringify(data.json)}\n` + "```\n");
+					    }
+					  }
+					})
+			    .catch((error: Error) => {
+			      console.error(error);
+			    });
+}
+
 export default class MainAPIR extends Plugin {
 	settings: LoadAPIRSettings;
 
@@ -44,82 +91,58 @@ export default class MainAPIR extends Plugin {
 			}
 		});
 
-    this.registerMarkdownCodeBlockProcessor("apir", (source, el, ctx) => {
-        const SourceSplit = source.split("\n")
-        
+		try {
+			    this.registerMarkdownCodeBlockProcessor("apir", (source, el, ctx) => {
+	        const SourceSplit = source.split("\n")
+	        
 
-        for (let i = 0; i < SourceSplit.length; i++) {
-					if (SourceSplit[i].includes("URL: ") || SourceSplit[i].includes("url: ")) {
-						var URL: string = SourceSplit[i].replace("URL: ", "").replace("url: ", "");
-					}
-					if (SourceSplit[i].includes("ShowThis: ") || SourceSplit[i].includes("showthis: ")) {
-						var ShowThis: string = SourceSplit[i].replace("ShowThis: ", "").replace("showthis: ", "");
-					}
-				}
-
-        requestUrl({url: URL})
-				.then((data: JSON) => {
-					if (!ShowThis) {
-						el.innerHTML = JSON.stringify(data.json);
-					} else {
-						el.innerHTML = JSON.stringify(data.json[ShowThis]);
-						if (ShowThis.includes("->")) {
-							el.innerHTML = JSON.stringify(nestedValue(data, ShowThis));
+	        for (let i = 0; i < SourceSplit.length; i++) {
+						if (SourceSplit[i].includes("URL: ") || SourceSplit[i].includes("url: ")) {
+							var URL: string = SourceSplit[i].replace("URL: ", "").replace("url: ", "");
+						}
+						if (SourceSplit[i].includes("ShowThis: ") || SourceSplit[i].includes("showthis: ")) {
+							var ShowThis: string = SourceSplit[i].replace("ShowThis: ", "").replace("showthis: ", "");
 						}
 					}
-				})
-				.catch((error: Error) => {
-					console.error(error);
-					el.innerHTML = "Error: " + error.message;
-				});
-    });
+
+	        requestUrl({url: URL})
+					.then((data: JSON) => {
+						if (!ShowThis) {
+							el.innerHTML = JSON.stringify(data.json);
+						} else {
+							el.innerHTML = JSON.stringify(data.json[ShowThis]);
+							if (ShowThis.includes("->")) {
+								el.innerHTML = JSON.stringify(nestedValue(data, ShowThis));
+							}
+						}
+					})
+					.catch((error: Error) => {
+						console.error(error);
+						el.innerHTML = "Error: " + error.message;
+					});
+	    });
+			} catch (error) {
+				console.error(error);
+			}
 
 		this.addCommand({
 			id: 'response-in-document',
 			name: 'Paste response in current document',
 			editorCallback: (editor: Editor, view: MarkdownView) => {
-			requestUrl({
-			  	url: this.settings.URL,
-			    method: this.settings.MethodRequest,
-			    body: this.settings.DataRequest,
-			  })
-					.then((data: JSON) => {
-					  if (this.settings.DataResponse !== "") {
-					    const DataResponseArray = this.settings.DataResponse.split(",");
-					    for (let i = 0; i < DataResponseArray.length; i++) {
-					    	const key = DataResponseArray[i].trim();
-
-					    	var value = JSON.stringify(data.json[key]);
-
-								if (key.includes("->")) {
-					    		value = nestedValue(data, key);
-					    	}
-					      
-					      if (this.settings.FormatOut === "variable") {
-					      	value = JSON.stringify(value);
-					        editor.replaceSelection(`json:: ${key.split("->").pop()} : ${value}\n`);
-					      }
-					      if (this.settings.FormatOut === "json") {
-					      	if (key.includes("->")) {
-					      		value = JSON.stringify(value);
-					      		}
-					        editor.replaceSelection("```json\n" + `${key.split("->").pop()} : ${value}\n` + "```\n\n");
-					      }
-					    }
-					  } else {
-					    if (this.settings.FormatOut === "variable") {
-					      editor.replaceSelection(`json:: ${JSON.stringify(data.json)}\n`);
-					    }
-					    if (this.settings.FormatOut === "json") {
-					      editor.replaceSelection("```json\n" + `${JSON.stringify(data.json)}\n` + "```\n");
-					    }
-					  }
-					})
-			    .catch((error: Error) => {
-			      console.error(error);
-			    });
+				toDocument(this.settings, editor);
 			}
 		});
+
+		for (let i = 0; i < this.settings.URLs.length; i++) {
+			this.addCommand({
+				id: 'response-in-document-' + this.settings.URLs[i].Name,
+				name: 'Response for api: ' + this.settings.URLs[i].Name,
+				editorCallback: (editor: Editor, view: MarkdownView) => {
+					const rea = this.settings.URLs[i];
+					toDocument(rea, editor);
+				}
+			});
+		}
 
 		this.addSettingTab(new APRSettings(this.app, this));
 	}
@@ -222,6 +245,20 @@ class APRSettings extends PluginSettingTab {
 		const {containerEl} = this;
 
 		containerEl.empty();
+		this.displayAddedURLs(containerEl);
+
+		new Setting(containerEl)
+			.setName('Name')
+			.setDesc('Name of the request')
+			.addText(text => text
+				.setPlaceholder('Name')
+				.setValue(this.plugin.settings.Name)
+				.onChange(async (value) => {
+					if (value !== "") {
+						this.plugin.settings.Name = value;
+						await this.plugin.saveSettings();
+					}
+				}));
 
 		new Setting(containerEl)
 			.setName('URL')
@@ -279,6 +316,62 @@ class APRSettings extends PluginSettingTab {
 	      		this.plugin.settings.DataResponse = value;
 	      		await this.plugin.saveSettings();
 	      }));
+        new Setting(containerEl)
+            .addButton(button => {
+            	  // add style to button to center it and make it bigger
+            		button.setClass('mod-cta');
+                button.setButtonText('Add this APIR').onClick(async () => {
+                    // add url to URLs take data from current settings, all in one json
+                		const {URL} = this.plugin.settings;
+                		const {Name} = this.plugin.settings;
+                		const {FormatOut} = this.plugin.settings;
+                		const {MethodRequest} = this.plugin.settings;
+                		const {DataRequest} = this.plugin.settings;
+                		const {DataResponse} = this.plugin.settings;
+                		const {URLs} = this.plugin.settings;
+                		URLs.push({
+                			'URL': URL, 
+                			'Name': Name, 
+                			'FormatOut': FormatOut, 
+                			'MethodRequest': MethodRequest, 
+                			'DataRequest': DataRequest, 
+                			'DataResponse': DataResponse
+                		});
+                		await this.plugin.saveSettings();
+                		this.display();
+                		this.plugin.addCommand({
+                			id: 'response-in-document-' + Name,
+                			name: 'Response for api: ' + Name,
+                			editorCallback: (editor: Editor, view: MarkdownView) => {
+                				const rea = URLs[URLs.length - 1];
+                				toDocument(rea, editor);
+											}
+										});
+                });
+            });
+    }
 
-	}
+    displayAddedURLs(containerEl: HTMLElement) {
+    const {URLs} = this.plugin.settings;
+    if (URLs.length > 0) {
+        containerEl.createEl('p', {text: 'Added APIs:'});
+        const urlsList = containerEl.createEl('ul');
+        URLs.forEach((url) => {
+            const urlItem = urlsList.createEl('li');
+            
+            urlItem.createEl('code', {text: url.Name});
+            urlItem.createEl('code', {text: " (" + url.URL + ")"});
+            
+            const removeButton = urlItem.createEl('button', {
+                text: '❌',
+            });
+            removeButton.addEventListener('click', async () => {
+                const index = URLs.indexOf(url);
+                URLs.splice(index, 1);
+                await this.plugin.saveSettings();
+                this.display();
+            });
+        });
+    }
+}
 }
