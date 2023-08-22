@@ -318,16 +318,14 @@ class APRSettings extends PluginSettingTab {
 	      }));
         new Setting(containerEl)
             .addButton(button => {
-            	  // add style to button to center it and make it bigger
             		button.setClass('mod-cta');
                 button.setButtonText('Add this APIR').onClick(async () => {
-                    // add url to URLs take data from current settings, all in one json
-                		const {URL} = this.plugin.settings;
                 		const {Name} = this.plugin.settings;
-                		const {FormatOut} = this.plugin.settings;
-                		const {MethodRequest} = this.plugin.settings;
-                		const {DataRequest} = this.plugin.settings;
-                		const {DataResponse} = this.plugin.settings;
+                		if (Name === "") {
+                			new Notice("Name is empty");
+                			return;
+										}
+                		const {URL, FormatOut, MethodRequest, DataResponse, DataRequest} = this.plugin.settings;
                 		const {URLs} = this.plugin.settings;
                 		URLs.push({
                 			'URL': URL, 
@@ -358,10 +356,10 @@ class APRSettings extends PluginSettingTab {
         const urlsList = containerEl.createEl('ul');
         URLs.forEach((url) => {
             const urlItem = urlsList.createEl('li');
-            
-            urlItem.createEl('code', {text: url.Name});
-            urlItem.createEl('code', {text: " (" + url.URL + ")"});
-            
+            urlItem.createEl('code', {text: url.Name+" : "});
+            urlItem.createEl('a', {text:  url.URL, href: url.URL});
+            urlItem.createEl('code', {text: " || "});
+
             const removeButton = urlItem.createEl('button', {
                 text: '❌',
             });

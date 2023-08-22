@@ -7,7 +7,7 @@ Obsidian plugin that allows you to make requests to APIs and receive responses i
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/rooyca/obsidian-api-request?logo=github&color=ee8449&style=flat-square)](https://github.com/rooyca/obsidian-api-request/releases/latest)
 [![Obsidian plugin release](https://img.shields.io/badge/Obsidian%20plugin%20release-purple?logo=obsidian&style=flat-square)](https://obsidian.md/plugins?id=api-request)
 
-![conf_img](config_img.png)
+![conf_img](apir.gif)
 
 ## Installation
 
@@ -51,7 +51,7 @@ You can also show the entire response by only specifying the url:
 url: https://jsonplaceholder.typicode.com/todos/1
 ```
 
-> **NOTE:** The plugin only makes GET requests at the moment.
+> **NOTE:** The codeblock method exclusively supports GET requests.
 
 ### With Configuration
 
@@ -78,9 +78,6 @@ The plugin has a few settings that you can configure:
 - [ ] ~Add support for authentication~
 - [x] Add customizability for modal output (e.g. show only specific fields, change color scheme, add custom CSS)
 - [x] Add customizability for variable output (e.g. show only specific fields, change variable name)
-- [ ] Improve error handling and provide meaningful error messages
-- [ ] Provide comprehensive documentation and examples for users to reference
-
 
 ## Feedback and Contributions
 
