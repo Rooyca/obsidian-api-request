@@ -6,6 +6,7 @@ interface LoadAPIRSettings {
 	FormatOut: string;
 	MethodRequest: string;
 	DataRequest: string;
+	HeaderRequest: string;
 	DataResponse: string;
 	URLs: string[];
 	Name: string;
@@ -16,6 +17,7 @@ const DEFAULT_SETTINGS: LoadAPIRSettings = {
 	FormatOut: 'json',
 	MethodRequest: 'GET',
 	DataRequest: '',
+	HeaderRequest: '{"Content-Type": "application/json"}',
 	DataResponse: '',
 	URLs: [],
 	Name: '',
@@ -87,7 +89,7 @@ export default class MainAPIR extends Plugin {
 			id: 'show-response-in-modal',
 			name: 'Show response in Modal',
 			callback: () => {
-				new ShowOutputModal(this.app, this.settings.URL, this.settings.MethodRequest, this.settings.DataRequest, this.settings.DataResponse).open();
+				new ShowOutputModal(this.app, this.settings.URL, this.settings.MethodRequest, this.settings.DataRequest, this.settings.HeaderRequest, this.settings.DataResponse).open();
 			}
 		});
 
@@ -161,27 +163,27 @@ export default class MainAPIR extends Plugin {
 }
 
 class ShowOutputModal extends Modal {
-  constructor(app: App, URL: string, MethodRequest: string, DataRequest: string, DataResponse: string) {
+  constructor(app: App, URL: string, MethodRequest: string, DataRequest: string, HeaderRequest: string, DataResponse: string) {
     super(app);
     this.props = {
       URL,
       MethodRequest,
       DataRequest,
+      HeaderRequest,
       DataResponse,
     };
   }
 
 onOpen() {
   const { contentEl } = this;
-  const { URL, MethodRequest, DataRequest, DataResponse } = this.props;
+  const { URL, MethodRequest, DataRequest, HeaderRequest, DataResponse } = this.props;
+  console.log(HeaderRequest)
 
   if (MethodRequest === "GET") {
     requestUrl({
     	url: URL,
       method: MethodRequest,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: JSON.parse(HeaderRequest)
     })
       .then((data: JSON) => {
         if (DataResponse !== "") {
@@ -205,9 +207,7 @@ onOpen() {
     requestUrl({
     	url: URL,
       method: MethodRequest,
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: JSON.parse(HeaderRequest),
       body: DataRequest
     })
       .then((data: JSON)  => {
@@ -300,10 +300,20 @@ class APRSettings extends PluginSettingTab {
 	      .setName('Data to send')
 	      .setDesc("Data to send in the request")
 	      .addTextArea(text => text
-	      	.setPlaceholder('{"data": "data"}')
+	      	.setPlaceholder('{"data":"data"}')
 	      	.setValue(this.plugin.settings.DataRequest)
 	      	.onChange(async (value) => {
 	      		this.plugin.settings.DataRequest = value;
+	      		await this.plugin.saveSettings();
+	      }));
+	    new Setting(containerEl)
+	      .setName('Headers')
+	      .setDesc("Headers to send in the request")
+	      .addTextArea(text => text
+	      	.setPlaceholder('{"Content-Type": "application/json"}')
+	      	.setValue(this.plugin.settings.HeaderRequest)
+	      	.onChange(async (value) => {
+	      		this.plugin.settings.HeaderRequest = value;
 	      		await this.plugin.saveSettings();
 	      }));
 	    new Setting(containerEl)
@@ -325,14 +335,15 @@ class APRSettings extends PluginSettingTab {
                 			new Notice("Name is empty");
                 			return;
 										}
-                		const {URL, FormatOut, MethodRequest, DataResponse, DataRequest} = this.plugin.settings;
+                		const {URL, FormatOut, MethodRequest, DataResponse, DataRequest, HeaderRequest} = this.plugin.settings;
                 		const {URLs} = this.plugin.settings;
                 		URLs.push({
                 			'URL': URL, 
                 			'Name': Name, 
                 			'FormatOut': FormatOut, 
                 			'MethodRequest': MethodRequest, 
-                			'DataRequest': DataRequest, 
+                			'DataRequest': DataRequest,
+                			'HeaderRequest': HeaderRequest, 
                 			'DataResponse': DataResponse
                 		});
                 		await this.plugin.saveSettings();

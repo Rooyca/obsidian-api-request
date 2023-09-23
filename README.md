@@ -72,12 +72,13 @@ The plugin has a few settings that you can configure:
 - **Output format**: Choose between JSON block or Obsidian variable.
 - **Request Method**: Choose between GET, POST, PUT & DELETE.
 - **Request Data**: The data to send with the request. Data should by in JSON format.
+- **Header Data**: The header data to send with the request. Data should by in JSON format. (`{"Content-Type": "application/json", "Authorization": "Bearer TOKEN"}`)
 - **Response Data**: The response data to display. If empty all data will be display. You can use a right arrow `->` to access nested objects. For example, if you want to show the `title` from the `user` object, you can do that like this: `user -> title`.
 
 ## To-do
 
 - [x] Add more request types (POST, PUT, DELETE)
-- [ ] ~Add support for authentication~
+- [ ] Add support for authentication
 - [x] Add customizability for modal output (e.g. show only specific fields, change color scheme, add custom CSS)
 - [x] Add customizability for variable output (e.g. show only specific fields, change variable name)
 
