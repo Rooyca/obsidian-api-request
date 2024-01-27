@@ -2,7 +2,7 @@
 
 Obsidian plugin that allows you to make requests to APIs and receive responses in the format of a JSON block or an Obsidian variable.
 
-> 🚧 **Attention**:
+> [!IMPORTANT]
 > 
 > At the moment only JSON responses are supported.
 
@@ -53,7 +53,9 @@ You can also show the entire response by only specifying the url:
 url: https://jsonplaceholder.typicode.com/todos/1
 ```
 
-> **NOTE:** The codeblock method exclusively supports GET requests.
+> [!NOTE]
+>
+>  The codeblock method exclusively supports GET requests.
 
 ### With Configuration
 
