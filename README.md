@@ -23,39 +23,50 @@ The plugin can be installed from within Obsidian or manually.
 - Search for `APIRequest`
 - Click `Install` and then `Enable`
 
-### Maunal Installation
-
-- Copy over `main.js` and `manifest.json` to your vault. `VaultFolder/.obsidian/plugins/obsidian-api-request/`.
-
 ## Usage
 
 There are two ways to use the plugin:
 
 ### With Markdown Block (Easier)
 
-To use the plugin, create a code block with the language set to `apir`. Inside the code block, you can specify the url and what to show from that request. The plugin will automatically replace the code block with the response from the API. A quick example:
+To use the plugin, create a code block with the language set to `req`. Inside the code block, you can specify things like the URL, request method, request data, header data, and the response data you want to display.
 
-```apir
-url: https://jsonplaceholder.typicode.com/todos/1
-showthis: title
-```
+| Key| Description| Default|
+| ---| -----------|---------|
+| url | The URL to send the request to|  |
+| method | Request method (GET, POST, PUT, DELETE)| GET |
+| body | Data to send with the request. Data should by in JSON format|  |
+| header | Header(s) for the request. Data should by in JSON format|  |
+| show | Response data to display. You can use a right arrow `->` to access nested objects| ALL |
+| format | Format in which the response should be displayed| {} |
+
+The plugin will automatically replace the code block with the response from the API. Here are a quick examples:
 
 If you want to show data from nested objects, you can do that by using a right arrow `->`. For example, if you want to show the `last` from the `chess_daily` object, you can do that like this:
 
-```apir
+```req
 url: https://api.chess.com/pub/player/hikaru/stats
-showthis: chess_daily -> last
+show: chess_daily -> last
 ```
 
 You can also show the entire response by only specifying the url:
 
-```apir
+```req
 url: https://jsonplaceholder.typicode.com/todos/1
 ```
 
-> [!NOTE]
->
->  The codeblock method exclusively supports GET requests.
+You can also specify the request method, request data, header data, and the response format:
+
+```req
+url: https://my-json-server.typicode.com/typicode/demo/comments
+format: Here: <h1>{}</h1> is the ID
+method: post
+body: {"id":1}
+header: {"Accept": "application/json"}
+show: id
+```
+
+In the example above, the response will be displayed in a h1 tag.
 
 ### With Configuration
 
@@ -80,7 +91,7 @@ The plugin has a few settings that you can configure:
 ## To-do
 
 - [x] Add more request types (POST, PUT, DELETE)
-- [ ] Add support for authentication
+- [x] Add support for authentication
 - [x] Add customizability for modal output (e.g. show only specific fields, change color scheme, add custom CSS)
 - [x] Add customizability for variable output (e.g. show only specific fields, change variable name)
 

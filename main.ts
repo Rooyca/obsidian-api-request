@@ -94,38 +94,90 @@ export default class MainAPIR extends Plugin {
 		});
 
 		try {
-			    this.registerMarkdownCodeBlockProcessor("apir", (source, el, ctx) => {
-	        const SourceSplit = source.split("\n")
-	        
+	    this.registerMarkdownCodeBlockProcessor("req", async (source, el, ctx) => {
+	        const sourceLines = source.split("\n");
 
-	        for (let i = 0; i < SourceSplit.length; i++) {
-						if (SourceSplit[i].includes("URL: ") || SourceSplit[i].includes("url: ")) {
-							var URL: string = SourceSplit[i].replace("URL: ", "").replace("url: ", "");
-						}
-						if (SourceSplit[i].includes("ShowThis: ") || SourceSplit[i].includes("showthis: ")) {
-							var ShowThis: string = SourceSplit[i].replace("ShowThis: ", "").replace("showthis: ", "");
-						}
-					}
+	        let method: string = "GET";
+	        let allowedMethods: string[] = ["GET", "POST", "PUT", "DELETE"];
+	        let URL: string = "";
+	        let show: string = "";
+	        let header: any = {};
+	        let body: any = {};
+	        let format: string = "{}";
 
-	        requestUrl({url: URL})
-					.then((data: JSON) => {
-						if (!ShowThis) {
-							el.innerHTML = JSON.stringify(data.json);
-						} else {
-							el.innerHTML = JSON.stringify(data.json[ShowThis]);
-							if (ShowThis.includes("->")) {
-								el.innerHTML = JSON.stringify(nestedValue(data, ShowThis));
-							}
+	        for (const line of sourceLines) {
+						let lowercaseLine = line.toLowerCase();
+
+						switch (true) {
+						    case lowercaseLine.includes("method: "):
+						        method = line.replace(/method: /i, "").toUpperCase();
+						        if (!allowedMethods.includes(method.toUpperCase())) {
+						            el.innerHTML = "Error: Method " + method + " not supported";
+						            return;
+						        }
+						        break;
+
+						    case lowercaseLine.includes("url: "):
+						        URL = line.replace(/url: /i, "");
+						        break;
+
+						    case lowercaseLine.includes("show: "):
+						        show = line.replace(/show: /i, "");
+						        break;
+
+						    case lowercaseLine.includes("header: "):
+						        header = JSON.parse(line.replace(/header: /i, ""));
+						        break;
+
+						    case lowercaseLine.includes("body: "):
+						        body = line.replace(/body: /i, "");
+						        break;
+
+						    case lowercaseLine.includes("format: "):
+						        format = line.replace(/format: /i, "");
+						        if (!format.includes("{}")) {
+						            el.innerHTML = "Error: Use {} to show response in the document.";
+						            return;
+						        }
+						        break;
 						}
-					})
-					.catch((error: Error) => {
-						console.error(error);
-						el.innerHTML = "Error: " + error.message;
-					});
+	            if (URL === "") {
+	            			el.innerHTML = "Error: URL not found";
+	            			return;
+	            }
+	        }
+
+	        try {
+	        		const formatSplit = format.split("{}");
+	        		let responseData: any;
+	        		
+	        		if (method !== "GET") {
+	            		responseData = await requestUrl({ url: URL, method, header, body });
+	            } else {
+	            	responseData = await requestUrl({ url: URL, method });
+	            }
+
+	            if (!show) {
+	                el.innerHTML = formatSplit[0] + JSON.stringify(responseData.json, null) + formatSplit[1];
+	            } else {
+	                let nesData: any = show.includes("->") ? nestedValue(responseData, show) : responseData.json[show];
+
+	                if (typeof nesData === "object") {
+	                		nesData = JSON.stringify(nesData);
+	                } else if (typeof nesData === "string") {
+											nesData = nesData.replace(/"/g, "");
+									} 
+
+	                el.innerHTML = formatSplit[0] + nesData + formatSplit[1];
+	            }
+	        } catch (error) {
+	            console.error(error);
+	            el.innerHTML = "Error: " + error.message;
+	        }
 	    });
-			} catch (error) {
-				console.error(error);
-			}
+		} catch (e) {
+		    console.error(e.message);
+		}
 
 		this.addCommand({
 			id: 'response-in-document',
