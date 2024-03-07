@@ -104,6 +104,7 @@ export default class MainAPIR extends Plugin {
 	        let header: any = {};
 	        let body: any = {};
 	        let format: string = "{}";
+	        let responseType: string = "json";
 
 	        for (const line of sourceLines) {
 						let lowercaseLine = line.toLowerCase();
@@ -119,6 +120,15 @@ export default class MainAPIR extends Plugin {
 
 						    case lowercaseLine.includes("url: "):
 						        URL = line.replace(/url: /i, "");
+						        break;
+
+						    case lowercaseLine.includes("response-type"):
+						    		responseType = line.replace(/response-type: /i, "").toLowerCase();
+						    		const allowedResponseTypes = ["json", "txt", "md"];
+						    		if (!allowedResponseTypes.includes(responseType)) {
+						    				el.innerHTML = "Error: Response type " + responseType + " not supported";
+						            return;
+						        }
 						        break;
 
 						    case lowercaseLine.includes("show: "):
@@ -157,7 +167,9 @@ export default class MainAPIR extends Plugin {
 	            	responseData = await requestUrl({ url: URL, method });
 	            }
 
-	            if (!show) {
+							if (responseType !== "json") {
+	            		el.innerHTML = formatSplit[0] + responseData.text + formatSplit[1];
+	            } else if (!show) {
 	                el.innerHTML = formatSplit[0] + JSON.stringify(responseData.json, null) + formatSplit[1];
 	            } else {
 	                let nesData: any = show.includes("->") ? nestedValue(responseData, show) : responseData.json[show];

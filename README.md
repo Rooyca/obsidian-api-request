@@ -4,7 +4,7 @@ Obsidian plugin that allows you to make requests to APIs and receive responses i
 
 > [!IMPORTANT]
 > 
-> At the moment only JSON responses are supported.
+> We now support JSON, TEXT and MARKDOWN responses
 
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/rooyca/obsidian-api-request?logo=github&color=ee8449&style=flat-square)](https://github.com/rooyca/obsidian-api-request/releases/latest)
 [![Obsidian plugin release](https://img.shields.io/badge/Obsidian%20plugin%20release-purple?logo=obsidian&style=flat-square)](https://obsidian.md/plugins?id=api-request)
@@ -39,6 +39,7 @@ To use the plugin, create a code block with the language set to `req`. Inside th
 | header | Header(s) for the request. Data should by in JSON format|  |
 | show | Response data to display. You can use a right arrow `->` to access nested objects| ALL |
 | format | Format in which the response should be displayed| {} |
+| response-type | The type of response we are getting (json, txt or md)| json |
 
 The plugin will automatically replace the code block with the response from the API. Here are a quick examples:
 
@@ -49,10 +50,17 @@ url: https://api.chess.com/pub/player/hikaru/stats
 show: chess_daily -> last
 ```
 
-You can also show the entire response by only specifying the url:
+You can show the entire response by only specifying the url:
 
 ```req
 url: https://jsonplaceholder.typicode.com/todos/1
+```
+
+You can specify the response type you are getting:
+
+```req
+url: https://raw.githubusercontent.com/Rooyca/Rooyca/main/README.md
+response-type: md
 ```
 
 You can also specify the request method, request data, header data, and the response format:
