@@ -29,14 +29,14 @@ There are two ways to use the plugin:
 
 ### With Markdown Block (Easier)
 
-To use the plugin, create a code block with the language set to `req`. Inside the code block, you can specify things like the URL, request method, request data, header data, and the response data you want to display.
+To use the plugin, create a code block with the language set to `req`. Inside the code block, you can specify things like the URL, request method, request data, headers, and the response data you want to display.
 
 | Key| Description| Default|
 | ---| -----------|---------|
 | url | The URL to send the request to|  |
 | method | Request method (GET, POST, PUT, DELETE)| GET |
 | body | Data to send with the request. Data should by in JSON format|  |
-| header | Header(s) for the request. Data should by in JSON format|  |
+| headers | Header(s) for the request. Data should by in JSON format|  |
 | show | Response data to display. You can use a right arrow `->` to access nested objects| ALL |
 | format | Format in which the response should be displayed| {} |
 | response-type | The type of response we are getting (json, txt or md)| json |
@@ -63,14 +63,14 @@ url: https://raw.githubusercontent.com/Rooyca/Rooyca/main/README.md
 response-type: md
 ```
 
-You can also specify the request method, request data, header data, and the response format:
+You can also specify the request method, request data, headers, and the response format:
 
 ```req
 url: https://my-json-server.typicode.com/typicode/demo/comments
 format: Here: <h1>{}</h1> is the ID
 method: post
 body: {"id":1}
-header: {"Accept": "application/json"}
+headers: {"Accept": "application/json"}
 show: id
 ```
 
