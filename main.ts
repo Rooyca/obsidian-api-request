@@ -101,7 +101,7 @@ export default class MainAPIR extends Plugin {
 	        let allowedMethods: string[] = ["GET", "POST", "PUT", "DELETE"];
 	        let URL: string = "";
 	        let show: string = "";
-	        let header: any = {};
+	        let headers: any = {};
 	        let body: any = {};
 	        let format: string = "{}";
 	        let responseType: string = "json";
@@ -135,8 +135,8 @@ export default class MainAPIR extends Plugin {
 						        show = line.replace(/show: /i, "");
 						        break;
 
-						    case lowercaseLine.includes("header: "):
-						        header = JSON.parse(line.replace(/header: /i, ""));
+						    case lowercaseLine.includes("headers: "):
+						        headers = JSON.parse(line.replace(/headers: /i, ""));
 						        break;
 
 						    case lowercaseLine.includes("body: "):
@@ -162,9 +162,9 @@ export default class MainAPIR extends Plugin {
 	        		let responseData: any;
 	        		
 	        		if (method !== "GET") {
-	            		responseData = await requestUrl({ url: URL, method, header, body });
+	            		responseData = await requestUrl({ url: URL, method, headers, body });
 	            } else {
-	            	responseData = await requestUrl({ url: URL, method });
+	            	responseData = await requestUrl({ url: URL, headers });
 	            }
 
 							if (responseType !== "json") {
