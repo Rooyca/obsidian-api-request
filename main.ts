@@ -182,7 +182,7 @@ export default class MainAPIR extends Plugin {
 	        }
 
 	        try {
-	        		const formatSplit = format.split("{}");
+	        		let formatSplit = format.split("{}");
 	        		let responseData: any;
 	        		
 	        		if (method !== "GET") {
@@ -196,15 +196,30 @@ export default class MainAPIR extends Plugin {
 	            } else if (!show) {
 	                el.innerHTML = formatSplit[0] + JSON.stringify(responseData.json, null) + formatSplit[1];
 	            } else {
-	                let nesData: any = show.includes("->") ? nestedValue(responseData, show) : responseData.json[show];
+	            		if (show.includes(",")) {
+	            			const showSplit = show.split(",");
+	            			for (let i = 0; i < showSplit.length; i++) {
+	            				const key = showSplit[i].trim();
+	            				let value = JSON.stringify(responseData.json[key]);
 
-	                if (typeof nesData === "object") {
-	                		nesData = JSON.stringify(nesData);
-	                } else if (typeof nesData === "string") {
-											nesData = nesData.replace(/"/g, "");
-									} 
+	            				if (key.includes("->")) {
+	            					value = nestedValue(responseData, key);
+	            				}
+	            				if (formatSplit[i] === undefined) {
+	            					formatSplit[i] = "<br\>";
+	            				}
+	            				el.innerHTML = el.innerHTML + formatSplit[i] + value;
+	            			}
+	            		} else {
+	            			const key = show.trim();
+	            			let value = JSON.stringify(responseData.json[key]);
 
-	                el.innerHTML = formatSplit[0] + nesData + formatSplit[1];
+	            			if (key.includes("->")) {
+	            				value = nestedValue(responseData, key);
+	            			}
+
+	            			el.innerHTML = formatSplit[0] + value + formatSplit[1];
+	            		}
 	            }
 	        } catch (error) {
 	            console.error(error);

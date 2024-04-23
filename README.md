@@ -47,7 +47,14 @@ If you want to show data from nested objects, you can do that by using a right a
 
 ```req
 url: https://api.chess.com/pub/player/hikaru/stats
-show: chess_daily -> last
+show: chess_daily -> last -> rating
+```
+It's also posible to show multiple outputs by separating them with a comma:
+
+```req
+url: https://api.chess.com/pub/player/hikaru/stats
+show: chess_daily -> last -> rating, chess_daily -> best -> rating
+format: <p>Last game: {}</p> <strong>Best game: {}</strong>
 ```
 
 You can show the entire response by only specifying the url:
