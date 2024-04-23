@@ -33,10 +33,10 @@ To use the plugin, create a code block with the language set to `req`. Inside th
 
 | Key| Description| Default|
 | ---| -----------|---------|
-| url | The URL to send the request to|  |
+| url | The URL to send the request to (You can use variables defined in the frontmatter)|  |
 | method | Request method (GET, POST, PUT, DELETE)| GET |
-| body | Data to send with the request. Data should by in JSON format|  |
-| headers | Header(s) for the request. Data should by in JSON format|  |
+| body | Data to send with the request. Data should by in JSON format (You can use variables defined in the frontmatter)|  |
+| headers | Header(s) for the request. Data should by in JSON format (You can use variables defined in the frontmatter)|  |
 | show | Response data to display. You can use a right arrow `->` to access nested objects| ALL |
 | format | Format in which the response should be displayed| {} |
 | response-type | The type of response we are getting (json, txt or md)| json |
@@ -54,6 +54,12 @@ You can show the entire response by only specifying the url:
 
 ```req
 url: https://jsonplaceholder.typicode.com/todos/1
+```
+
+You can use the frontmatter variables in the URL, for instance, if you have a variable `numb` defined in the frontmatter, you can use it like this:
+
+```req
+url: https://jsonplaceholder.typicode.com/todos/{{this.numb}}
 ```
 
 You can specify the response type you are getting:

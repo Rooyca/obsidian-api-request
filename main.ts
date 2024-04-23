@@ -1,5 +1,26 @@
 import { App, Editor, MarkdownView, Modal, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { readFrontmatter, parseFrontmatter } from './frontmatterUtils';
 
+export function checkFrontmatter(req_prop: string){
+	const regex = /{{this\.([^{}]*)}}/g;
+	const match = req_prop.match(regex);
+
+	if (match) {
+		const var_name = match[0].replace(/{{this\.|}}/g, "");
+		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		const markdownContent = activeView.editor.getValue();
+
+		try {
+			const frontmatterData = parseFrontmatter(readFrontmatter(markdownContent));
+			req_prop = req_prop.replace(regex, frontmatterData[var_name] || "");
+			return req_prop;
+		} catch (e) {
+			console.error(e.message);
+			return;
+			}
+		} 
+		return req_prop;
+}
 
 interface LoadAPIRSettings {
 	URL: string;
@@ -119,7 +140,8 @@ export default class MainAPIR extends Plugin {
 						        break;
 
 						    case lowercaseLine.includes("url: "):
-						        URL = line.replace(/url: /i, "");
+										URL = line.replace(/url: /i, "");
+										URL = checkFrontmatter(URL);
 						        break;
 
 						    case lowercaseLine.includes("response-type"):
@@ -136,11 +158,13 @@ export default class MainAPIR extends Plugin {
 						        break;
 
 						    case lowercaseLine.includes("headers: "):
-						        headers = JSON.parse(line.replace(/headers: /i, ""));
+						        headers = line.replace(/headers: /i, "");
+						        headers = JSON.parse(checkFrontmatter(headers));
 						        break;
 
 						    case lowercaseLine.includes("body: "):
 						        body = line.replace(/body: /i, "");
+						        body = checkFrontmatter(body);
 						        break;
 
 						    case lowercaseLine.includes("format: "):
