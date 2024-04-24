@@ -22,6 +22,19 @@ export function checkFrontmatter(req_prop: string){
 		return req_prop;
 }
 
+export function replaceOrder(stri, val) {
+    let index = 0;
+    let replaced = stri.replace(/{}/g, function(match) {
+        return val[index++];
+    });
+
+    if (index < val.length) {
+        replaced += "<br\>" + val.slice(index).join('');
+    }
+
+    return replaced;
+}
+
 interface LoadAPIRSettings {
 	URL: string;
 	FormatOut: string;
@@ -198,6 +211,7 @@ export default class MainAPIR extends Plugin {
 	            } else {
 	            		if (show.includes(",")) {
 	            			const showSplit = show.split(",");
+	            			let values = [];
 	            			for (let i = 0; i < showSplit.length; i++) {
 	            				const key = showSplit[i].trim();
 	            				let value = JSON.stringify(responseData.json[key]);
@@ -205,11 +219,9 @@ export default class MainAPIR extends Plugin {
 	            				if (key.includes("->")) {
 	            					value = nestedValue(responseData, key);
 	            				}
-	            				if (formatSplit[i] === undefined) {
-	            					formatSplit[i] = "<br\>";
-	            				}
-	            				el.innerHTML = el.innerHTML + formatSplit[i] + value;
+	            				values.push(value);
 	            			}
+	            			el.innerHTML = replaceOrder(format, values);
 	            		} else {
 	            			const key = show.trim();
 	            			let value = JSON.stringify(responseData.json[key]);
