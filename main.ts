@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Plugin, PluginSettingTab, Setting, Notice } from 'obsidian';
 import { readFrontmatter, parseFrontmatter } from './frontmatterUtils';
 
 export function checkFrontmatter(req_prop: string){
@@ -16,6 +16,7 @@ export function checkFrontmatter(req_prop: string){
 			return req_prop;
 		} catch (e) {
 			console.error(e.message);
+			new Notice("Error: " + e.message);
 			return;
 			}
 		} 
@@ -87,29 +88,19 @@ function toDocument(settings: any, editor: Editor) {
 								if (key.includes("->")) {
 					    		value = nestedValue(data, key);
 					    	}
-					      
-					      if (settings.FormatOut === "variable") {
-					      	value = JSON.stringify(value);
-					        editor.replaceSelection(`${key.split("->").pop()} : ${value}\n`);
-					      }
-					      if (settings.FormatOut === "json") {
-					      	if (key.includes("->")) {
-					      		value = JSON.stringify(value);
-					      		}
-					        editor.replaceSelection("```json\n" + `${key.split("->").pop()} : ${value}\n` + "```\n\n");
-					      }
+
+				      	if (key.includes("->")) {
+				      		value = JSON.stringify(value);
+				      		}
+				        editor.replaceSelection("```json\n" + `${key.split("->").pop()} : ${value}\n` + "```\n\n");
 					    }
 					  } else {
-					    if (settings.FormatOut === "variable") {
-					      editor.replaceSelection(`${JSON.stringify(data.json)}\n`);
-					    }
-					    if (settings.FormatOut === "json") {
 					      editor.replaceSelection("```json\n" + `${JSON.stringify(data.json)}\n` + "```\n");
-					    }
-					  }
+						  }
 					})
 			    .catch((error: Error) => {
 			      console.error(error);
+			      new Notice("Error: " + error.message);
 			    });
 }
 
@@ -139,6 +130,11 @@ export default class MainAPIR extends Plugin {
 	        let body: any = {};
 	        let format: string = "{}";
 	        let responseType: string = "json";
+
+	        if (sourceLines.includes("disabled")) {
+	            el.innerHTML = "<strong>This request is disabled</strong>";
+	            return;
+	        }
 
 	        for (const line of sourceLines) {
 						let lowercaseLine = line.toLowerCase();
@@ -236,10 +232,13 @@ export default class MainAPIR extends Plugin {
 	        } catch (error) {
 	            console.error(error);
 	            el.innerHTML = "Error: " + error.message;
+	            new Notice("Error: " + error.message);
 	        }
 	    });
 		} catch (e) {
 		    console.error(e.message);
+		    el.innerHTML = "Error: " + error.message;
+		    new Notice("Error: " + e.message);
 		}
 
 		this.addCommand({
@@ -292,7 +291,6 @@ class ShowOutputModal extends Modal {
 onOpen() {
   const { contentEl } = this;
   const { URL, MethodRequest, DataRequest, HeaderRequest, DataResponse } = this.props;
-  console.log(HeaderRequest)
 
   if (MethodRequest === "GET") {
     requestUrl({
@@ -316,7 +314,7 @@ onOpen() {
       })
       .catch((error: Error) => {
         console.error(error);
-        contentEl.createEl('b', { text: "Error: " + error.message });
+        new Notice("Error: " + error.message);
       });
   } else {
     requestUrl({
@@ -337,7 +335,7 @@ onOpen() {
       })
       .catch((error: Error) => {
         console.error(error);
-        contentEl.createEl('b', { text: "Error: " + error.message });
+        new Notice("Error: " + error.message);
       });
   }
 }
@@ -364,7 +362,7 @@ class APRSettings extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Name')
-			.setDesc('Name of the request')
+			.setDesc('Name of request')
 			.addText(text => text
 				.setPlaceholder('Name')
 				.setValue(this.plugin.settings.Name)
@@ -387,10 +385,9 @@ class APRSettings extends PluginSettingTab {
 				}));
 	    new Setting(containerEl)
 	      .setName('Response format')
-	      .setDesc("Select the desired response format: JSON (as a code block) or Variable (using '::')")
+	      .setDesc("Select the desired response format (only JSON for now)")
 	      .addDropdown(dropDown => {
 	        dropDown.addOption("json", "JSON");
-	        dropDown.addOption("variable", "Variable");
 	        dropDown.setValue(this.plugin.settings.FormatOut)
 	        dropDown.onChange(async value => {
 	          this.plugin.settings.FormatOut = value;
@@ -398,8 +395,8 @@ class APRSettings extends PluginSettingTab {
 	        });
 	      });
 	    new Setting(containerEl)
-	      .setName('Request method')
-	      .setDesc("Select the desired request method")
+	      .setName('Method')
+	      .setDesc("Select the desired method")
 	      .addDropdown(dropDown => {
 	        dropDown.addOption("GET", "GET");
 	        dropDown.addOption("POST", "POST");
@@ -412,8 +409,8 @@ class APRSettings extends PluginSettingTab {
 	        });
 	      });
 	    new Setting(containerEl)
-	      .setName('Data to send')
-	      .setDesc("Data to send in the request")
+	      .setName('Body')
+	      .setDesc("Data to send in the body")
 	      .addTextArea(text => text
 	      	.setPlaceholder('{"data":"data"}')
 	      	.setValue(this.plugin.settings.DataRequest)
@@ -423,7 +420,7 @@ class APRSettings extends PluginSettingTab {
 	      }));
 	    new Setting(containerEl)
 	      .setName('Headers')
-	      .setDesc("Headers to send in the request")
+	      .setDesc("The headers of the request")
 	      .addTextArea(text => text
 	      	.setPlaceholder('{"Content-Type": "application/json"}')
 	      	.setValue(this.plugin.settings.HeaderRequest)
@@ -432,10 +429,10 @@ class APRSettings extends PluginSettingTab {
 	      		await this.plugin.saveSettings();
 	      }));
 	    new Setting(containerEl)
-	      .setName('Data to show in modal')
-	      .setDesc("Write the name of the variable to show in the modal (space by comma)")
+	      .setName('What to display')
+	      .setDesc("Write the name of the variables you want to show (spaced by comma)")
 	      .addTextArea(text => text
-	      	.setPlaceholder('Variable Name')
+	      	.setPlaceholder('varname')
 	      	.setValue(this.plugin.settings.DataResponse)
 	      	.onChange(async (value) => {
 	      		this.plugin.settings.DataResponse = value;

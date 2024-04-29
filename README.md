@@ -33,6 +33,7 @@ To use the plugin, create a code block with the language set to `req`. Inside th
 
 | Key| Description| Default|
 | ---| -----------|---------|
+| disabled | Disables the request|  |
 | url | The URL to send the request to (You can use variables defined in the frontmatter)|  |
 | method | Request method (GET, POST, PUT, DELETE)| GET |
 | body | Data to send with the request. Data should by in JSON format (You can use variables defined in the frontmatter)|  |
@@ -103,11 +104,11 @@ Select the option that suits your needs. Additionally, you can configure the plu
 The plugin has a few settings that you can configure:
 
 - **URL**: The URL to send the request to.
-- **Output format**: Choose between JSON block or Obsidian variable.
-- **Request Method**: Choose between GET, POST, PUT & DELETE.
-- **Request Data**: The data to send with the request. Data should by in JSON format.
-- **Header Data**: The header data to send with the request. Data should by in JSON format. (`{"Content-Type": "application/json", "Authorization": "Bearer TOKEN"}`)
-- **Response Data**: The response data to display. If empty all data will be display. You can use a right arrow `->` to access nested objects. For example, if you want to show the `title` from the `user` object, you can do that like this: `user -> title`.
+- **Format Output**: Just JSON blocks (for now).
+- **Method**: Choose between GET, POST, PUT & DELETE.
+- **Body**: The data to send with the request. Data should by in JSON format.
+- **Headers**: The header data to send with the request. Data should by in JSON format. (`{"Content-Type": "application/json", "Authorization": "Bearer TOKEN"}`)
+- **Response**: The response data to display. If empty all data will be display. You can use a right arrow `->` to access nested objects. For example, if you want to show the `title` from the `user` object, you can do that like this: `user -> title`.
 
 ## To-do
 
