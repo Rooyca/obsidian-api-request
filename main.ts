@@ -24,14 +24,16 @@ export function checkFrontmatter(req_prop: string){
 }
 
 export function replaceOrder(stri, val) {
+		console.log(val)
     let index = 0;
     let replaced = stri.replace(/{}/g, function(match) {
         return val[index++];
     });
 
-    if (index < val.length) {
-        replaced += "<br\>" + val.slice(index).join('');
-    }
+    while (val.length > index) {
+    		if (val[index] === undefined) break;
+    		replaced += stri.replace(/{}/g, val[index++]);
+		}
 
     return replaced;
 }
@@ -68,6 +70,11 @@ function nestedValue(data: any, key: string) {
 			value = value[keySplit[i]];
 			}
 		}
+		
+		if (typeof value === "object") {
+			value = JSON.stringify(value);
+		}
+
 		return value;
 	}
 
@@ -119,122 +126,83 @@ export default class MainAPIR extends Plugin {
 		});
 
 		try {
-	    this.registerMarkdownCodeBlockProcessor("req", async (source, el, ctx) => {
-	        const sourceLines = source.split("\n");
+		    this.registerMarkdownCodeBlockProcessor("req", async (source, el, ctx) => {
+		        const sourceLines = source.split("\n");
+		        let method = "GET", allowedMethods = ["GET", "POST", "PUT", "DELETE"], URL = "", show = "", headers = {}, body = {}, format = "<li>{}</li>", responseType = "json";
 
-	        let method: string = "GET";
-	        let allowedMethods: string[] = ["GET", "POST", "PUT", "DELETE"];
-	        let URL: string = "";
-	        let show: string = "";
-	        let headers: any = {};
-	        let body: any = {};
-	        let format: string = "{}";
-	        let responseType: string = "json";
+		        if (sourceLines.includes("disabled")) {
+		            el.innerHTML = "<strong>This request is disabled</strong>";
+		            return;
+		        }
 
-	        if (sourceLines.includes("disabled")) {
-	            el.innerHTML = "<strong>This request is disabled</strong>";
-	            return;
-	        }
+		        for (const line of sourceLines) {
+		            const lowercaseLine = line.toLowerCase();
+		            if (lowercaseLine.includes("method: ")) {
+		                method = line.replace(/method: /i, "").toUpperCase();
+		                if (!allowedMethods.includes(method)) {
+		                    el.innerHTML = `Error: Method ${method} not supported`;
+		                    return;
+		                }
+		            } else if (lowercaseLine.includes("url: ")) {
+		                URL = checkFrontmatter(line.replace(/url: /i, ""));
+		            } else if (lowercaseLine.includes("response-type")) {
+		                responseType = line.replace(/response-type: /i, "").toLowerCase();
+		                if (!["json", "txt", "md"].includes(responseType)) {
+		                    el.innerHTML = `Error: Response type ${responseType} not supported`;
+		                    return;
+		                }
+		            } else if (lowercaseLine.includes("show: ")) {
+		                show = line.replace(/show: /i, "");
+		            } else if (lowercaseLine.includes("headers: ")) {
+		                headers = JSON.parse(checkFrontmatter(line.replace(/headers: /i, "")));
+		            } else if (lowercaseLine.includes("body: ")) {
+		                body = checkFrontmatter(line.replace(/body: /i, ""));
+		            } else if (lowercaseLine.includes("format: ")) {
+		                format = line.replace(/format: /i, "");
+		                if (!format.includes("{}")) {
+		                    el.innerHTML = "Error: Use {} to show response in the document.";
+		                    return;
+		                }
+		            }
+		            if (URL === "") {
+		                el.innerHTML = "Error: URL not found";
+		                return;
+		            }
+		        }
 
-	        for (const line of sourceLines) {
-						let lowercaseLine = line.toLowerCase();
+		        try {
+		            const formatSplit = format.split("{}");
+		            const responseData = await requestUrl({ url: URL, method, headers, body });
+								if (!show) {
+		                el.innerHTML = formatSplit[0] + JSON.stringify(responseData.json, null) + formatSplit[1];
+		            } else {
 
-						switch (true) {
-						    case lowercaseLine.includes("method: "):
-						        method = line.replace(/method: /i, "").toUpperCase();
-						        if (!allowedMethods.includes(method.toUpperCase())) {
-						            el.innerHTML = "Error: Method " + method + " not supported";
-						            return;
-						        }
-						        break;
 
-						    case lowercaseLine.includes("url: "):
-										URL = line.replace(/url: /i, "");
-										URL = checkFrontmatter(URL);
-						        break;
+										if (show.includes("{..}")) {
+												if (show.includes(",")) { 
+							            el.innerHTML = "Error: can't use {..} and , in the same req";
+							            return;
+												}
+										    let temp_show = "";
+										    for (let i = 0; i < responseData.json.length; i++) {
+										        temp_show += show.replace("{..}", i) + ", ";
+										    }
+										    show = temp_show;
+										}
 
-						    case lowercaseLine.includes("response-type"):
-						    		responseType = line.replace(/response-type: /i, "").toLowerCase();
-						    		const allowedResponseTypes = ["json", "txt", "md"];
-						    		if (!allowedResponseTypes.includes(responseType)) {
-						    				el.innerHTML = "Error: Response type " + responseType + " not supported";
-						            return;
-						        }
-						        break;
-
-						    case lowercaseLine.includes("show: "):
-						        show = line.replace(/show: /i, "");
-						        break;
-
-						    case lowercaseLine.includes("headers: "):
-						        headers = line.replace(/headers: /i, "");
-						        headers = JSON.parse(checkFrontmatter(headers));
-						        break;
-
-						    case lowercaseLine.includes("body: "):
-						        body = line.replace(/body: /i, "");
-						        body = checkFrontmatter(body);
-						        break;
-
-						    case lowercaseLine.includes("format: "):
-						        format = line.replace(/format: /i, "");
-						        if (!format.includes("{}")) {
-						            el.innerHTML = "Error: Use {} to show response in the document.";
-						            return;
-						        }
-						        break;
-						}
-	            if (URL === "") {
-	            			el.innerHTML = "Error: URL not found";
-	            			return;
-	            }
-	        }
-
-	        try {
-	        		let formatSplit = format.split("{}");
-	        		let responseData: any;
-	        		
-	        		if (method !== "GET") {
-	            		responseData = await requestUrl({ url: URL, method, headers, body });
-	            } else {
-	            	responseData = await requestUrl({ url: URL, headers });
-	            }
-
-							if (responseType !== "json") {
-	            		el.innerHTML = formatSplit[0] + responseData.text + formatSplit[1];
-	            } else if (!show) {
-	                el.innerHTML = formatSplit[0] + JSON.stringify(responseData.json, null) + formatSplit[1];
-	            } else {
-	            		if (show.includes(",")) {
-	            			const showSplit = show.split(",");
-	            			let values = [];
-	            			for (let i = 0; i < showSplit.length; i++) {
-	            				const key = showSplit[i].trim();
-	            				let value = JSON.stringify(responseData.json[key]);
-
-	            				if (key.includes("->")) {
-	            					value = nestedValue(responseData, key);
-	            				}
-	            				values.push(value);
-	            			}
-	            			el.innerHTML = replaceOrder(format, values);
-	            		} else {
-	            			const key = show.trim();
-	            			let value = JSON.stringify(responseData.json[key]);
-
-	            			if (key.includes("->")) {
-	            				value = nestedValue(responseData, key);
-	            			}
-
-	            			el.innerHTML = formatSplit[0] + value + formatSplit[1];
-	            		}
-	            }
-	        } catch (error) {
-	            console.error(error);
-	            el.innerHTML = "Error: " + error.message;
-	            new Notice("Error: " + error.message);
-	        }
-	    });
+		                const values = show.includes(",") ? show.split(",").map(key => {
+		                    let value = JSON.stringify(responseData.json[key.trim()]);
+		                    if (key.includes("->")) value = nestedValue(responseData, key);
+		                    return value;
+		                }) : [show.trim().includes("->") ? nestedValue(responseData, show.trim()) : JSON.stringify(responseData.json[show.trim()])];
+		                el.innerHTML = replaceOrder(format, values);
+		            }
+		        } catch (error) {
+		            console.error(error);
+		            el.innerHTML = "Error: " + error.message;
+		            new Notice("Error: " + error.message);
+		        }
+		    });
 		} catch (e) {
 		    console.error(e.message);
 		    el.innerHTML = "Error: " + error.message;

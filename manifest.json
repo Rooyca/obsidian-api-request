@@ -1,7 +1,7 @@
 {
 	"id": "api-request",
 	"name": "APIRequest",
-	"version": "1.1.6",
+	"version": "1.1.7",
 	"minAppVersion": "0.15.0",
 	"description": "Request and retrieve data from APIs. The responses are delivered in a JSON format for easy integration with your notes.",
 	"author": "rooyca",

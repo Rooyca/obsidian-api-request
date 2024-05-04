@@ -39,7 +39,7 @@ To use the plugin, create a code block with the language set to `req`. Inside th
 | body | Data to send with the request. Data should by in JSON format (You can use variables defined in the frontmatter)|  |
 | headers | Header(s) for the request. Data should by in JSON format (You can use variables defined in the frontmatter)|  |
 | show | Response data to display. You can use a right arrow `->` to access nested objects| ALL |
-| format | Format in which the response should be displayed| {} |
+| format | Format in which the response should be displayed| `<li>{}</li>` |
 | response-type | The type of response we are getting (json, txt or md)| json |
 
 The plugin will automatically replace the code block with the response from the API. Here are a quick examples:
@@ -62,6 +62,12 @@ You can show the entire response by only specifying the url:
 
 ```req
 url: https://jsonplaceholder.typicode.com/todos/1
+```
+Or you can loop over an array. The following example will give you the city from all users:
+
+```req
+url: https://jsonplaceholder.typicode.com/users
+show: {..} -> address -> city
 ```
 
 You can use the frontmatter variables in the URL, for instance, if you have a variable `numb` defined in the frontmatter, you can use it like this:
