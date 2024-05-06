@@ -1,0 +1,9 @@
+.copy-req {
+    padding: var(--size-2-2) var(--size-2-3);
+    position: absolute;
+    top: 0;
+    right: 30px;
+    display: flex;
+    border-radius: var(--radius-s);
+    cursor: var(--cursor);
+}

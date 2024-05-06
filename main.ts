@@ -1,5 +1,6 @@
 import { App, Editor, MarkdownView, Modal, Plugin, PluginSettingTab, Setting, Notice } from 'obsidian';
 import { readFrontmatter, parseFrontmatter } from './frontmatterUtils';
+import './styles.css'
 
 export function checkFrontmatter(req_prop: string){
 	const regex = /{{this\.([^{}]*)}}/g;
@@ -24,7 +25,6 @@ export function checkFrontmatter(req_prop: string){
 }
 
 export function replaceOrder(stri, val) {
-		console.log(val)
     let index = 0;
     let replaced = stri.replace(/{}/g, function(match) {
         return val[index++];
@@ -174,9 +174,8 @@ export default class MainAPIR extends Plugin {
 		            const formatSplit = format.split("{}");
 		            const responseData = await requestUrl({ url: URL, method, headers, body });
 								if (!show) {
-		                el.innerHTML = formatSplit[0] + JSON.stringify(responseData.json, null) + formatSplit[1];
+		                el.innerHTML += formatSplit[0] + JSON.stringify(responseData.json, null) + formatSplit[1];
 		            } else {
-
 
 										if (show.includes("{..}")) {
 												if (show.includes(",")) { 
@@ -195,8 +194,24 @@ export default class MainAPIR extends Plugin {
 		                    if (key.includes("->")) value = nestedValue(responseData, key);
 		                    return value;
 		                }) : [show.trim().includes("->") ? nestedValue(responseData, show.trim()) : JSON.stringify(responseData.json[show.trim()])];
-		                el.innerHTML = replaceOrder(format, values);
+		                el.innerHTML += replaceOrder(format, values);
 		            }
+		            // https://github.com/jdbrice/obsidian-code-block-copy/
+		            const btnCopy = el.createEl("button", {cls: "copy-req", text: "copy"});
+				        btnCopy.addEventListener('click', function () {
+				        		const copyThis = el.innerText;
+				            navigator.clipboard.writeText(copyThis.slice(0,-4)).then(function () {
+				                btnCopy.blur();
+				  
+				                btnCopy.innerText = 'copied!';
+				  
+				                setTimeout(function () {
+				                    btnCopy.innerText = 'copy';
+				                }, 2000);
+				            }, function (error) {
+				                btnCopy.innerText = 'Error';
+				            });
+				        });
 		        } catch (error) {
 		            console.error(error);
 		            el.innerHTML = "Error: " + error.message;
