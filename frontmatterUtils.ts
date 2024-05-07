@@ -13,7 +13,7 @@ export function readFrontmatter(md: string) {
 // throws: MetadataError
 export function parseFrontmatter(input: Frontmatter) {
   if (input === undefined || input === null) { 
-    throw new Error("No hay frontmatter definido.");
+    throw new Error("Frontmatter not defined.");
   }
 
   return parseYaml(input);

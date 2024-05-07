@@ -1,5 +1,6 @@
 import { App, Editor, MarkdownView, Modal, Plugin, PluginSettingTab, Setting, Notice } from 'obsidian';
 import { readFrontmatter, parseFrontmatter } from './frontmatterUtils';
+import { marked } from './marked.min.js'
 import './styles.css'
 
 export function checkFrontmatter(req_prop: string){
@@ -24,6 +25,25 @@ export function checkFrontmatter(req_prop: string){
 		return req_prop;
 }
 
+export function addBtnCopy(el: any, copyThis: string) {
+		// https://github.com/jdbrice/obsidian-code-block-copy/
+	  const btnCopy = el.createEl("button", {cls: "copy-req", text: "copy"});
+	  console.log(copyThis)
+	  btnCopy.addEventListener('click', function () {
+	      navigator.clipboard.writeText(copyThis).then(function () {
+	          btnCopy.blur();
+
+	          btnCopy.innerText = 'copied!';
+
+	          setTimeout(function () {
+	              btnCopy.innerText = 'copy';
+	          }, 2000);
+	      }, function (error) {
+	          btnCopy.innerText = 'Error';
+	      });
+	  });
+}
+
 export function replaceOrder(stri, val) {
     let index = 0;
     let replaced = stri.replace(/{}/g, function(match) {
@@ -32,7 +52,7 @@ export function replaceOrder(stri, val) {
 
     while (val.length > index) {
     		if (val[index] === undefined) break;
-    		replaced += stri.replace(/{}/g, val[index++]);
+    		replaced += "\n"+stri.replace(/{}/g, val[index++]);
 		}
 
     return replaced;
@@ -173,10 +193,20 @@ export default class MainAPIR extends Plugin {
 		        try {
 		            const formatSplit = format.split("{}");
 		            const responseData = await requestUrl({ url: URL, method, headers, body });
+		            if (responseType !== "json") {
+		            	try {
+		            		el.innerHTML += marked(responseData.text, { sanitize: false });
+		            	} catch (e) {
+		            		new Notice("Error: " + e.message);
+		            		el.innerHTML += responseData.text;
+		            	}
+		            	addBtnCopy(el, responseData.text);
+		            	return;
+		            }
 								if (!show) {
 		                el.innerHTML += formatSplit[0] + JSON.stringify(responseData.json, null) + formatSplit[1];
+		                addBtnCopy(el, el.innerText);
 		            } else {
-
 										if (show.includes("{..}")) {
 												if (show.includes(",")) { 
 							            el.innerHTML = "Error: can't use {..} and , in the same req";
@@ -188,30 +218,15 @@ export default class MainAPIR extends Plugin {
 										    }
 										    show = temp_show;
 										}
-
 		                const values = show.includes(",") ? show.split(",").map(key => {
 		                    let value = JSON.stringify(responseData.json[key.trim()]);
 		                    if (key.includes("->")) value = nestedValue(responseData, key);
 		                    return value;
 		                }) : [show.trim().includes("->") ? nestedValue(responseData, show.trim()) : JSON.stringify(responseData.json[show.trim()])];
-		                el.innerHTML += replaceOrder(format, values);
+		                const replacedText = replaceOrder(format, values);
+		                el.innerHTML += marked(replacedText, { sanitize: false });
+		                addBtnCopy(el, replacedText);
 		            }
-		            // https://github.com/jdbrice/obsidian-code-block-copy/
-		            const btnCopy = el.createEl("button", {cls: "copy-req", text: "copy"});
-				        btnCopy.addEventListener('click', function () {
-				        		const copyThis = el.innerText;
-				            navigator.clipboard.writeText(copyThis.slice(0,-4)).then(function () {
-				                btnCopy.blur();
-				  
-				                btnCopy.innerText = 'copied!';
-				  
-				                setTimeout(function () {
-				                    btnCopy.innerText = 'copy';
-				                }, 2000);
-				            }, function (error) {
-				                btnCopy.innerText = 'Error';
-				            });
-				        });
 		        } catch (error) {
 		            console.error(error);
 		            el.innerHTML = "Error: " + error.message;
