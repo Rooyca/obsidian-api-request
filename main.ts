@@ -25,10 +25,13 @@ export function checkFrontmatter(req_prop: string){
 		return req_prop;
 }
 
+export function saveToID(reqID: any, reqText: any) {
+	localStorage.setItem(reqID, reqText);
+}
+
 export function addBtnCopy(el: any, copyThis: string) {
 		// https://github.com/jdbrice/obsidian-code-block-copy/
 	  const btnCopy = el.createEl("button", {cls: "copy-req", text: "copy"});
-	  console.log(copyThis)
 	  btnCopy.addEventListener('click', function () {
 	      navigator.clipboard.writeText(copyThis).then(function () {
 	          btnCopy.blur();
@@ -148,12 +151,7 @@ export default class MainAPIR extends Plugin {
 		try {
 		    this.registerMarkdownCodeBlockProcessor("req", async (source, el, ctx) => {
 		        const sourceLines = source.split("\n");
-		        let method = "GET", allowedMethods = ["GET", "POST", "PUT", "DELETE"], URL = "", show = "", headers = {}, body = {}, format = "<li>{}</li>", responseType = "json";
-
-		        if (sourceLines.includes("disabled")) {
-		            el.innerHTML = "<strong>This request is disabled</strong>";
-		            return;
-		        }
+		        let method = "GET", allowedMethods = ["GET", "POST", "PUT", "DELETE"], URL = "", show = "", headers = {}, body = {}, format = "{}", responseType = "json", reqID = "req-general";
 
 		        for (const line of sourceLines) {
 		            const lowercaseLine = line.toLowerCase();
@@ -183,6 +181,18 @@ export default class MainAPIR extends Plugin {
 		                    el.innerHTML = "Error: Use {} to show response in the document.";
 		                    return;
 		                }
+		            } else if (lowercaseLine.includes("req-id: ")) {
+		                reqID = line.replace(/id: /i, "");
+
+				            if (sourceLines.includes("disabled")) {
+				            	const idExists = localStorage.getItem(reqID);
+				            	if (idExists) {
+				            		el.innerHTML = marked(idExists);
+				            		return;
+				            	} else {
+				            		sourceLines.splice(sourceLines.indexOf("disabled"), 1);
+				            	}
+				            }
 		            }
 		            if (URL === "") {
 		                el.innerHTML = "Error: URL not found";
@@ -190,21 +200,28 @@ export default class MainAPIR extends Plugin {
 		            }
 		        }
 
+		        if (sourceLines.includes("disabled")) {
+		            el.innerHTML = "<strong>This request is disabled</strong>";
+		            return;
+		        }
+
 		        try {
 		            const formatSplit = format.split("{}");
 		            const responseData = await requestUrl({ url: URL, method, headers, body });
 		            if (responseType !== "json") {
 		            	try {
-		            		el.innerHTML += marked(responseData.text, { sanitize: false });
+		            		el.innerHTML += marked(responseData.text);
 		            	} catch (e) {
 		            		new Notice("Error: " + e.message);
 		            		el.innerHTML += responseData.text;
 		            	}
+		            	saveToID(reqID, responseData.text);
 		            	addBtnCopy(el, responseData.text);
 		            	return;
 		            }
 								if (!show) {
 		                el.innerHTML += formatSplit[0] + JSON.stringify(responseData.json, null) + formatSplit[1];
+		                saveToID(reqID, el.innerText);
 		                addBtnCopy(el, el.innerText);
 		            } else {
 										if (show.includes("{..}")) {
@@ -224,7 +241,9 @@ export default class MainAPIR extends Plugin {
 		                    return value;
 		                }) : [show.trim().includes("->") ? nestedValue(responseData, show.trim()) : JSON.stringify(responseData.json[show.trim()])];
 		                const replacedText = replaceOrder(format, values);
-		                el.innerHTML += marked(replacedText, { sanitize: false });
+		                el.innerHTML += marked(replacedText);
+
+		                saveToID(reqID, replacedText);
 		                addBtnCopy(el, replacedText);
 		            }
 		        } catch (error) {
@@ -468,6 +487,19 @@ class APRSettings extends PluginSettingTab {
 										});
                 });
             });
+        new Setting(containerEl)
+        		.addButton(button => {
+        			//button.setClass('mod-cta');
+							button.setButtonText("Clear ID's").onClick(async () => {
+								// clear all localStorage that starts with req-
+								Object.keys(localStorage).forEach(key => {
+									if (key.startsWith("req-")) {
+										localStorage.removeItem(key);
+									}
+								});
+								this.display();
+							});
+						});
     }
 
     displayAddedURLs(containerEl: HTMLElement) {

@@ -34,6 +34,7 @@ To use the plugin, create a code block with the language set to `req`. Inside th
 | Key| Description| Default|
 | ---| -----------|---------|
 | disabled | Disables the request|  |
+| req-id | Where response is store | req-general |
 | url | The URL to send the request to (You can use variables defined in the frontmatter)|  |
 | method | Request method (GET, POST, PUT, DELETE)| GET |
 | body | Data to send with the request. Data should by in JSON format (You can use variables defined in the frontmatter)|  |
@@ -95,6 +96,44 @@ show: id
 ```
 
 In the example above, the response will be displayed in a h1 tag.
+
+---
+
+Now we can store the response in `localStore` and use it in other blocks. For example, if we want to store the response in a variable called `idPersona`:
+
+```req
+url: https://jsonplaceholder.typicode.com/users/1
+show: id
+req-id: idPersona
+```
+
+With this with can also disable a request and still get the response:
+
+```req
+url: https://jsonplaceholder.typicode.com/users/1
+show: id
+req-id: idPersona
+disabled
+```
+
+This will check for the response in the `localStore` and if it's not there, it will make it.
+
+#### How to get responses from localStore
+
+For this you would need [dataview](https://obsidian.md/plugins?id=dataview).
+
+```dataviewjs
+dv.paragraph(localStorage.getItem("req-idPersona"))
+```
+
+Is mandatory to use `req-` before whatever you defined in `req-id` flag.
+
+You could also used inline:
+
+`$=localStorage.getItem("req-idPersona")`
+
+But this is a little buggy and don't work all the time. (Use this for short and unformated responses)
+
 
 ### With Configuration
 
