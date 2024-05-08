@@ -4,16 +4,16 @@ export class MarkdownParser {
         text = text.replace(/^(#{1,6})\s*(.*)$/gm, (match, p1, p2) => `<h${p1.length}>${p2}</h${p1.length}>`);
 
         // Todo Items
-        text = text.replace(/^- \[ \](.*)$/gm, '<li><input type="checkbox">$1</li>');
-        text = text.replace(/^- \[x\](.*)$/gm, '<li><input type="checkbox" checked>$1</li>');
+        text = text.replace(/^- \[ \](.*)$/gm, '<li class="todo-li"><input type="checkbox">$1</li>');
+        text = text.replace(/^- \[x\](.*)$/gm, '<li class="todo-li"><input type="checkbox" checked>$1</li>');
 
         // Unordered Lists
         text = text.replace(/^\s*-\s*(.*)$/gm, '<li>$1</li>');
-        text = text.replace(/^\s*<li>(.*?)<\/li>\s*$/gm, '<ul>$1</ul>');
+        //text = text.replace(/^\s*<li>(.*?)<\/li>\s*$/gm, '<ul>$1</ul>');
 
         // Ordered Lists
         text = text.replace(/^\s*\d+\.\s*(.*)$/gm, '<li>$1</li>');
-        text = text.replace(/^\s*<li>(.*?)<\/li>\s*$/gm, '<ol>$1</ol>');
+        //text = text.replace(/^\s*<li>(.*?)<\/li>\s*$/gm, '<ol>$1</ol>');
 
         // Bold
         text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');

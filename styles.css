@@ -1,14 +1,21 @@
 .copy-req {
-    padding: var(--size-2-2) var(--size-2-3);
+    padding: var(--size-2-2);
     position: absolute;
-    top: 0;
+    top: 2px;
     right: 34px;
     display: flex;
-    border-radius: var(--radius-s);
     cursor: var(--cursor);
+    opacity: 0;
+    background-color: transparent !important;
+    box-shadow: none !important;
 }
 
-ul {
+.block-language-req:hover .copy-req {
+    opacity: 1;
+    background-color: var(--background-modifier-hover) !important;
+}
+
+.todo-li {
     list-style-type: none;
     padding: 0 !important;
     margin: 0 !important;
