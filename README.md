@@ -99,7 +99,7 @@ In the example above, the response will be displayed in a h1 tag.
 
 ---
 
-Now we can store the response in `localStore` and use it in other blocks. For example, if we want to store the response in a variable called `idPersona`:
+Now we can store the response in `localStorage` and use it in other blocks. For example, if we want to store the response in a variable called `idPersona`:
 
 ```req
 url: https://jsonplaceholder.typicode.com/users/1
@@ -116,9 +116,9 @@ req-id: idPersona
 disabled
 ```
 
-This will check for the response in the `localStore` and if it's not there, it will make it.
+This will check for the response in the `localStorage` and if it's not there, it will make it.
 
-#### How to get responses from localStore
+#### How to get responses from localStorage
 
 For this you would need [dataview](https://obsidian.md/plugins?id=dataview).
 
