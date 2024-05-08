@@ -8,3 +8,9 @@
     cursor: var(--cursor);
 }
 
+ul {
+    list-style-type: none;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+

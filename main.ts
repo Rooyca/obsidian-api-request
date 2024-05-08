@@ -1,7 +1,9 @@
 import { App, Editor, MarkdownView, Modal, Plugin, PluginSettingTab, Setting, Notice } from 'obsidian';
 import { readFrontmatter, parseFrontmatter } from './frontmatterUtils';
-import { marked } from './marked.min.js'
-import './styles.css'
+import { MarkdownParser } from './mdparse.js';
+import './styles.css';
+
+const parser = new MarkdownParser();
 
 export function checkFrontmatter(req_prop: string){
 	const regex = /{{this\.([^{}]*)}}/g;
@@ -187,7 +189,7 @@ export default class MainAPIR extends Plugin {
 				            if (sourceLines.includes("disabled")) {
 				            	const idExists = localStorage.getItem(reqID);
 				            	if (idExists) {
-				            		el.innerHTML = marked(idExists);
+				            		el.innerHTML = parser.parse(idExists);
 				            		return;
 				            	} else {
 				            		sourceLines.splice(sourceLines.indexOf("disabled"), 1);
@@ -210,7 +212,7 @@ export default class MainAPIR extends Plugin {
 		            const responseData = await requestUrl({ url: URL, method, headers, body });
 		            if (responseType !== "json") {
 		            	try {
-		            		el.innerHTML += marked(responseData.text);
+		            		el.innerHTML += parser.parse(responseData.text);
 		            	} catch (e) {
 		            		new Notice("Error: " + e.message);
 		            		el.innerHTML += responseData.text;
@@ -241,7 +243,7 @@ export default class MainAPIR extends Plugin {
 		                    return value;
 		                }) : [show.trim().includes("->") ? nestedValue(responseData, show.trim()) : JSON.stringify(responseData.json[show.trim()])];
 		                const replacedText = replaceOrder(format, values);
-		                el.innerHTML += marked(replacedText);
+		                el.innerHTML += parser.parse(replacedText);
 
 		                saveToID(reqID, replacedText);
 		                addBtnCopy(el, replacedText);

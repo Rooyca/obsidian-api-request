@@ -135,6 +135,22 @@ You could also used inline:
 But this is a little buggy and don't work all the time. (Use this for short and unformated responses)
 
 
+#### How to remove responses from localStorage
+
+In order to remove a response from the `localStorage` you can use the following code:
+
+```dataviewjs
+localStorage.removeItem("req-idPersona")
+```
+Or you can use the following code to remove all responses:
+
+```dataviewjs
+localStorage.clear()
+```
+
+**There is also a button in the settings to remove all responses.**
+
+
 ### With Configuration
 
 To use the plugin, press `Ctrl+P` and search for "APIR". The plugin will present you with two options:
