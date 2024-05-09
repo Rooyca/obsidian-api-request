@@ -6,7 +6,7 @@ APIR (shorthand for api-request) is an [Obsidian](https://obsidian.md/) plugin t
 
 ### Code-block
 
-To use it, create a code-block with the language set to `req`. Inside the code-block, you can specify `url`, `method`, `body`, `headers`, `format`, etc. See the [available flags](codeblock/flags) for more information.
+To use it, create a code-block with the language set to `req`. Inside the code-block, you can specify `url`, `method`, `body`, `headers`, `format`, etc. See the [available flags](codeblock/flags.md) for more information.
 
 ~~~markdown
 ```req

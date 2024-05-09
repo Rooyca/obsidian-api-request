@@ -1,5 +1,6 @@
 site_name: APIRequest
 repo_url: https://github.com/Rooyca/obsidian-api-request/
+edit_uri: edit/master/docs/docs/
 
 markdown_extensions:
   - admonition
@@ -8,6 +9,7 @@ theme:
   features:
     - content.code.copy
   name: material
+  custom_dir: overrides
   palette: 
     - scheme: default
       toggle:
