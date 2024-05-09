@@ -1,0 +1,195 @@
+# Code-block flags
+
+Flags are the way to specify the parameters of our request and also the format in which we want our response.
+
+| Flag | Default|
+| ---| ---------|
+| url |  |
+| method |  GET |
+| body |  |
+| headers |  |
+| show | ALL |
+| format | `{}` |
+| response-type | json |
+| req-id | req-general |
+| disabled |  |
+
+## url
+
+Is the only **required** flag. It specifies the endpoint of the request. Variables defined in the `frontmatter` can be used.
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/users/{{this.id}}
+```
+~~~
+
+!!! info "Where `{{this.id}}` is a variable (`id`) defined in the frontmatter."
+
+
+## method
+
+Specifies the request method. The default value is `GET` and the available values are:
+
+- GET
+- POST
+- PUT
+- DELETE
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/posts
+method: post
+```
+~~~
+
+## body
+
+Specifies the body of the request. The default value is an empty object. The data should be in JSON format with double quotes separating the keys and values with a colon and space. Variables defined in the `frontmatter` can be used.
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/posts
+method: post
+body: {"title": {{this.title}}, "body": "bar", "userId": 1}
+```
+~~~
+
+!!! info "Where `{{this.title}}` is a variable (`title`) defined in the frontmatter."
+
+## headers
+
+Specifies the headers of the request. The default value is an empty object. The data should be in JSON format with double quotes separating the keys and values with a colon and space. Variables defined in the `frontmatter` can be used.
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/posts
+method: post
+headers: {"Content-type": "application/json; charset=UTF-8"}
+```
+~~~
+
+## show
+
+Specifies the response data to display. Accessing nested objects is done using a right arrow `->`. The default value is `ALL`.
+
+~~~markdown
+```req
+url: https://api.chess.com/pub/player/hikaru/stats
+show: chess_daily -> last -> rating
+```
+~~~
+
+Multiple outputs can be displayed by separating them with a comma.
+
+~~~markdown
+```req
+url: https://api.chess.com/pub/player/hikaru/stats
+show: chess_daily -> last -> rating, chess_daily -> best -> rating
+format: <p>Last game: {}</p> <strong>Best game: {}</strong>
+```
+~~~
+
+Looping over an array is also possible using `{..}`. The following example retrieves the city from all users.
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/users
+show: {..} -> address -> city
+```
+~~~
+
+## format
+
+Specifies the format in which the response should be displayed. The default value is `{}`. It can be any string (including `markdown` and `html`). If more than one output is specified, more then one format should be specified, otherwise, the same format will be applied to all outputs.
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/posts/1
+show: title, body
+format: <h1>{}</h1> <p>{}</p>
+```
+~~~
+
+!!! info "In this example, first `{}` will be replaced by the title, and second `{}` will be replaced by the body."
+
+
+## response-type
+
+Specifies the type of response we are getting. The default value is `json`. The available values are:
+
+- json
+- md
+- txt
+
+When the response type is `md`, the response will be rendered as markdown.
+
+~~~markdown
+```req 
+url: https://raw.githubusercontent.com/Rooyca/Rooyca/main/README.md
+response-type: md
+```
+~~~
+
+## req-id
+
+Specifies the id of the request. The default value is `req-general`. This is useful when we want to store the response in `localStorage` and use it in other blocks or notes.
+
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/users/1
+show: name
+req-id: name
+```
+~~~
+
+Stored responses can be accessed using the `req-id` with the `disabled` flag (which won't trigger a new request).
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/users/1
+req-id: name
+disabled
+```
+~~~
+
+Responses can also be accessed using [dataview](https://blacksmithgu.github.io/dataview/).
+
+~~~markdown
+```dataview
+dv.paragraph(localStorage.getItem("req-name"))
+```
+~~~
+
+!!! info "Is mandatory to use `req-` before whatever you defined in `req-id` flag."
+
+To remove responses from localStorage, run:
+
+~~~markdown
+```dataview
+localStorage.removeItem("req-name")
+```
+~~~
+
+To remove all responses, go to settings and click on the `Clear ID's` button.
+
+## disabled
+
+Disables the request. If a `req-id` is specified, APIR will check for the response in `localStorage`. If it's not found, it will make a new request and store it. After that, APIR will use the stored response.
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/users/1
+show: name
+req-id: name
+disabled
+```
+~~~
+
+
+
+
+
+
+

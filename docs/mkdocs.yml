@@ -1,0 +1,25 @@
+site_name: APIRequest
+repo_url: https://github.com/Rooyca/obsidian-api-request/
+
+markdown_extensions:
+  - admonition
+
+theme:
+  features:
+    - content.code.copy
+  name: material
+  palette: 
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+nav:
+  - Getting started: 'index.md'
+  - codeblock:
+    - flags: 'codeblock/flags.md'
