@@ -40,7 +40,7 @@ To use the plugin, create a code block with the language set to `req`. Inside th
 | body | Data to send with the request. Data should by in JSON format (You can use variables defined in the frontmatter)|  |
 | headers | Header(s) for the request. Data should by in JSON format (You can use variables defined in the frontmatter)|  |
 | show | Response data to display. You can use a right arrow `->` to access nested objects| ALL |
-| format | Format in which the response should be displayed| `<li>{}</li>` |
+| format | Format in which the response should be displayed| `{}` |
 | response-type | The type of response we are getting (json, txt or md)| json |
 
 The plugin will automatically replace the code block with the response from the API. Here are a quick examples:
@@ -120,7 +120,7 @@ This will check for the response in the `localStorage` and if it's not there, it
 
 #### How to get responses from localStorage
 
-For this you would need [dataview](https://obsidian.md/plugins?id=dataview).
+For this you'll need [dataview](https://obsidian.md/plugins?id=dataview).
 
 ```dataviewjs
 dv.paragraph(localStorage.getItem("req-idPersona"))
