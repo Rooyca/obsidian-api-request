@@ -99,6 +99,24 @@ show: {..} -> address -> city
 ```
 ~~~
 
+Looping over a specified number of elements of the array is also possible using `{n..n}`.
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/users
+show: {0..2} -> address -> city
+```
+~~~
+
+It's also possible to loop over a specified range of indexes of the array using `{n-n-n}`.
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/users
+show: {0-2-1} -> address -> city
+```
+~~~
+
 ## format
 
 Specifies the format in which the response should be displayed. The default value is `{}`. It can be any string (including `markdown` and `html`). If more than one output is specified, more then one format should be specified, otherwise, the same format will be applied to all outputs.

@@ -25,3 +25,4 @@ nav:
   - Getting started: 'index.md'
   - codeblock:
     - flags: 'codeblock/flags.md'
+  - settings: 'settings.md'

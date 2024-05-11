@@ -226,17 +226,42 @@ export default class MainAPIR extends Plugin {
 		                saveToID(reqID, el.innerText);
 		                addBtnCopy(el, el.innerText);
 		            } else {
-										if (show.includes("{..}")) {
-												if (show.includes(",")) { 
-							            el.innerHTML = "Error: can't use {..} and , in the same req";
-							            return;
+
+		            		const first_pattern = /{([^{}]*)}/g;
+										if (show.match(first_pattern)) {
+												if (show.includes(",")) {
+													el.innerHTML = "Error: comma is not allowed when using {}";
+													return;
 												}
-										    let temp_show = "";
-										    for (let i = 0; i < responseData.json.length; i++) {
-										        temp_show += show.replace("{..}", i) + ", ";
-										    }
-										    show = temp_show;
-										}
+
+												const pattern = /{(\d+)\.\.(\d+)}/;
+												let temp_show = "";
+
+												if (show.match(pattern)) {
+													const range = show.match(/\d+/g).map(Number);
+													if (range[0] > range[1]) {
+														el.innerHTML = "Error: range is not valid";
+														return;
+													}
+													for (let i = range[0]; i <= range[1]; i++) {
+														temp_show += show.replace(show.match(pattern)[0], i) + ", ";
+													}
+													show = temp_show;
+												} else if (show.match(/(\d+-)+\d+/)) {
+													const numbers = show.match(/\d+/g).map(Number);
+													show = show.replace(/{.*?}/g, "-");
+													for (let i = 0; i < numbers.length; i++) {
+														temp_show += show.replace("-", numbers[i]) + ", ";
+													}
+													show = temp_show;
+												} else {
+											    for (let i = 0; i < responseData.json.length; i++) {
+											        temp_show += show.replace("{..}", i) + ", ";
+											    }
+											    show = temp_show;
+										  	}
+											}
+
 		                const values = show.includes(",") ? show.split(",").map(key => {
 		                    let value = JSON.stringify(responseData.json[key.trim()]);
 		                    if (key.includes("->")) value = nestedValue(responseData, key);
