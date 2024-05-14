@@ -1,7 +1,6 @@
 import { App, Editor, MarkdownView, Modal, Plugin, PluginSettingTab, Setting, Notice } from 'obsidian';
 import { readFrontmatter, parseFrontmatter } from './frontmatterUtils';
 import { MarkdownParser } from './mdparse.js';
-import './styles.css';
 
 const parser = new MarkdownParser();
 
@@ -10,20 +9,24 @@ export function checkFrontmatter(req_prop: string){
 	const match = req_prop.match(regex);
 
 	if (match) {
-		const var_name = match[0].replace(/{{this\.|}}/g, "");
-		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-		const markdownContent = activeView.editor.getValue();
 
-		try {
-			const frontmatterData = parseFrontmatter(readFrontmatter(markdownContent));
-			req_prop = req_prop.replace(regex, frontmatterData[var_name] || "");
-			return req_prop;
-		} catch (e) {
-			console.error(e.message);
-			new Notice("Error: " + e.message);
-			return;
+		for (let i = 0; i < match.length; i++) {
+			const var_name = match[i].replace(/{{this\.|}}/g, "");
+			
+			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+			const markdownContent = activeView.editor.getValue();
+
+			try {
+				const frontmatterData = parseFrontmatter(readFrontmatter(markdownContent));
+				req_prop = req_prop.replace(match[i], frontmatterData[var_name] || "");
+			} catch (e) {
+				console.error(e.message);
+				new Notice("Error: " + e.message);
+				return;
+				}
 			}
-		} 
+		}
+		console.log(req_prop);
 		return req_prop;
 }
 
@@ -165,8 +168,8 @@ export default class MainAPIR extends Plugin {
 		                }
 		            } else if (lowercaseLine.includes("url: ")) {
 		                URL = checkFrontmatter(line.replace(/url: /i, ""));
-		            } else if (lowercaseLine.includes("response-type")) {
-		                responseType = line.replace(/response-type: /i, "").toLowerCase();
+		            } else if (lowercaseLine.includes("res-type")) {
+		                responseType = line.replace(/res-type: /i, "").toLowerCase();
 		                if (!["json", "txt", "md"].includes(responseType)) {
 		                    el.innerHTML = `Error: Response type ${responseType} not supported`;
 		                    return;

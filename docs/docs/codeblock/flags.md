@@ -132,7 +132,7 @@ format: <h1>{}</h1> <p>{}</p>
 !!! info "In this example, first `{}` will be replaced by the title, and second `{}` will be replaced by the body."
 
 
-## response-type
+## res-type
 
 Specifies the type of response we are getting. The default value is `json`. The available values are:
 
@@ -145,7 +145,7 @@ When the response type is `md`, the response will be rendered as markdown.
 ~~~markdown
 ```req 
 url: https://raw.githubusercontent.com/Rooyca/Rooyca/main/README.md
-response-type: md
+res-type: md
 ```
 ~~~
 
