@@ -26,7 +26,6 @@ export function checkFrontmatter(req_prop: string){
 				}
 			}
 		}
-		console.log(req_prop);
 		return req_prop;
 }
 
