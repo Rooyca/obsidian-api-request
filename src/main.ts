@@ -1,73 +1,12 @@
 import { App, Editor, MarkdownView, Modal, Plugin, PluginSettingTab, Setting, Notice } from 'obsidian';
 import { readFrontmatter, parseFrontmatter } from './frontmatterUtils';
-import { MarkdownParser } from './mdparse.js';
+import { MarkdownParser } from './mdparse';
+import { checkFrontmatter, saveToID, addBtnCopy, replaceOrder, nestedValue, toDocument } from './functions';
 
 const parser = new MarkdownParser();
 
-export function checkFrontmatter(req_prop: string){
-	const regex = /{{this\.([^{}]*)}}/g;
-	const match = req_prop.match(regex);
-
-	if (match) {
-
-		for (let i = 0; i < match.length; i++) {
-			const var_name = match[i].replace(/{{this\.|}}/g, "");
-			
-			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-			const markdownContent = activeView.editor.getValue();
-
-			try {
-				const frontmatterData = parseFrontmatter(readFrontmatter(markdownContent));
-				req_prop = req_prop.replace(match[i], frontmatterData[var_name] || "");
-			} catch (e) {
-				console.error(e.message);
-				new Notice("Error: " + e.message);
-				return;
-				}
-			}
-		}
-		return req_prop;
-}
-
-export function saveToID(reqID: any, reqText: any) {
-	localStorage.setItem(reqID, reqText);
-}
-
-export function addBtnCopy(el: any, copyThis: string) {
-		// https://github.com/jdbrice/obsidian-code-block-copy/
-	  const btnCopy = el.createEl("button", {cls: "copy-req", text: "copy"});
-	  btnCopy.addEventListener('click', function () {
-	      navigator.clipboard.writeText(copyThis).then(function () {
-	          btnCopy.blur();
-
-	          btnCopy.innerText = 'copied!';
-
-	          setTimeout(function () {
-	              btnCopy.innerText = 'copy';
-	          }, 2000);
-	      }, function (error) {
-	          btnCopy.innerText = 'Error';
-	      });
-	  });
-}
-
-export function replaceOrder(stri, val) {
-    let index = 0;
-    let replaced = stri.replace(/{}/g, function(match) {
-        return val[index++];
-    });
-
-    while (val.length > index) {
-    		if (val[index] === undefined) break;
-    		replaced += "\n"+stri.replace(/{}/g, val[index++]);
-		}
-
-    return replaced;
-}
-
 interface LoadAPIRSettings {
 	URL: string;
-	FormatOut: string;
 	MethodRequest: string;
 	DataRequest: string;
 	HeaderRequest: string;
@@ -78,62 +17,12 @@ interface LoadAPIRSettings {
 
 const DEFAULT_SETTINGS: LoadAPIRSettings = {
 	URL: 'https://jsonplaceholder.typicode.com/todos/1',
-	FormatOut: 'json',
 	MethodRequest: 'GET',
 	DataRequest: '',
 	HeaderRequest: '{"Content-Type": "application/json"}',
 	DataResponse: '',
 	URLs: [],
 	Name: '',
-}
-
-function nestedValue(data: any, key: string) {
-		const keySplit: string[] = key.split("->").map((item) => item.trim());
-		var value: any = "";
-		for (let i: number = 0; i < keySplit.length; i++) {
-			if (i === 0) {
-				value = data.json[keySplit[i]];
-		} else {
-			value = value[keySplit[i]];
-			}
-		}
-		
-		if (typeof value === "object") {
-			value = JSON.stringify(value);
-		}
-
-		return value;
-	}
-
-function toDocument(settings: any, editor: Editor) {
-			requestUrl({
-			  	url: settings.URL,
-			    method: settings.MethodRequest,
-			    body: settings.DataRequest,
-			  })
-					.then((data: JSON) => {
-					  if (settings.DataResponse !== "") {
-					    const DataResponseArray = settings.DataResponse.split(",");
-					    for (let i = 0; i < DataResponseArray.length; i++) {
-					    	const key = DataResponseArray[i].trim();
-
-					    	var value = JSON.stringify(data.json[key]);
-
-								if (key.includes("->")) {
-					    		value = nestedValue(data, key);
-					    		value = JSON.stringify(value);
-					    	}
-
-				        editor.replaceSelection("```json\n" + `${key.split("->").pop()} : ${value}\n` + "```\n\n");
-					    }
-					  } else {
-					      editor.replaceSelection("```json\n" + `${JSON.stringify(data.json)}\n` + "```\n");
-						  }
-					})
-			    .catch((error: Error) => {
-			      console.error(error);
-			      new Notice("Error: " + error.message);
-			    });
 }
 
 export default class MainAPIR extends Plugin {
@@ -332,57 +221,39 @@ class ShowOutputModal extends Modal {
     };
   }
 
-onOpen() {
-  const { contentEl } = this;
-  const { URL, MethodRequest, DataRequest, HeaderRequest, DataResponse } = this.props;
+	onOpen() {
+	  const { contentEl } = this;
+	  const { URL, MethodRequest, DataRequest, HeaderRequest, DataResponse } = this.props;
 
-  if (MethodRequest === "GET") {
-    requestUrl({
-    	url: URL,
-      method: MethodRequest,
-      headers: JSON.parse(HeaderRequest)
-    })
-      .then((data: JSON) => {
-        if (DataResponse !== "") {
-          const DataResponseArray = DataResponse.split(",");
-          for (let i = 0; i < DataResponseArray.length; i++) {
-          	if (DataResponseArray[i].includes("->")) {
-          		contentEl.createEl('b', { text: DataResponseArray[i] + " : " + `${JSON.stringify(nestedValue(data, DataResponseArray[i]))}` });
-						} else {
-							contentEl.createEl('b', { text: DataResponseArray[i] + " : " + `${JSON.stringify(data.json[DataResponseArray[i]])}` });
-						}
-          }
-        } else {
-          contentEl.createEl('b', { text: `${JSON.stringify(data.json)}` });
-        }
-      })
-      .catch((error: Error) => {
-        console.error(error);
-        new Notice("Error: " + error.message);
-      });
-  } else {
-    requestUrl({
-    	url: URL,
-      method: MethodRequest,
-      headers: JSON.parse(HeaderRequest),
-      body: DataRequest
-    })
-      .then((data: JSON)  => {
-        if (DataResponse !== "") {
-          const DataResponseArray = DataResponse.split(",");
-          for (let i = 0; i < DataResponseArray.length; i++) {
-            contentEl.createEl('b', { text: DataResponseArray[i] + " : " + `${JSON.stringify(data.json[DataResponseArray[i]])}` });
-          }
-        } else {
-          contentEl.createEl('b', { text: `${JSON.stringify(data.json)}` });
-        }
-      })
-      .catch((error: Error) => {
-        console.error(error);
-        new Notice("Error: " + error.message);
-      });
-  }
-}
+	  const handleError = (error) => {
+	    console.error(error);
+	    new Notice("Error: " + error.message);
+	  };
+
+	  const parseAndCreate = (data) => (key) => {
+	    const json = data.json;
+	    const value = DataResponse.includes("->") ? nestedValue(data, key) : json[key];
+	    contentEl.createEl('b', { text: key + " : " + JSON.stringify(value, null, 2) });
+	  };
+
+	  const requestOptions = {
+	    url: URL,
+	    method: MethodRequest,
+	    headers: JSON.parse(HeaderRequest),
+	    ...(MethodRequest !== "GET" && { body: DataRequest })
+	  };
+
+	  requestUrl(requestOptions)
+	    .then((data) => {
+	      if (DataResponse !== "") {
+	        const DataResponseArray = DataResponse.split(",");
+	        DataResponseArray.forEach(parseAndCreate(data));
+	      } else {
+	        contentEl.createEl('b', { text: JSON.stringify(data.json, null, 2) });
+	      }
+	    })
+	    .catch(handleError);
+	}
 
   onClose() {
     const { contentEl } = this;
@@ -427,17 +298,6 @@ class APRSettings extends PluginSettingTab {
 					this.plugin.settings.URL = value;
 					await this.plugin.saveSettings();
 				}));
-	    new Setting(containerEl)
-	      .setName('Response format')
-	      .setDesc("Select the desired response format (only JSON for now)")
-	      .addDropdown(dropDown => {
-	        dropDown.addOption("json", "JSON");
-	        dropDown.setValue(this.plugin.settings.FormatOut)
-	        dropDown.onChange(async value => {
-	          this.plugin.settings.FormatOut = value;
-	          await this.plugin.saveSettings();
-	        });
-	      });
 	    new Setting(containerEl)
 	      .setName('Method')
 	      .setDesc("Select the desired method")
@@ -491,12 +351,11 @@ class APRSettings extends PluginSettingTab {
                 			new Notice("Name is empty");
                 			return;
 										}
-                		const {URL, FormatOut, MethodRequest, DataResponse, DataRequest, HeaderRequest} = this.plugin.settings;
+                		const {URL, MethodRequest, DataResponse, DataRequest, HeaderRequest} = this.plugin.settings;
                 		const {URLs} = this.plugin.settings;
                 		URLs.push({
                 			'URL': URL, 
                 			'Name': Name, 
-                			'FormatOut': FormatOut, 
                 			'MethodRequest': MethodRequest, 
                 			'DataRequest': DataRequest,
                 			'HeaderRequest': HeaderRequest, 

@@ -1,3 +1,5 @@
+// Pretty simple markdown parser
+
 export class MarkdownParser {
     parse(text) {
         // Headers

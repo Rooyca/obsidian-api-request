@@ -1,3 +1,5 @@
+// frontmatter read and parse
+
 import { parseYaml } from "obsidian";
 
 export const FRONTMATTER_REGEX = /^\n*---[^\n]*\n+(?<fm>.+?)\n+---.*/s;
@@ -10,7 +12,6 @@ export function readFrontmatter(md: string) {
   return result?.groups?.fm;
 }
 
-// throws: MetadataError
 export function parseFrontmatter(input: Frontmatter) {
   if (input === undefined || input === null) { 
     throw new Error("Frontmatter not defined.");
