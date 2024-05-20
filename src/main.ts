@@ -121,11 +121,9 @@ function toDocument(settings: any, editor: Editor) {
 
 								if (key.includes("->")) {
 					    		value = nestedValue(data, key);
+					    		value = JSON.stringify(value);
 					    	}
 
-				      	if (key.includes("->")) {
-				      		value = JSON.stringify(value);
-				      		}
 				        editor.replaceSelection("```json\n" + `${key.split("->").pop()} : ${value}\n` + "```\n\n");
 					    }
 					  } else {
@@ -310,7 +308,7 @@ export default class MainAPIR extends Plugin {
 	}
 
 	onunload() {
-
+		console.log('unloading APIR');
 	}
 
 	async loadSettings() {

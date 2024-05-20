@@ -3,7 +3,7 @@
 
 # Intellij
 *.iml
-.idea
+.idea*
 
 # npm
 node_modules
