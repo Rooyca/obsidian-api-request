@@ -1,6 +1,6 @@
 {
 	"name": "api-request",
-	"version": "1.2.4",
+	"version": "1.2.5",
 	"description": "Request and retrieve data from APIs. The responses are delivered in a JSON format for easy integration with your notes.",
 	"main": "main.js",
 	"scripts": {

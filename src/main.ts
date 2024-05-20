@@ -2,6 +2,7 @@ import { App, Editor, MarkdownView, Modal, Plugin, PluginSettingTab, Setting, No
 import { readFrontmatter, parseFrontmatter } from './frontmatterUtils';
 import { MarkdownParser } from './mdparse';
 import { checkFrontmatter, saveToID, addBtnCopy, replaceOrder, nestedValue, toDocument } from './functions';
+import { num_braces_regx, num_hyphen_regx, nums_rex, in_braces_regx, varname_regx, no_varname_regx } from './regx';
 
 const parser = new MarkdownParser();
 
@@ -25,10 +26,37 @@ const DEFAULT_SETTINGS: LoadAPIRSettings = {
 	Name: '',
 }
 
+// Checks if the frontmatter is present in the request property
+// If it is, it will replace the variable (this.VAR) with the frontmatter value
+export function checkFrontmatter(req_prop: string) {
+	const match = req_prop.match(varname_regx);
+
+	if (match) {
+
+		for (let i = 0; i < match.length; i++) {
+			const var_name = match[i].replace(no_varname_regx, "");
+			
+			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+			const markdownContent = activeView.editor.getValue();
+
+			try {
+				const frontmatterData = parseFrontmatter(readFrontmatter(markdownContent));
+				req_prop = req_prop.replace(match[i], frontmatterData[var_name] || "");
+			} catch (e) {
+				console.error(e.message);
+				new Notice("Error: " + e.message);
+				return;
+				}
+			}
+		}
+		return req_prop;
+}
+
 export default class MainAPIR extends Plugin {
 	settings: LoadAPIRSettings;
 
 	async onload() {
+		console.log('loading APIR');
 		await this.loadSettings();
 
 		this.addCommand({
@@ -116,33 +144,31 @@ export default class MainAPIR extends Plugin {
 		                addBtnCopy(el, el.innerText);
 		            } else {
 
-		            		const first_pattern = /{([^{}]*)}/g;
-										if (show.match(first_pattern)) {
+										if (show.match(in_braces_regx)) {
 												if (show.includes(",")) {
 													el.innerHTML = "Error: comma is not allowed when using {}";
 													return;
 												}
 
-												const pattern = /{(\d+)\.\.(\d+)}/;
 												let temp_show = "";
 
-												if (show.match(pattern)) {
-													const range = show.match(/\d+/g).map(Number);
+												if (show.match(num_braces_regx)) {
+													const range = show.match(nums_rex).map(Number);
 													if (range[0] > range[1]) {
 														el.innerHTML = "Error: range is not valid";
 														return;
 													}
 													for (let i = range[0]; i <= range[1]; i++) {
-														temp_show += show.replace(show.match(pattern)[0], i) + ", ";
+														temp_show += show.replace(show.match(num_braces_regx)[0], i) + ", ";
 													}
 													show = temp_show;
-												} else if (show.match(/(\d+-)+\d+/)) {
-													const numbers = show.match(/\d+/g).map(Number);
-													show = show.replace(/{.*?}/g, "-");
-													for (let i = 0; i < numbers.length; i++) {
-														temp_show += show.replace("-", numbers[i]) + ", ";
-													}
-													show = temp_show;
+												} else if (show.match(num_hyphen_regx)) {
+														const numbers = show.match(nums_rex).map(Number);
+														show = show.replace(in_braces_regx, "-");
+														for (let i = 0; i < numbers.length; i++) {
+															temp_show += show.replace("-", numbers[i]) + ", ";
+														}
+														show = temp_show;
 												} else {
 											    for (let i = 0; i < responseData.json.length; i++) {
 											        temp_show += show.replace("{..}", i) + ", ";

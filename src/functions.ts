@@ -1,30 +1,3 @@
-// Checks if the frontmatter is present in the request property
-// If it is, it will replace the variable (this.VAR) with the frontmatter value
-export function checkFrontmatter(req_prop: string) {
-	const regex = /{{this\.([^{}]*)}}/g;
-	const match = req_prop.match(regex);
-
-	if (match) {
-
-		for (let i = 0; i < match.length; i++) {
-			const var_name = match[i].replace(/{{this\.|}}/g, "");
-			
-			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-			const markdownContent = activeView.editor.getValue();
-
-			try {
-				const frontmatterData = parseFrontmatter(readFrontmatter(markdownContent));
-				req_prop = req_prop.replace(match[i], frontmatterData[var_name] || "");
-			} catch (e) {
-				console.error(e.message);
-				new Notice("Error: " + e.message);
-				return;
-				}
-			}
-		}
-		return req_prop;
-}
-
 // Saves the response to the localStorage
 export function saveToID(reqID: any, reqText: any) {
 	localStorage.setItem(reqID, reqText);
