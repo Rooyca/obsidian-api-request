@@ -1,12 +1,12 @@
-# Overview
+# 🔎 Overview
 
 APIR (shorthand for api-request) is an [Obsidian](https://obsidian.md/) plugin that allows you to make requests and show the responses in your notes. This aims to be an easy way to integrate APIs into your notes.
 
-## How to use
+## ⚡ How to use
 
-### Code-block
+### 👨🏻‍💻 Code-block
 
-To use it, create a code-block with the language set to `req`. Inside the code-block, you can specify `url`, `method`, `body`, `headers`, `format`, etc. See the [available flags](codeblock/flags.md) for more information.
+To use it, create a code-block with the language set to `req`. Inside the code-block, you can specify `url`, `method`, `body`, `headers`, `format`, etc. See the [available flags](codeblocks.md#flags) for more information.
 
 ~~~markdown
 ```req
@@ -21,7 +21,7 @@ disabled
 ```
 ~~~
 
-### Configuration (don't have all functionalities yet)
+### 🛠️ Settings (don't have all functionalities yet)
 
 !!! info "All parameters can be defined in settings."
 
@@ -29,3 +29,6 @@ Press `Ctrl+P` and search for `APIR`. There are two options:
 
 1. Show response in modal
 2. Paste response in current document (at current line)
+
+[More information](settings.md)
+

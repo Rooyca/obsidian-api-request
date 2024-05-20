@@ -1,4 +1,8 @@
-# Code-block flags
+# 👨🏻‍💻 Codeblocks
+
+The `codeblock` is a versatile block that can be used to write code in different languages. In this case, we will use it to make requests.
+
+## 🏳️ Flags
 
 Flags are the way to specify the parameters of our request and also the format in which we want our response.
 
@@ -14,7 +18,7 @@ Flags are the way to specify the parameters of our request and also the format i
 | req-id | req-general |
 | disabled |  |
 
-## url
+### url
 
 Is the only **required** flag. It specifies the endpoint of the request. Variables defined in the `frontmatter` can be used.
 
@@ -27,7 +31,7 @@ url: https://jsonplaceholder.typicode.com/users/{{this.id}}
 !!! info "Where `{{this.id}}` is a variable (`id`) defined in the frontmatter."
 
 
-## method
+### method
 
 Specifies the request method. The default value is `GET` and the available values are:
 
@@ -43,7 +47,7 @@ method: post
 ```
 ~~~
 
-## body
+### body
 
 Specifies the body of the request. The default value is an empty object. The data should be in JSON format with double quotes separating the keys and values with a colon and space. Variables defined in the `frontmatter` can be used.
 
@@ -57,7 +61,7 @@ body: {"title": {{this.title}}, "body": "bar", "userId": 1}
 
 !!! info "Where `{{this.title}}` is a variable (`title`) defined in the frontmatter."
 
-## headers
+### headers
 
 Specifies the headers of the request. The default value is an empty object. The data should be in JSON format with double quotes separating the keys and values with a colon and space. Variables defined in the `frontmatter` can be used.
 
@@ -69,7 +73,7 @@ headers: {"Content-type": "application/json; charset=UTF-8"}
 ```
 ~~~
 
-## show
+### show
 
 Specifies the response data to display. Accessing nested objects is done using a right arrow `->`. The default value is `ALL`.
 
@@ -117,7 +121,7 @@ show: {0-2-1} -> address -> city
 ```
 ~~~
 
-## format
+### format
 
 Specifies the format in which the response should be displayed. The default value is `{}`. It can be any string (including `markdown` and `html`). If more than one output is specified, more then one format should be specified, otherwise, the same format will be applied to all outputs.
 
@@ -132,7 +136,7 @@ format: <h1>{}</h1> <p>{}</p>
 !!! info "In this example, first `{}` will be replaced by the title, and second `{}` will be replaced by the body."
 
 
-## res-type
+### res-type
 
 Specifies the type of response we are getting. The default value is `json`. The available values are:
 
@@ -149,7 +153,7 @@ res-type: md
 ```
 ~~~
 
-## req-id
+### req-id
 
 Specifies the id of the request. The default value is `req-general`. This is useful when we want to store the response in `localStorage` and use it in other blocks or notes.
 
@@ -192,7 +196,7 @@ localStorage.removeItem("req-name")
 
 To remove all responses, go to settings and click on the `Clear ID's` button.
 
-## disabled
+### disabled
 
 Disables the request. If a `req-id` is specified, APIR will check for the response in `localStorage`. If it's not found, it will make a new request and store it. After that, APIR will use the stored response.
 
