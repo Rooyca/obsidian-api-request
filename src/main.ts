@@ -70,7 +70,9 @@ export default class MainAPIR extends Plugin {
 		try {
 		    this.registerMarkdownCodeBlockProcessor("req", async (source, el, ctx) => {
 		        const sourceLines = source.split("\n");
-		        let method = "GET", allowedMethods = ["GET", "POST", "PUT", "DELETE"], URL = "", show = "", headers = {}, body = {}, format = "{}", responseType = "json", reqID = "req-general";
+		        let method = "GET", allowedMethods = ["GET", "POST", "PUT", "DELETE"], URL = "", show = "", 
+		        	headers = {}, body = {}, format = "{}", responseType = "json", reqID = "req-general", 
+		        	reqRepeat = { "times": 1, "every": 1000 }, notifyIf = "";
 
 		        for (const line of sourceLines) {
 		            const lowercaseLine = line.toLowerCase();
@@ -80,12 +82,26 @@ export default class MainAPIR extends Plugin {
 		                    el.createEl("strong", { text: `Error: Method ${method} not supported` });
 		                    return;
 		                }
+		            } else if (lowercaseLine.includes("notify-if: ")) {
+		                notifyIf = line.replace(/notify-if: /i, "");
+		                notifyIf = notifyIf.split(" ");
+		            } else if (lowercaseLine.includes("req-repeat: ")) {
+						let repeat_values = line.replace(/req-repeat: /i, "");
+						repeat_values = repeat_values.split("@");
+
+						// check if there are two values and they are numbers
+						if (repeat_values.length === 2 && !isNaN(repeat_values[0]) && !isNaN(repeat_values[1])) {
+							reqRepeat = {"times": parseInt(repeat_values[0]), "every": parseInt(repeat_values[1])*1000};
+						} else {
+							el.createEl("strong", { text: "Error: req-repeat format is not valid (use Nt@Ns)" });
+							return;
+						}
 		            } else if (lowercaseLine.includes("url: ")) {
 		                URL = checkFrontmatter(line.replace(/url: /i, ""));
 		                if (!URL.includes("http")) {
 		                    URL = "https://" + URL;
 		                }
-		            } else if (lowercaseLine.includes("res-type")) {
+		            } else if (lowercaseLine.includes("res-type: ")) {
 		                responseType = line.replace(/res-type: /i, "").toLowerCase();
 		                if (!["json", "txt", "md"].includes(responseType)) {
 		                    el.createEl("strong", { text: `Error: Response type ${responseType} not supported` });
@@ -127,73 +143,99 @@ export default class MainAPIR extends Plugin {
 		            return;
 		        }
 
-		        try {
-		            const responseData = await requestUrl({ url: URL, method, headers, body });
-		            if (responseType !== "json") {
-		            	try {
-		            		el.innerHTML += parser.parse(responseData.text);
-		            	} catch (e) {
-		            		new Notice("Error: " + e.message);
-		            		el.createEl("strong", { text: responseData.text });
-		            	}
-		            	saveToID(reqID, responseData.text);
-		            	addBtnCopy(el, responseData.text);
-		            	return;
-		            }
-					if (!show) {
-		                el.createEl("pre", { text: JSON.stringify(responseData.json, null, 2) });
-		                saveToID(reqID, el.innerText);
-		                addBtnCopy(el, el.innerText);
-		            } else {
-						if (show.match(in_braces_regx)) {
-							if (show.includes(",")) {
-								el.createEl("strong", { text: "Error: comma is not allowed when using {}" });
-								return;
-							}
+		        for (let i = 0; i < reqRepeat.times; i++) {
+			        try {
+			            const responseData = await requestUrl({ url: URL, method, headers, body });
+			            if (responseType !== "json") {
+			            	try {
+			            		el.innerHTML += parser.parse(responseData.text);
+			            	} catch (e) {
+			            		new Notice("Error: " + e.message);
+			            		el.createEl("strong", { text: responseData.text });
+			            	}
+			            	saveToID(reqID, responseData.text);
+			            	addBtnCopy(el, responseData.text);
+			            	return;
+			            }
 
-							let temp_show = "";
+			            if (notifyIf) {
+			            	const jsonPath = notifyIf[0];
+			            	const symbol = notifyIf[1];
+			            	const value = notifyIf[2]
+			            	const int_value = parseInt(value);
 
-							if (show.match(num_braces_regx)) {
-								const range = show.match(nums_rex).map(Number);
-								if (range[0] > range[1]) {
-									el.createEl("strong", { text: "Error: range is not valid" });
+			            	const jsonPathValue = jsonPath.split(".").reduce((acc, cv) => acc[cv], responseData.json);
+			            	const lastValue = jsonPath.split(".").pop();
+			            	if (symbol === ">" && jsonPathValue > int_value) {
+			            		new Notice("APIR: " + lastValue + " is greater than " + int_value);
+			            	} else if (symbol === "<" && jsonPathValue < int_value) {
+			            		new Notice("APIR: " + lastValue + " is less than " + int_value);
+			            	} else if (symbol === "=" && jsonPathValue === value) {
+			            		new Notice("APIR: " + lastValue + " is equal to " + value);
+			            	} else if (symbol === ">=" && jsonPathValue >= int_value) {
+			            		new Notice("APIR: " + lastValue + " is greater than or equal to " + int_value);
+			            	} else if (symbol === "<=" && jsonPathValue <= int_value) {
+			            		new Notice("APIR: " + lastValue + " is less than or equal to " + int_value);
+			            	}
+			            }
+
+						if (!show) {
+			                el.innerHTML = "<pre>" + JSON.stringify(responseData.json, null, 2) + "</pre>";
+			                saveToID(reqID, el.innerText);
+			                addBtnCopy(el, el.innerText);
+			            } else {
+							if (show.match(in_braces_regx)) {
+								if (show.includes(",")) {
+									el.createEl("strong", { text: "Error: comma is not allowed when using {}" });
 									return;
 								}
-								for (let i = range[0]; i <= range[1]; i++) {
-									temp_show += show.replace(show.match(num_braces_regx)[0], i) + ", ";
-								}
-								show = temp_show;
-							} else if (show.match(num_hyphen_regx)) {
-									const numbers = show.match(nums_rex).map(Number);
-									show = show.replace(in_braces_regx, "-");
-									for (let i = 0; i < numbers.length; i++) {
-										temp_show += show.replace("-", numbers[i]) + ", ";
+
+								let temp_show = "";
+
+								if (show.match(num_braces_regx)) {
+									const range = show.match(nums_rex).map(Number);
+									if (range[0] > range[1]) {
+										el.createEl("strong", { text: "Error: range is not valid" });
+										return;
+									}
+									for (let i = range[0]; i <= range[1]; i++) {
+										temp_show += show.replace(show.match(num_braces_regx)[0], i) + ", ";
 									}
 									show = temp_show;
-							} else {
-						    for (let i = 0; i < responseData.json.length; i++) {
-						        temp_show += show.replace("{..}", i) + ", ";
-						    }
-						    show = temp_show;
-					  		}
-						}
+								} else if (show.match(num_hyphen_regx)) {
+										const numbers = show.match(nums_rex).map(Number);
+										show = show.replace(in_braces_regx, "-");
+										for (let i = 0; i < numbers.length; i++) {
+											temp_show += show.replace("-", numbers[i]) + ", ";
+										}
+										show = temp_show;
+								} else {
+								    for (let i = 0; i < responseData.json.length; i++) {
+								        temp_show += show.replace("{..}", i) + ", ";
+								    }
+								    show = temp_show;
+						  		}
+							}
 
-		                const values = show.includes(",") ? show.split(",").map(key => {
-		                    let value = JSON.stringify(responseData.json[key.trim()]);
-		                    if (key.includes("->")) value = nestedValue(responseData, key);
-		                    return value;
-		                }) : [show.trim().includes("->") ? nestedValue(responseData, show.trim()) : JSON.stringify(responseData.json[show.trim()])];
-		                const replacedText = replaceOrder(format, values);
-		                el.innerHTML += parser.parse(replacedText);
+			                const values = show.includes(",") ? show.split(",").map(key => {
+			                    let value = JSON.stringify(responseData.json[key.trim()]);
+			                    if (key.includes("->")) value = nestedValue(responseData, key);
+			                    return value;
+			                }) : [show.trim().includes("->") ? nestedValue(responseData, show.trim()) : JSON.stringify(responseData.json[show.trim()])];
+			                const replacedText = replaceOrder(format, values);
+			                el.innerHTML = parser.parse(replacedText);
 
-		                saveToID(reqID, replacedText);
-		                addBtnCopy(el, replacedText);
-		            }
-		        } catch (error) {
-		            console.error(error);
-		            el.createEl("strong", { text: "Error: " + error.message });
-		            new Notice("Error: " + error.message);
-		        }
+			                saveToID(reqID, replacedText);
+			                addBtnCopy(el, replacedText);
+			            }
+			        } catch (error) {
+			            console.error(error);
+			            el.createEl("strong", { text: "Error: " + error.message });
+			            new Notice("Error: " + error.message);
+			        }
+		        	await sleep(reqRepeat.every);
+		    	}
+		    	return; 
 		    });
 		} catch (e) {
 		    console.error(e.message);

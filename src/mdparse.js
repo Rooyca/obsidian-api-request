@@ -14,7 +14,7 @@ export class MarkdownParser {
         //text = text.replace(/^\s*<li>(.*?)<\/li>\s*$/gm, '<ul>$1</ul>');
 
         // Ordered Lists
-        text = text.replace(/^\s*\d+\.\s*(.*)$/gm, '<li>$1</li>');
+        //text = text.replace(/^\s*\d+\.\s*(.*)$/gm, '<li>$1</li>');
         //text = text.replace(/^\s*<li>(.*?)<\/li>\s*$/gm, '<ol>$1</ol>');
 
         // Bold
