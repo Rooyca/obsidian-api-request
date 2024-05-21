@@ -3,7 +3,7 @@
 	"name": "APIRequest",
 	"version": "1.2.5",
 	"minAppVersion": "0.15.0",
-	"description": "Request and retrieve data from APIs. The responses are delivered in a JSON format for easy integration with your notes.",
+	"description": "Fetch data from APIs or other sources. Responses in JSON, MD or HTML directly in your notes.",
 	"author": "rooyca",
 	"authorUrl": "https://github.com/rooyca",
 	"fundingUrl": "https://ko-fi.com/rooyca",
