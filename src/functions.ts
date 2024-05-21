@@ -63,7 +63,7 @@ export function toDocument(settings: any, editor: Editor) {
 	    method: settings.MethodRequest,
 	    body: settings.DataRequest,
 	})
-	.then((data: JSON) => {
+	.then((data) => {
 	  if (settings.DataResponse !== "") {
 	    const DataResponseArray = settings.DataResponse.split(",");
 	    for (let i = 0; i < DataResponseArray.length; i++) {
@@ -79,7 +79,8 @@ export function toDocument(settings: any, editor: Editor) {
         	editor.replaceSelection("```markdown\n" + `${key.split("->").pop()} : ${value}\n` + "```\n\n");
 	    }
 	  } else {
-	      editor.replaceSelection("```json\n" + `${JSON.stringify(data.json, null, 2)}\n` + "```\n");
+	  	  console.log(data.text)
+	      editor.replaceSelection("<code>\n" + `${data.text}\n` + "</code>\n");
 	  }
 	})
     .catch((error: Error) => {
