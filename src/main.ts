@@ -77,15 +77,18 @@ export default class MainAPIR extends Plugin {
 		            if (lowercaseLine.includes("method: ")) {
 		                method = line.replace(/method: /i, "").toUpperCase();
 		                if (!allowedMethods.includes(method)) {
-		                    el.innerHTML = `Error: Method ${method} not supported`;
+		                    el.createEl("strong", { text: `Error: Method ${method} not supported` });
 		                    return;
 		                }
 		            } else if (lowercaseLine.includes("url: ")) {
 		                URL = checkFrontmatter(line.replace(/url: /i, ""));
+		                if (!URL.includes("http")) {
+		                    URL = "https://" + URL;
+		                }
 		            } else if (lowercaseLine.includes("res-type")) {
 		                responseType = line.replace(/res-type: /i, "").toLowerCase();
 		                if (!["json", "txt", "md"].includes(responseType)) {
-		                    el.innerHTML = `Error: Response type ${responseType} not supported`;
+		                    el.createEl("strong", { text: `Error: Response type ${responseType} not supported` });
 		                    return;
 		                }
 		            } else if (lowercaseLine.includes("show: ")) {
@@ -97,85 +100,83 @@ export default class MainAPIR extends Plugin {
 		            } else if (lowercaseLine.includes("format: ")) {
 		                format = line.replace(/format: /i, "");
 		                if (!format.includes("{}")) {
-		                    el.innerHTML = "Error: Use {} to show response in the document.";
+		                    el.createEl("strong", { text: "Error: Use {} to show response in the document." });
 		                    return;
 		                }
 		            } else if (lowercaseLine.includes("req-id: ")) {
 		                reqID = line.replace(/id: /i, "");
 
-				            if (sourceLines.includes("disabled")) {
-				            	const idExists = localStorage.getItem(reqID);
-				            	if (idExists) {
-				            		el.innerHTML = parser.parse(idExists);
-				            		return;
-				            	} else {
-				            		sourceLines.splice(sourceLines.indexOf("disabled"), 1);
-				            	}
-				            }
+			            if (sourceLines.includes("disabled")) {
+			            	const idExists = localStorage.getItem(reqID);
+			            	if (idExists) {
+			            		el.innerHTML += parser.parse(idExists);
+			            		return;
+			            	} else {
+			            		sourceLines.splice(sourceLines.indexOf("disabled"), 1);
+			            	}
+			            }
 		            }
 		            if (URL === "") {
-		                el.innerHTML = "Error: URL not found";
+		                el.createEl("strong", { text: "Error: URL not found" });
 		                return;
 		            }
 		        }
 
 		        if (sourceLines.includes("disabled")) {
-		            el.innerHTML = "<strong>This request is disabled</strong>";
+		            el.createEl("strong", { text: "This request is disabled." });
 		            return;
 		        }
 
 		        try {
-		            const formatSplit = format.split("{}");
 		            const responseData = await requestUrl({ url: URL, method, headers, body });
 		            if (responseType !== "json") {
 		            	try {
 		            		el.innerHTML += parser.parse(responseData.text);
 		            	} catch (e) {
 		            		new Notice("Error: " + e.message);
-		            		el.innerHTML += responseData.text;
+		            		el.createEl("strong", { text: responseData.text });
 		            	}
 		            	saveToID(reqID, responseData.text);
 		            	addBtnCopy(el, responseData.text);
 		            	return;
 		            }
-								if (!show) {
-		                el.innerHTML += formatSplit[0] + JSON.stringify(responseData.json, null) + formatSplit[1];
+					if (!show) {
+		                el.createEl("pre", { text: JSON.stringify(responseData.json, null, 2) });
 		                saveToID(reqID, el.innerText);
 		                addBtnCopy(el, el.innerText);
 		            } else {
+						if (show.match(in_braces_regx)) {
+							if (show.includes(",")) {
+								el.createEl("strong", { text: "Error: comma is not allowed when using {}" });
+								return;
+							}
 
-										if (show.match(in_braces_regx)) {
-												if (show.includes(",")) {
-													el.innerHTML = "Error: comma is not allowed when using {}";
-													return;
-												}
+							let temp_show = "";
 
-												let temp_show = "";
-
-												if (show.match(num_braces_regx)) {
-													const range = show.match(nums_rex).map(Number);
-													if (range[0] > range[1]) {
-														el.innerHTML = "Error: range is not valid";
-														return;
-													}
-													for (let i = range[0]; i <= range[1]; i++) {
-														temp_show += show.replace(show.match(num_braces_regx)[0], i) + ", ";
-													}
-													show = temp_show;
-												} else if (show.match(num_hyphen_regx)) {
-														const numbers = show.match(nums_rex).map(Number);
-														show = show.replace(in_braces_regx, "-");
-														for (let i = 0; i < numbers.length; i++) {
-															temp_show += show.replace("-", numbers[i]) + ", ";
-														}
-														show = temp_show;
-												} else {
-											    for (let i = 0; i < responseData.json.length; i++) {
-											        temp_show += show.replace("{..}", i) + ", ";
-											    }
-											    show = temp_show;
-										  	}
-											}
+							if (show.match(num_braces_regx)) {
+								const range = show.match(nums_rex).map(Number);
+								if (range[0] > range[1]) {
+									el.createEl("strong", { text: "Error: range is not valid" });
+									return;
+								}
+								for (let i = range[0]; i <= range[1]; i++) {
+									temp_show += show.replace(show.match(num_braces_regx)[0], i) + ", ";
+								}
+								show = temp_show;
+							} else if (show.match(num_hyphen_regx)) {
+									const numbers = show.match(nums_rex).map(Number);
+									show = show.replace(in_braces_regx, "-");
+									for (let i = 0; i < numbers.length; i++) {
+										temp_show += show.replace("-", numbers[i]) + ", ";
+									}
+									show = temp_show;
+							} else {
+						    for (let i = 0; i < responseData.json.length; i++) {
+						        temp_show += show.replace("{..}", i) + ", ";
+						    }
+						    show = temp_show;
+					  		}
+						}
 
 		                const values = show.includes(",") ? show.split(",").map(key => {
 		                    let value = JSON.stringify(responseData.json[key.trim()]);
@@ -190,13 +191,13 @@ export default class MainAPIR extends Plugin {
 		            }
 		        } catch (error) {
 		            console.error(error);
-		            el.innerHTML = "Error: " + error.message;
+		            el.createEl("strong", { text: "Error: " + error.message });
 		            new Notice("Error: " + error.message);
 		        }
 		    });
 		} catch (e) {
 		    console.error(e.message);
-		    el.innerHTML = "Error: " + error.message;
+		    el.createEl("strong", { text: "Error: " + error.message });
 		    new Notice("Error: " + e.message);
 		}
 
