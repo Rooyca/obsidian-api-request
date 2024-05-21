@@ -17,6 +17,8 @@ Flags are the way to specify the parameters of our request and also the format i
 | response-type | json |
 | req-id | req-general |
 | disabled |  |
+| req-repeat | 1t@1s |
+| notify-if | |
 
 ### url
 
@@ -28,7 +30,7 @@ url: https://jsonplaceholder.typicode.com/users/{{this.id}}
 ```
 ~~~
 
-!!! info "Where `{{this.id}}` is a variable (`id`) defined in the frontmatter."
+!!! note "Where `{{this.id}}` is a variable (`id`) defined in the frontmatter."
 
 
 ### method
@@ -59,7 +61,7 @@ body: {"title": {{this.title}}, "body": "bar", "userId": 1}
 ```
 ~~~
 
-!!! info "Where `{{this.title}}` is a variable (`title`) defined in the frontmatter."
+!!! note "Where `{{this.title}}` is a variable (`title`) defined in the frontmatter."
 
 ### headers
 
@@ -133,7 +135,7 @@ format: <h1>{}</h1> <p>{}</p>
 ```
 ~~~
 
-!!! info "In this example, first `{}` will be replaced by the title, and second `{}` will be replaced by the body."
+!!! note "In this example, first `{}` will be replaced by the title, and second `{}` will be replaced by the body."
 
 
 ### res-type
@@ -208,6 +210,39 @@ req-id: name
 disabled
 ```
 ~~~
+
+### req-repeat
+
+!!! warning "This only works with JSON responses"
+
+Specifies the number of times the request should be repeated and the interval between each repetition. The default value is `1t@1s` (read as `X time(s) every X second(s)`). Letters `t` and `s` are not mandatory.
+
+
+~~~markdown
+```req 
+url: api.coincap.io/v2/rates/bitcoin
+req-repeat: 5@5
+```
+~~~
+
+### notify-if
+
+!!! warning "This only works with JSON responses"
+
+Specifies the condition to trigger a notification. Can be used to monitor a specific value. The path syntax used to access nested objects varies from the `show` flag, here dots are used instead of arrows and not spaces are allowed in the path.
+
+~~~markdown
+```req 
+url: api.coincap.io/v2/rates/bitcoin
+req-repeat: 5@5
+notify-if: data.rateUsd < 69889
+```
+~~~
+
+!!! note "In the example above, a notification will be triggered everytime the value of `data.rateUsd` is less than `69889`."
+
+
+
 
 
 

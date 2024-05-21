@@ -1,4 +1,4 @@
-# APIR - API Request
+# APIR - APIRequest
 
 
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/rooyca/obsidian-api-request?logo=github&color=ee8449&style=flat-square)](https://github.com/rooyca/obsidian-api-request/releases/latest)
@@ -7,11 +7,7 @@
 
 ![req_img](req-codeblock.gif)
 
-Obsidian plugin that allows you to make requests to API's and receive responses in code-blocks or store them in `localStorage`. 
-
-> [!IMPORTANT]
-> 
-> JSON, TEXT, HTML and MARKDOWN responses supported
+[Obsidian](https://obsidian.md/) plugin that allows you to make requests to APIs or any other URL and display the response in a code-block. 
 
 ## Installation
 
@@ -31,7 +27,7 @@ There are two ways to use the plugin:
 
 ### With Code-blocks
 
-To use it, create a code-block with the language set to `req`. Inside the code-block, you can specify `url`, `method`, `body`, `headers`, `format`, etc.
+To use it, create a code-block with the language set to `req`. Inside the code-block, you can specify `url`, `method`, `body`, `headers`, `format`, etc. [Check docs](https://rooyca.github.io/obsidian-api-request/codeblocks/).
 
 ```req
 url: https://api.chess.com/pub/player/hikaru/stats
@@ -109,6 +105,8 @@ To use the plugin, press `Ctrl+P` and search for `APIR`. There are two options:
 1. Show response in modal
 2. Paste response in current document (at current line)
 
+[Check docs](https://rooyca.github.io/obsidian-api-request/settings/).
+
 #### Settings
 
 The plugin has a few settings that you can configure:
@@ -116,7 +114,6 @@ The plugin has a few settings that you can configure:
 ![req_settings](config_img.png)
 
 - URL: The URL to send the request to.
-- Format Output: Just JSON blocks (for now).
 - Method: Choose between GET, POST, PUT & DELETE.
 - Body: The data to send with the request. Data should by in JSON format.
 - Headers: The header data to send with the request. Data should by in JSON format. (`{"Content-Type": "application/json", "Authorization": "Bearer TOKEN"}`)
