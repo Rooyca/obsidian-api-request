@@ -14,7 +14,7 @@ Flags are the way to specify the parameters of our request and also the format i
 | headers |  |
 | show | ALL |
 | format | `{}` |
-| response-type | json |
+| res-type | json |
 | req-id | req-general |
 | disabled |  |
 | req-repeat | 1t@1s |

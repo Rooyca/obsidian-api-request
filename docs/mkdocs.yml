@@ -23,5 +23,6 @@ theme:
 
 nav:
   - Getting started: 'index.md'
-  - codeblocks: 'codeblocks.md'
-  - settings: 'settings.md'
+  - How to Use:
+    - codeblocks: 'codeblocks.md'
+    - settings: 'settings.md'

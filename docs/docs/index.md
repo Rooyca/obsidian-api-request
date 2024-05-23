@@ -1,6 +1,18 @@
 # 🔎 Overview
 
-APIR (shorthand for api-request) is an [Obsidian](https://obsidian.md/) plugin that allows you to make requests and show the responses in your notes. This aims to be an easy way to integrate APIs into your notes.
+APIRequest (APIR) is a plugin for the note taking app [Obsidian](https://obsidian.md/) that allows you to make requests to apis or other sources and display the response in your notes.
+
+## 🔥 Features
+
+- Perform HTTP requests using various methods such as `GET`, `POST`, `PUT`, and `DELETE`.
+- Receive responses in different formats including JSON, HTML, and Markdown.
+- Utilize variables from the front-matter within code blocks.
+- Save responses in the `localStorage` for convenient access and reuse.
+- Disable code blocks as needed to optimize performance.
+- Repeat requests multiple times at specified intervals, facilitating automated tasks or continuous data retrieval without manual intervention.
+- Receive notifications when specific values meet predefined conditions, enabling proactive monitoring and alerting.
+- Define shortcuts for executing requests, enhancing efficiency and user experience by enabling quick access to frequently used requests.
+- Display specific values from responses, providing granular control over the presentation of data.
 
 ## ⚡ How to use
 
