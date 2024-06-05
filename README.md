@@ -5,7 +5,7 @@
 [![Obsidian plugin release](https://img.shields.io/badge/Obsidian%20plugin%20release-purple?logo=obsidian&style=flat-square)](https://obsidian.md/plugins?id=api-request)
 [![Docs site](https://img.shields.io/badge/docs-GitHub_Pages-blue)](https://rooyca.github.io/obsidian-api-request/)
 
-![req_img](req-codeblock.gif)
+![req_img](showcase_1.gif)
 
 [Obsidian](https://obsidian.md/) plugin that allows you to make requests to APIs or any other URL and display the response in a code-block. 
 
@@ -23,9 +23,15 @@ The plugin can be installed from within Obsidian.
 
 ## Usage
 
+[Read documentation](https://rooyca.github.io/obsidian-api-request/)
+
+<details>
+  <summary>Quick Guide</summary>
 There are two ways to use the plugin:
 
 ### With Code-blocks
+
+![showcase](showcase_2.gif)
 
 To use it, create a code-block with the language set to `req`. Inside the code-block, you can specify `url`, `method`, `body`, `headers`, `format`, etc. [Check docs](https://rooyca.github.io/obsidian-api-request/codeblocks/).
 
@@ -118,12 +124,17 @@ The plugin has a few settings that you can configure:
 - Body: The data to send with the request. Data should by in JSON format.
 - Headers: The header data to send with the request. Data should by in JSON format. (`{"Content-Type": "application/json", "Authorization": "Bearer TOKEN"}`)
 - Response: The response data to display. If empty all data will be display. You can use a right arrow `->` to access nested objects. For example, if you want to show the `title` from the `user` object, you can do that like this: `user -> title`.
+</details>
 
 ## To-do
 
 - [x] Add more request types (POST, PUT, DELETE)
 - [x] Add support for authentication
 - [x] Add customization for modal output
+- [ ] Save response to a file
+- [ ] Inline query from response
+- [ ] Predefined requests
+- [ ] GUI for code-blocks
 
 ## Feedback and Contributions
 

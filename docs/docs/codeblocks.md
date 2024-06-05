@@ -19,6 +19,7 @@ Flags are the way to specify the parameters of our request and also the format i
 | disabled |  |
 | req-repeat | 1t@1s |
 | notify-if | |
+| save-to | |
 
 ### url
 
@@ -215,7 +216,7 @@ disabled
 
 !!! warning "This only works with JSON responses"
 
-Specifies the number of times the request should be repeated and the interval between each repetition. The default value is `1t@1s` (read as `X time(s) every X second(s)`). Letters `t` and `s` are not mandatory.
+Specifies the number of times the request should be repeated and the interval between each repetition. The default value is `1@1` (read as `X time(s) every X second(s)`).
 
 
 ~~~markdown
@@ -241,6 +242,16 @@ notify-if: data.rateUsd < 69889
 
 !!! note "In the example above, a notification will be triggered everytime the value of `data.rateUsd` is less than `69889`."
 
+### save-to
+
+Specifies the path to save the response. It'll save the entire response. A file extension is required. It won't create directories.
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/posts/1
+save-to: posts/1.json
+```
+~~~
 
 
 

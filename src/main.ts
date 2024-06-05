@@ -72,7 +72,7 @@ export default class MainAPIR extends Plugin {
 		        const sourceLines = source.split("\n");
 		        let method = "GET", allowedMethods = ["GET", "POST", "PUT", "DELETE"], URL = "", show = "", 
 		        	headers = {}, body = {}, format = "{}", responseType = "json", reqID = "req-general", 
-		        	reqRepeat = { "times": 1, "every": 1000 }, notifyIf = "";
+		        	reqRepeat = { "times": 1, "every": 1000 }, notifyIf = "", saveTo = "";
 
 		        for (const line of sourceLines) {
 		            const lowercaseLine = line.toLowerCase();
@@ -131,6 +131,12 @@ export default class MainAPIR extends Plugin {
 			            		sourceLines.splice(sourceLines.indexOf("disabled"), 1);
 			            	}
 			            }
+		            } else if (lowercaseLine.includes("save-to: ")) {
+										saveTo = line.replace(/save-to: /i, "");
+		                if (saveTo === "") {
+		                    el.createEl("strong", { text: "Error: save-to value is empty. Please provide a filename" });
+		                    return;
+		                }
 		            }
 		            if (URL === "") {
 		                el.createEl("strong", { text: "Error: URL not found" });
@@ -146,6 +152,17 @@ export default class MainAPIR extends Plugin {
 		        for (let i = 0; i < reqRepeat.times; i++) {
 			        try {
 			            const responseData = await requestUrl({ url: URL, method, headers, body });
+			            // Save to File
+			            if (saveTo) {
+			            	try {
+			            		await this.app.vault.create(saveTo, responseData.text);
+			            		new Notice("Saved to " + saveTo);
+			            	} catch (e) {
+			            		console.error(e.message);
+			            		new Notice("Error: " + e.message);
+			            	}
+			            }
+
 			            if (responseType !== "json") {
 			            	try {
 			            		el.innerHTML += parser.parse(responseData.text);
@@ -180,10 +197,10 @@ export default class MainAPIR extends Plugin {
 			            }
 
 						if (!show) {
-			                el.innerHTML = "<pre>" + JSON.stringify(responseData.json, null, 2) + "</pre>";
-			                saveToID(reqID, el.innerText);
-			                addBtnCopy(el, el.innerText);
-			            } else {
+			          el.innerHTML = "<pre>" + JSON.stringify(responseData.json, null, 2) + "</pre>";
+			          saveToID(reqID, el.innerText);
+			          addBtnCopy(el, el.innerText);
+			      } else {
 							if (show.match(in_braces_regx)) {
 								if (show.includes(",")) {
 									el.createEl("strong", { text: "Error: comma is not allowed when using {}" });

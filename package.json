@@ -1,7 +1,7 @@
 {
 	"name": "api-request",
-	"version": "1.2.6",
-	"description": "Request and retrieve data from APIs. The responses are delivered in a JSON format for easy integration with your notes.",
+	"version": "1.2.7",
+	"description": "Fetch data from APIs or other sources. Responses in JSON, MD or HTML directly in your notes.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
