@@ -21,3 +21,73 @@
     margin: 0 !important;
 }
 
+/* Tables CSS */
+
+.table-container {
+    margin-right: 30px;
+}
+
+.cocontainer{
+    display: flex;
+}
+
+.full-width {
+    width: 100% !important;
+    margin-right: 0px !important;
+}
+
+.api-table {
+    border-collapse: collapse;
+}
+
+.api-table a {
+    text-decoration: none;
+}
+
+.api-table th, .api-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.api-table th {
+    background-color: #f2f2f2;
+    color: black;
+}
+
+/* I want to display the line over the entire row */
+
+.api-table tr:hover :not(th) {
+    background-color: #F3A0A0;
+    color: black;
+    cursor: pointer;
+    text-decoration: line-through;
+}
+
+.api-table tr:hover a {
+    color: black;
+}
+
+.table-title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.btn-add-apir, .btn-clear-apir {
+    width: 53%;
+    background-color: #4CAF50 !important;
+    color: white !important;
+    cursor: pointer;
+}
+
+.btn-add-apir {
+    background-color: #4CAF50 !important;
+}
+
+.btn-clear-apir {
+    background-color: #f44336 !important;
+}
+
+
+

@@ -359,7 +359,7 @@ class APRSettings extends PluginSettingTab {
 		const {containerEl} = this;
 
 		containerEl.empty();
-		this.displayAddedURLs(containerEl);
+		containerEl.createEl('h2', { text: "Add Request" });
 
 		new Setting(containerEl)
 			.setName('Name')
@@ -430,8 +430,8 @@ class APRSettings extends PluginSettingTab {
 	      }));
         new Setting(containerEl)
             .addButton(button => {
-            		button.setClass('mod-cta');
-                button.setButtonText('Add this APIR').onClick(async () => {
+            		button.setClass('btn-add-apir');
+                button.setButtonText('ADD').onClick(async () => {
                 		const {Name} = this.plugin.settings;
                 		if (Name === "") {
                 			new Notice("Name is empty");
@@ -459,36 +459,49 @@ class APRSettings extends PluginSettingTab {
 										});
                 });
             });
-        new Setting(containerEl)
-        		.addButton(button => {
-        			//button.setClass('mod-cta');
-							button.setButtonText("Clear ID's").onClick(async () => {
-								// clear all localStorage that starts with req-
-								Object.keys(localStorage).forEach(key => {
-									if (key.startsWith("req-")) {
-										localStorage.removeItem(key);
-									}
-								});
-								this.display();
-							});
-						});
-    }
 
-    displayAddedURLs(containerEl: HTMLElement) {
-    const {URLs} = this.plugin.settings;
+    containerEl.createEl('hr');
+
+		containerEl.createEl('h2', { text: 'Manage Requests' });
+		this.displayInfoApirs(containerEl);
+
+    new Setting(containerEl)
+  		.addButton(button => {
+  			button.setClass('btn-clear-apir');
+				button.setButtonText("Clear localStorage").onClick(async () => {
+					Object.keys(localStorage).forEach(key => {
+						if (key.startsWith("req-")) {
+							localStorage.removeItem(key);
+						}
+					});
+					this.display();
+				});
+		});
+  }
+
+displayInfoApirs(containerEl: HTMLElement) {
+		// Render URL table
+    const { URLs } = this.plugin.settings;
+    const ct = containerEl.createEl('div', { cls: 'cocontainer' });
     if (URLs.length > 0) {
-        containerEl.createEl('p', {text: 'Added APIs:'});
-        const urlsList = containerEl.createEl('ul');
-        URLs.forEach((url) => {
-            const urlItem = urlsList.createEl('li');
-            urlItem.createEl('code', {text: url.Name+" : "});
-            urlItem.createEl('a', {text:  url.URL, href: url.URL});
-            urlItem.createEl('code', {text: " || "});
+        const tableContainer = ct.createEl('div', { cls: 'table-container' });
+        
+        const table = tableContainer.createEl('table', { cls: 'api-table' });
+        const thead = table.createEl('thead');
+        const headerRow = thead.createEl('tr');
+        headerRow.createEl('th', { text: 'Name' });
+        headerRow.createEl('th', { text: 'URL' });
 
-            const removeButton = urlItem.createEl('button', {
-                text: '❌',
-            });
-            removeButton.addEventListener('click', async () => {
+        const tbody = table.createEl('tbody');
+        URLs.forEach((url) => {
+            const row = tbody.createEl('tr');
+
+            row.createEl('td', { text: url.Name });
+
+            const urlCell = row.createEl('td');
+            urlCell.createEl('a', { text: url.URL.length > 50 ? url.URL.substring(0, 50) + "..." : url.URL, cls: 'api-url' });
+
+            urlCell.addEventListener('click', async () => {
                 const index = URLs.indexOf(url);
                 URLs.splice(index, 1);
                 await this.plugin.saveSettings();
@@ -496,5 +509,30 @@ class APRSettings extends PluginSettingTab {
             });
         });
     }
-}
+
+    // Render localStorage table
+    const tableContainer = containerEl.createEl('div', { cls: 'table-container full-width' });
+    const table = ct.createEl('table', { cls: 'api-table full-width' });
+    const thead = table.createEl('thead');
+    const headerRow = thead.createEl('tr');
+    let hr = headerRow.createEl('th', { text: 'ID' });
+
+    const tbody = table.createEl('tbody');
+    Object.keys(localStorage).forEach(key => {
+        if (key.startsWith("req-")) {
+            const row = tbody.createEl('tr');
+            const idCell = row.createEl('td', { text: key });
+
+            idCell.addEventListener('click', async () => {
+                localStorage.removeItem(key);
+                this.display();
+            });
+        }
+    });
+    // if table is empty
+    if (tbody.children.length === 0) {
+				hr.innerText = 'No response saved';
+		}
+	}
+
 }

@@ -131,10 +131,11 @@ The plugin has a few settings that you can configure:
 - [x] Add more request types (POST, PUT, DELETE)
 - [x] Add support for authentication
 - [x] Add customization for modal output
-- [ ] Save response to a file
+- [x] Save response to a file
 - [ ] Inline query from response
 - [ ] Predefined requests
 - [ ] GUI for code-blocks
+- [x] Remove one by one from localStorage
 
 ## Feedback and Contributions
 
