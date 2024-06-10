@@ -71,22 +71,22 @@ export default class MainAPIR extends Plugin {
 		    this.registerMarkdownCodeBlockProcessor("req", async (source, el, ctx) => {
 		        const sourceLines = source.split("\n");
 		        let method = "GET", allowedMethods = ["GET", "POST", "PUT", "DELETE"], URL = "", show = "", 
-		        	headers = {}, body = {}, format = "{}", responseType = "json", reqID = "req-general", 
+		        	headers = {}, body = {}, format = "{}", responseType = "json", responseAllow = ["json", "other"], reqID = "req-general", 
 		        	reqRepeat = { "times": 1, "every": 1000 }, notifyIf = "", saveTo = "";
 
 		        for (const line of sourceLines) {
 		            const lowercaseLine = line.toLowerCase();
-		            if (lowercaseLine.includes("method: ")) {
-		                method = line.replace(/method: /i, "").toUpperCase();
-		                if (!allowedMethods.includes(method)) {
+		            if (lowercaseLine.includes("method:")) {
+		                method = line.replace(/method:/i, "").toUpperCase();
+		                if (!allowedMethods.includes(method.trim())) {
 		                    el.createEl("strong", { text: `Error: Method ${method} not supported` });
 		                    return;
 		                }
-		            } else if (lowercaseLine.includes("notify-if: ")) {
-		                notifyIf = line.replace(/notify-if: /i, "");
+		            } else if (lowercaseLine.includes("notify-if:")) {
+		                notifyIf = line.replace(/notify-if:/i, "");
 		                notifyIf = notifyIf.split(" ");
-		            } else if (lowercaseLine.includes("req-repeat: ")) {
-						let repeat_values = line.replace(/req-repeat: /i, "");
+		            } else if (lowercaseLine.includes("req-repeat:")) {
+						let repeat_values = line.replace(/req-repeat:/i, "");
 						repeat_values = repeat_values.split("@");
 
 						// check if there are two values and they are numbers
@@ -96,31 +96,31 @@ export default class MainAPIR extends Plugin {
 							el.createEl("strong", { text: "Error: req-repeat format is not valid (use Nt@Ns)" });
 							return;
 						}
-		            } else if (lowercaseLine.includes("url: ")) {
-		                URL = checkFrontmatter(line.replace(/url: /i, ""));
+		            } else if (lowercaseLine.includes("url:")) {
+		                URL = checkFrontmatter(line.replace(/url:/i, ""));
 		                if (!URL.includes("http")) {
 		                    URL = "https://" + URL;
 		                }
-		            } else if (lowercaseLine.includes("res-type: ")) {
-		                responseType = line.replace(/res-type: /i, "").toLowerCase();
-		                if (!["json", "txt", "md"].includes(responseType)) {
+		            } else if (lowercaseLine.includes("res-type:")) {
+		                responseType = line.replace(/res-type:/i, "").toLowerCase();
+		                if (!responseAllow.includes(responseType.trim())) {
 		                    el.createEl("strong", { text: `Error: Response type ${responseType} not supported` });
 		                    return;
 		                }
-		            } else if (lowercaseLine.includes("show: ")) {
-		                show = line.replace(/show: /i, "");
-		            } else if (lowercaseLine.includes("headers: ")) {
-		                headers = JSON.parse(checkFrontmatter(line.replace(/headers: /i, "")));
-		            } else if (lowercaseLine.includes("body: ")) {
-		                body = checkFrontmatter(line.replace(/body: /i, ""));
-		            } else if (lowercaseLine.includes("format: ")) {
-		                format = line.replace(/format: /i, "");
+		            } else if (lowercaseLine.includes("show:")) {
+		                show = line.replace(/show:/i, "");
+		            } else if (lowercaseLine.includes("headers:")) {
+		                headers = JSON.parse(checkFrontmatter(line.replace(/headers:/i, "")));
+		            } else if (lowercaseLine.includes("body:")) {
+		                body = checkFrontmatter(line.replace(/body:/i, ""));
+		            } else if (lowercaseLine.includes("format:")) {
+		                format = line.replace(/format:/i, "");
 		                if (!format.includes("{}")) {
 		                    el.createEl("strong", { text: "Error: Use {} to show response in the document." });
 		                    return;
 		                }
-		            } else if (lowercaseLine.includes("req-id: ")) {
-		                reqID = line.replace(/id: /i, "");
+		            } else if (lowercaseLine.includes("req-id:")) {
+		                reqID = line.replace(/id:/i, "");
 
 			            if (sourceLines.includes("disabled")) {
 			            	const idExists = localStorage.getItem(reqID);
@@ -131,8 +131,8 @@ export default class MainAPIR extends Plugin {
 			            		sourceLines.splice(sourceLines.indexOf("disabled"), 1);
 			            	}
 			            }
-		            } else if (lowercaseLine.includes("save-to: ")) {
-										saveTo = line.replace(/save-to: /i, "");
+		            } else if (lowercaseLine.includes("save-to:")) {
+										saveTo = line.replace(/save-to:/i, "");
 		                if (saveTo === "") {
 		                    el.createEl("strong", { text: "Error: save-to value is empty. Please provide a filename" });
 		                    return;

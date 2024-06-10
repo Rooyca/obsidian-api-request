@@ -23,11 +23,10 @@ The plugin can be installed from within Obsidian.
 
 ## Usage
 
-[Read documentation](https://rooyca.github.io/obsidian-api-request/)
+### [Read documentation](https://rooyca.github.io/obsidian-api-request/)
 
 <details>
   <summary>Quick Guide</summary>
-There are two ways to use the plugin:
 
 ### With Code-blocks
 

@@ -144,15 +144,16 @@ format: <h1>{}</h1> <p>{}</p>
 Specifies the type of response we are getting. The default value is `json`. The available values are:
 
 - json
-- md
-- txt
+- other
 
-When the response type is `md`, the response will be rendered as markdown.
+When the response type is `other`, the response will be displayed as is. If the response is markdown, it will be rendered as markdown, if it's a raw text, it will be displayed as a text, and so on.
+
+!!! danger "Be carefull with `html` responses, it can break the page."
 
 ~~~markdown
 ```req 
 url: https://raw.githubusercontent.com/Rooyca/Rooyca/main/README.md
-res-type: md
+res-type: other
 ```
 ~~~
 
