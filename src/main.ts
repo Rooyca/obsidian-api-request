@@ -35,6 +35,12 @@ export function checkFrontmatter(req_prop: string) {
 
 		for (let i = 0; i < match.length; i++) {
 			const var_name = match[i].replace(no_varname_regx, "");
+
+			// if {{this.file.name}} return filename
+			if (var_name == "file.name") {
+				req_prop = req_prop.replace(match[i], this.app.workspace.getActiveFile().basename);
+				continue;
+			}
 			
 			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 			const markdownContent = activeView.editor.getValue();
