@@ -284,6 +284,12 @@ export default class MainAPIR extends Plugin {
 
 	onunload() {
 		console.log('unloading APIR');
+    // Clean up localStorage
+		Object.keys(localStorage).forEach(key => {
+			if (key.startsWith("req-")) {
+				localStorage.removeItem(key);
+			}
+		});
 	}
 
 	async loadSettings() {
