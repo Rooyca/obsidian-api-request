@@ -1,9 +1,9 @@
 # APIR - APIRequest
 
-
-[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/rooyca/obsidian-api-request?logo=github&color=ee8449&style=flat-square)](https://github.com/rooyca/obsidian-api-request/releases/latest)
+[![Docs site](https://img.shields.io/badge/docs-GitHub_Pages-blue?style=flat-square)](https://rooyca.github.io/obsidian-api-request/)
 [![Obsidian plugin release](https://img.shields.io/badge/Obsidian%20plugin%20release-purple?logo=obsidian&style=flat-square)](https://obsidian.md/plugins?id=api-request)
-[![Docs site](https://img.shields.io/badge/docs-GitHub_Pages-blue)](https://rooyca.github.io/obsidian-api-request/)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/rooyca/obsidian-api-request?logo=github&color=ee8449&style=flat-square)](https://github.com/rooyca/obsidian-api-request/releases/latest)
+<img alt="GitHub Release" src="https://img.shields.io/github/downloads/rooyca/obsidian-api-request/total?logo=github&&color=ee8449&style=flat-square">
 
 ![req_img](showcase_1.gif)
 
