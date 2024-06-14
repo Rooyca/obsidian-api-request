@@ -22,7 +22,22 @@ theme:
         name: Switch to light mode
 
 nav:
-  - Getting started: 'index.md'
-  - How to Use:
-    - codeblocks: 'codeblocks.md'
-    - settings: 'settings.md'
+  - English: 
+    - Overview: en/index.md
+    - Usage:
+      - codeblocks: en/codeblocks.md
+      - settings: en/settings.md
+  - Español:
+    - Inicio: es/index.md
+    - Uso:
+      - bloques de código: es/codeblocks.md
+      - configuraciones: es/settings.md
+
+extra:
+  alternate:
+    - name: English
+      link: /en/ 
+      lang: en
+    - name: Spanish
+      link: /es/
+      lang: es

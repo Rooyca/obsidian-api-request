@@ -1,6 +1,6 @@
 # 🛠️ Settings
 
-Using the plugin with this method is not recommended. It is better to use code blocks. This method is very limited and does not support all the features of the code block method.
+Using this method is NOT recommended. It is better to use code blocks. This method is very limited and does not support all the features of the code block method.
 
 ## ❓ Why use this method
 
@@ -37,10 +37,10 @@ Specifies the headers of the request.
 
 Specifies the output you want.
 
-### Add this APIR
+### Add
 
 Save the above fields into a new APIR (you can access all APIRs by pressing `Ctrl+P` and searching for `APIR`).
 
-### Clear ID's
+### Clear
 
-Remove all IDs stored in `localStorage`.
+Remove all IDs stored in `localStorage`. You could also click the APIR name to delete it.
