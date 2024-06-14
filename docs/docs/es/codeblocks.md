@@ -253,3 +253,17 @@ url: https://jsonplaceholder.typicode.com/posts/1
 save-to: posts/1.json
 ```
 ~~~
+
+### properties
+
+!!! warning "Para usar esta bandera necesitas una respuesta de tipo JSON y la bandera `show`"
+
+Especifica las propiedades del frontmatter que se actualizarán con la respuesta. Los datos deben ser cadenas separadas por comas.
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/posts/1
+show: id, title
+properties: id, title
+```
+~~~

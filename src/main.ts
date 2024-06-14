@@ -78,7 +78,7 @@ export default class MainAPIR extends Plugin {
 		        const sourceLines = source.split("\n");
 		        let method = "GET", allowedMethods = ["GET", "POST", "PUT", "DELETE"], URL = "", show = "", 
 		        	headers = {}, body = {}, format = "{}", responseType = "json", responseAllow = ["json", "other"], reqID = "req-general", 
-		        	reqRepeat = { "times": 1, "every": 1000 }, notifyIf = "", saveTo = "";
+		        	reqRepeat = { "times": 1, "every": 1000 }, notifyIf = "", saveTo = "", properties = "";
 
 		        for (const line of sourceLines) {
 		            const lowercaseLine = line.toLowerCase();
@@ -145,6 +145,10 @@ export default class MainAPIR extends Plugin {
 		                    el.createEl("strong", { text: "Error: save-to value is empty. Please provide a filename" });
 		                    return;
 		                }
+		            } else if (lowercaseLine.includes("properties:")) {
+		            		properties = line.replace(/properties:/i, "");
+		            		properties = properties.replace(/\s/g, "");
+		            		properties = properties.split(",");
 		            }
 		            if (URL === "") {
 		                el.createEl("strong", { text: "Error: URL not found" });
@@ -242,17 +246,39 @@ export default class MainAPIR extends Plugin {
 						  		}
 							}
 
-			                const values = show.includes(",") ? show.split(",").map(key => {
-			                    let value = JSON.stringify(responseData.json[key.trim()]);
-			                    if (key.includes("->")) value = nestedValue(responseData, key);
-			                    return value;
-			                }) : [show.trim().includes("->") ? nestedValue(responseData, show.trim()) : JSON.stringify(responseData.json[show.trim()])];
-			                const replacedText = replaceOrder(format, values);
-			                el.innerHTML = parser.parse(replacedText);
+							// adding properties to frontmatter
+							if (properties) {
+								const showArray = show.split(",");
+								const propertiesArray = properties;
+								const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+								const file = activeView.file;
 
-			                saveToID(reqID, replacedText);
-			                addBtnCopy(el, replacedText);
-			            }
+								showArray.forEach(async (key, index) => {
+									let val = "";
+									if (key.includes("->")) {
+										val = nestedValue(responseData, key);
+									} else if (responseData.json && responseData.json[key.trim()]) {
+										val = responseData.json[key.trim()];
+									}
+									const propertyName = propertiesArray[index].trim();
+									if (propertyName) {
+										await this.app.fileManager.processFrontMatter(file, (existingFrontmatter) => {
+												existingFrontmatter[propertyName] = val;
+										});
+									}
+								});
+							}
+	              const values = show.includes(",") ? show.split(",").map(key => {
+	                  let value = responseData.json[key.trim()];
+	                  if (key.includes("->")) value = nestedValue(responseData, key);
+	                  return value;
+	              }) : [show.trim().includes("->") ? nestedValue(responseData, show.trim()) : responseData.json[show.trim()]];
+	              const replacedText = replaceOrder(format, values);
+	              el.innerHTML = parser.parse(replacedText);
+
+	              saveToID(reqID, replacedText);
+	              addBtnCopy(el, replacedText);
+		            }
 			        } catch (error) {
 			            console.error(error);
 			            el.createEl("strong", { text: "Error: " + error.message });

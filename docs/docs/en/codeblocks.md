@@ -20,6 +20,7 @@ Flags are the way to specify the parameters of our request and also the format i
 | req-repeat | 1t@1s |
 | notify-if | |
 | save-to | |
+| properties | |
 
 ### url
 
@@ -254,11 +255,17 @@ save-to: posts/1.json
 ```
 ~~~
 
+### properties
 
+!!! warning "To use this flag you need a JSON response and the `show` flag"
 
+Specifies the frontmatter properties to update with the response. The data should be strings separated by commas.
 
-
-
-
-
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/posts/1
+show: id, title
+properties: id, title
+```
+~~~
 
