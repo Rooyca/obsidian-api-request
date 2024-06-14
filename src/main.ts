@@ -84,7 +84,8 @@ export default class MainAPIR extends Plugin {
 		            const lowercaseLine = line.toLowerCase();
 		            if (lowercaseLine.includes("method:")) {
 		                method = line.replace(/method:/i, "").toUpperCase();
-		                if (!allowedMethods.includes(method.trim())) {
+		                method = method.trim();
+		                if (!allowedMethods.includes(method)) {
 		                    el.createEl("strong", { text: `Error: Method ${method} not supported` });
 		                    return;
 		                }
@@ -109,7 +110,8 @@ export default class MainAPIR extends Plugin {
 		                }
 		            } else if (lowercaseLine.includes("res-type:")) {
 		                responseType = line.replace(/res-type:/i, "").toLowerCase();
-		                if (!responseAllow.includes(responseType.trim())) {
+		                responseType = responseType.trim();
+		                if (!responseAllow.includes(responseType)) {
 		                    el.createEl("strong", { text: `Error: Response type ${responseType} not supported` });
 		                    return;
 		                }
