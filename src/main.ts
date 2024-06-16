@@ -332,7 +332,14 @@ export default class MainAPIR extends Plugin {
 			id: 'response-in-document',
 			name: 'Paste response in current document',
 			editorCallback: (editor: Editor) => {
-				toDocument(this.settings, editor);
+				const set = this.settings;
+				const requestOptions = {
+					url: set.URL,
+					method: set.MethodRequest,
+					headers: JSON.parse(set.HeaderRequest),
+					...(set.MethodRequest !== "GET" && { body: set.DataRequest })
+				};
+				toDocument(requestOptions, set.DataResponse, editor);
 			}
 		});
 
@@ -342,7 +349,7 @@ export default class MainAPIR extends Plugin {
 				name: 'Response for api: ' + this.settings.URLs[i]["Name"],
 				editorCallback: (editor: Editor, view: MarkdownView) => {
 					const rea = this.settings.URLs[i];
-					toDocument(rea, editor);
+					toDocument(rea, this.settings.URLs[i]["DataResponse"], editor);
 				}
 			});
 		}
@@ -513,11 +520,11 @@ class APRSettings extends PluginSettingTab {
 					const { URL, MethodRequest, DataResponse, DataRequest, HeaderRequest } = this.plugin.settings;
 					const { URLs } = this.plugin.settings;
 					URLs.push({
-						'URL': URL, 
+						'url': URL, 
 						'Name': Name, 
-						'MethodRequest': MethodRequest, 
-						'DataRequest': DataRequest,
-						'HeaderRequest': HeaderRequest, 
+						'method': MethodRequest, 
+						'body': DataRequest,
+						'headers': HeaderRequest, 
 						'DataResponse': DataResponse
 					});
 					await this.plugin.saveSettings();
@@ -527,7 +534,7 @@ class APRSettings extends PluginSettingTab {
 						name: 'Response for api: ' + Name,
 						editorCallback: (editor: Editor) => {
 							const rea = URLs[URLs.length - 1];
-							toDocument(rea, editor);
+							toDocument(rea, rea.DataResponse, editor);
 						}
 					});
 				});
@@ -580,16 +587,16 @@ class APRSettings extends PluginSettingTab {
 			headerRow.createEl('th', { text: 'URL' });
 
 			const tbody = table.createEl('tbody');
-			URLs.forEach((url) => {
+			URLs.forEach((u) => {
 				const row = tbody.createEl('tr');
 
-				row.createEl('td', { text: url.Name });
+				row.createEl('td', { text: u.Name });
 
 				const urlCell = row.createEl('td');
-				urlCell.createEl('a', { text: url.URL.length > 50 ? url.URL.substring(0, 50) + "..." : url.URL, cls: 'api-url' });
+				urlCell.createEl('a', { text: u.url.length > 50 ? u.url.substring(0, 50) + "..." : u.url, cls: 'api-url' });
 
 				urlCell.addEventListener('click', async () => {
-					const index = URLs.indexOf(url);
+					const index = URLs.indexOf(u);
 					URLs.splice(index, 1);
 					await this.plugin.saveSettings();
 					this.display();

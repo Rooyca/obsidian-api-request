@@ -24,7 +24,7 @@ export function addBtnCopy(el: HTMLElement, copyThis: string) {
 
 // When more than one {} is defined in "format"
 // it will loop through the responses and replace the {} with the respective value
-export function replaceOrder(stri: string, val: []) {
+export function replaceOrder(stri: string, val) {
 	let index = 0;
 	let replaced = stri.replace(/{}/g, function () {
 		return val[index++];
@@ -59,15 +59,11 @@ export function nestedValue(data, key: string) {
 }
 
 // Paste the response to the editor
-export function toDocument(settings: any, editor: Editor) {
-	requestUrl({
-		url: settings.URL,
-		method: settings.MethodRequest,
-		body: settings.DataRequest,
-	})
+export function toDocument(requestOptions: object, DataResponse: string, editor: Editor) {
+	requestUrl(requestOptions)
 		.then((data) => {
-			if (settings.DataResponse !== "") {
-				const DataResponseArray = settings.DataResponse.split(",");
+			if (DataResponse !== "") {
+				const DataResponseArray = DataResponse.split(",");
 				for (let i = 0; i < DataResponseArray.length; i++) {
 					const key = DataResponseArray[i].trim();
 
@@ -78,10 +74,10 @@ export function toDocument(settings: any, editor: Editor) {
 						value = JSON.stringify(value);
 					}
 
-					editor.replaceSelection("```markdown\n" + `${key.split("->").pop()} : ${value}\n` + "```\n\n");
+					editor.replaceSelection(value);
 				}
 			} else {
-				editor.replaceSelection("<code>\n" + `${data.text}\n` + "</code>\n");
+				editor.replaceSelection("<div>\n" + `${data.text}\n` + "</div>\n");
 			}
 		})
 		.catch((error: Error) => {
