@@ -3,6 +3,7 @@ import { readFrontmatter, parseFrontmatter } from './frontmatterUtils';
 import { MarkdownParser } from './mdparse';
 import { saveToID, addBtnCopy, replaceOrder, nestedValue, toDocument } from './functions';
 import { num_braces_regx, num_hyphen_regx, nums_rex, in_braces_regx, varname_regx, no_varname_regx } from './regx';
+import { sanitizer } from './HtmlSanitizer';
 
 const parser = new MarkdownParser();
 
@@ -192,10 +193,10 @@ export default class MainAPIR extends Plugin {
 						// Check if the response is not JSON
 						if (!responseData.headers["content-type"].includes("application/json")) {
 							try {
-								el.innerHTML = parser.parse(responseData.text);
+								el.innerHTML = parser.parse(sanitizer.SanitizeHtml(responseData.text));
 							} catch (e) {
 								new Notice("Error: " + e.message);
-								el.innerHTML = "<pre>" + responseData.text + "</pre>";
+								el.innerHTML = "<pre>" + sanitizer.SanitizeHtml(responseData.text) + "</pre>";
 							}
 
 							if (reqID) saveToID(reqID, responseData.text);
