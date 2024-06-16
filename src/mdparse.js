@@ -2,9 +2,6 @@
 
 export class MarkdownParser {
     parse(text) {
-        // Remove all <script> tags
-        text = text.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-        
         // Headers
         text = text.replace(/^(#{1,6})\s*(.*)$/gm, (match, p1, p2) => `<h${p1.length}>${p2}</h${p1.length}>`);
 
