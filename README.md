@@ -41,7 +41,7 @@ The plugin can be installed from within Obsidian.
 - [ ] Inline query from response
 - [ ] Predefined requests
 - [ ] GUI for code-blocks
-- [ ] Translate documentation
+- [x] Translate documentation
 
 ## ❤️ Sponsors
 

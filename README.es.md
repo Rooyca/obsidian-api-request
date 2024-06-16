@@ -40,7 +40,7 @@ Este plugin se puede instalar desde Obsidian.
 - [ ] Consultas inline de la respuesta de una solicitud
 - [ ] Solicitudes predefinidas
 - [ ] GUI para bloques de código
-- [ ] Traducir la documentación
+- [x] Traducir la documentación
 
 ## ❤️ Patrocinadores
 

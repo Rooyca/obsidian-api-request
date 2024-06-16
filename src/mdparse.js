@@ -2,6 +2,9 @@
 
 export class MarkdownParser {
     parse(text) {
+        // Remove all <script> tags
+        text = text.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+        
         // Headers
         text = text.replace(/^(#{1,6})\s*(.*)$/gm, (match, p1, p2) => `<h${p1.length}>${p2}</h${p1.length}>`);
 
@@ -24,7 +27,7 @@ export class MarkdownParser {
         text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
 
         // Images
-        text = text.replace(/\!\[([^\]]+)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+        text = text.replace(/!\[([^\]]+)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
 
         // Links
         text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
@@ -57,8 +60,6 @@ export class MarkdownParser {
             let bodyEnd = '</tbody>\n';
             let rowStart = '<tr>\n';
             let rowEnd = '</tr>\n';
-            let cellStart = '<td>';
-            let cellEnd = '</td>\n';
             let headerRow = rowStart + headerCells.map(cell => `<th>${cell}</th>`).join('\n') + rowEnd;
             let bodyRows = rows.map(row => {
                 let cells = row.split('|').map(cell => cell.trim()).filter(cell => cell);

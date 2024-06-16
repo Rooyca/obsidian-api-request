@@ -6,21 +6,20 @@ The `codeblock` is a versatile block that can be used to write code in different
 
 Flags are the way to specify the parameters of our request and also the format in which we want our response.
 
-| Flag | Default|
-| ---| ---------|
-| url |  |
-| method |  GET |
-| body |  |
-| headers |  |
-| show | ALL |
-| format | `{}` |
-| res-type | json |
-| req-id | req-general |
-| disabled |  |
-| req-repeat | 1t@1s |
-| notify-if | |
-| save-to | |
-| properties | |
+| Flag         | Default  |
+| ------------| ---------|
+| [url](#url) |          |
+| [method](#method) | GET   |
+| [body](#body) |         |
+| [headers](#headers) |   |
+| [show](#show) | ALL     |
+| [format](#format) | `{}` |
+| [req-id](#req-id) | req-general |
+| [disabled](#disabled) | |
+| [req-repeat](#req-repeat) | 1t@1s |
+| [notify-if](#notify-if) | |
+| [save-to](#save-to) |   |
+| [properties](#properties) | |
 
 ### url
 
@@ -139,24 +138,6 @@ format: <h1>{}</h1> <p>{}</p>
 
 !!! note "In this example, first `{}` will be replaced by the title, and second `{}` will be replaced by the body."
 
-
-### res-type
-
-Specifies the type of response we are getting. The default value is `json`. The available values are:
-
-- json
-- other
-
-When the response type is `other`, the response will be displayed as is. If the response is markdown, it will be rendered as markdown, if it's a raw text, it will be displayed as a text, and so on.
-
-!!! danger "Be carefull with `html` responses, it can break the page."
-
-~~~markdown
-```req 
-url: https://raw.githubusercontent.com/Rooyca/Rooyca/main/README.md
-res-type: other
-```
-~~~
 
 ### req-id
 

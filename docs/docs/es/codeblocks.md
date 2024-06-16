@@ -7,19 +7,19 @@ El `bloque de código` es un bloque versátil que se puede usar para escribir c�
 Las banderas son la forma de especificar los parámetros de nuestra solicitud y también el formato en el que queremos nuestra respuesta.
 
 | Bandera | Valor predeterminado |
-| --- | --------- |
-| url |  |
-| method |  GET |
-| body |  |
-| headers |  |
-| show | ALL |
-| format | `{}` |
-| res-type | json |
-| req-id | req-general |
-| disabled |  |
-| req-repeat | 1t@1s |
-| notify-if | |
-| save-to | |
+| ------------| ---------|
+| [url](#url) |          |
+| [method](#method) | GET   |
+| [body](#body) |         |
+| [headers](#headers) |   |
+| [show](#show) | ALL     |
+| [format](#format) | `{}` |
+| [req-id](#req-id) | req-general |
+| [disabled](#disabled) | |
+| [req-repeat](#req-repeat) | 1t@1s |
+| [notify-if](#notify-if) | |
+| [save-to](#save-to) |   |
+| [properties](#properties) | |
 
 ### url
 
@@ -137,25 +137,6 @@ format: <h1>{}</h1> <p>{}</p>
 ~~~
 
 !!! note "En este ejemplo, primero `{}` será reemplazado por el título, y segundo `{}` será reemplazado por el cuerpo."
-
-
-### res-type
-
-Especifica el tipo de respuesta que estamos obteniendo. El valor predeterminado es `json`. Los valores disponibles son:
-
-- json
-- other
-
-Cuando el tipo de respuesta es `other`, la respuesta se mostrará tal como **está**; si es markdown, se renderizará como markdown, si es un texto, se mostrará como texto, y así sucesivamente.
-
-!!! danger "Ten cuidado con las respuestas `html`, pueden romper la página."
-
-~~~markdown
-```req 
-url: https://raw.githubusercontent.com/Rooyca/Rooyca/main/README.md
-res-type: other
-```
-~~~
 
 ### req-id
 
