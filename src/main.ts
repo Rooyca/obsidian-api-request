@@ -242,37 +242,79 @@ export default class MainAPIR extends Plugin {
 								}
 
 								let temp_show = "";
-								let range = Object();
+								let range: number[] = [];
 
 								try {
-									range = show.match(nums_rex)!.map(Number)
-									if (range[0] > range[1]) {
-										el.createEl("strong", { text: "Error: range is not valid" });
-										return;
+									const rangeMatch = show.match(nums_rex);
+									if (rangeMatch) {
+										range = rangeMatch.map(Number);
+										if (range[0] > range[1]) {
+											el.createEl("strong", { text: "Error: range is not valid" });
+											return;
+										}
 									}
 								} catch (e) {
-									console.error(e.message)
+									console.error(e.message);
 								}
 
-								const numberBracesRegex = show.match(num_braces_regx)
+								const numberBracesRegex = show.match(num_braces_regx);
 
-								if (numberBracesRegex) {
+								if (!numberBracesRegex) {
+									if (Array.isArray(responseData.json)) {
+										for (let i = 0; i < responseData.json.length; i++) {
+											temp_show += show.replace(in_braces_regx, i.toString()) + ", ";
+										}
+										show = temp_show;
+									} else {
+										const parts = show.split('->').map(part => part.trim());
+
+										const processNestedObject = (obj: any, parts: string[]): string => {
+											let result = "";
+
+											const traverse = (current: any, idx: number) => {
+												if (idx >= parts.length) {
+													if (typeof current === "object") {
+														current = JSON.stringify(current, null, 2);
+													}
+													result += current + ", ";
+													return;
+												}
+
+												const part = parts[idx];
+												if (part === "{..}") {
+													if (Array.isArray(current)) {
+														current.forEach((item, i) => {
+															traverse(item, idx + 1);
+														});
+													} else {
+														el.createEl("strong", { text: "Error: {..} used on non-array element" });
+													}
+												} else {
+													traverse(current[part], idx + 1);
+												}
+											};
+
+											traverse(obj, 0);
+											return result;
+										};
+
+										temp_show = processNestedObject(responseData.json, parts);
+										show = temp_show;
+									}
+								} else {
 									for (let i: number = range[0]; i <= range[1]; i++) {
 										temp_show += show.replace(numberBracesRegex![0], i.toString()) + ", ";
 									}
 									show = temp_show;
-								} else if (show.match(num_hyphen_regx)) {
+								}
+
+								if (show.match(num_hyphen_regx)) {
 									show = show.replace(in_braces_regx, "-");
 									for (let i = 0; i < range.length; i++) {
 										temp_show += show.replace("-", range[i].toString()) + ", ";
 									}
 									show = temp_show;
-								} else {
-									for (let i = 0; i < responseData.json.length; i++) {
-										temp_show += show.replace("{..}", i.toString()) + ", ";
-									}
-									show = temp_show;
-								}
+								} 
 							}
 
 							// adding properties to frontmatter
@@ -295,6 +337,13 @@ export default class MainAPIR extends Plugin {
 									const propertyName = propertiesArray[index].trim();
 									if (propertyName) {
 										await this.app.fileManager.processFrontMatter(file, (existingFrontmatter) => {
+											if (typeof val === "object") {
+												Object.keys(val).forEach((key) => {
+													if (typeof val[key] === "number") {
+														val[key] = val[key].toString();
+													}
+												});
+											}
 											existingFrontmatter[propertyName] = val;
 										});
 									}
@@ -309,9 +358,17 @@ export default class MainAPIR extends Plugin {
 							};
 
 							const values = show.split(",").map(trimAndProcessKey);
-							const replacedText = replaceOrder(format, values);
+							let replacedText = replaceOrder(format, values);
 
-							el.innerHTML = parser.parse(replacedText);
+							if (replacedText === 'undefined') {
+								show = show.trim();
+								if (show[show.length - 1] === ',') {
+									show = show.slice(0, -1);
+								}
+								replacedText = show;
+							}
+
+							el.createEl("pre", { text: replacedText });
 							if (reqID) saveToID(reqID, replacedText);
 							addBtnCopy(el, replacedText);
 						}

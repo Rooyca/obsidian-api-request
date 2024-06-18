@@ -42,17 +42,17 @@ export function replaceOrder(stri: string, val) {
 // In other words, if "->" is present in "show"
 export function nestedValue(data, key: string) {
 	const keySplit: string[] = key.split("->").map((item) => item.trim());
-	let value = "";
+	let value = data.json;
+
 	for (let i = 0; i < keySplit.length; i++) {
-		if (i === 0) {
-			value = data.json[keySplit[i]];
-		} else {
-			value = value[keySplit[i]];
+		if (value === undefined) {
+			return undefined;
 		}
+		value = value[keySplit[i]];
 	}
-	
-	if (typeof value === "object") {
-		value = JSON.stringify(value);
+	if (typeof value === "object" && !Array.isArray(value)) {
+		// pretty print
+		value = JSON.stringify(value, null, 2);
 	}
 
 	return value;
