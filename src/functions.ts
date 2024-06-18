@@ -51,7 +51,6 @@ export function nestedValue(data, key: string) {
 		value = value[keySplit[i]];
 	}
 	if (typeof value === "object" && !Array.isArray(value)) {
-		// pretty print
 		value = JSON.stringify(value, null, 2);
 	}
 

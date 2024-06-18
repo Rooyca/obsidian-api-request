@@ -1,3 +1,11 @@
+// ⚠️ MESSY CODE AHEAD ⚠️
+// PROCEDE UNDER YOUR OWN RISK
+// DON'T JUDGE ME... TOO MUCH
+// ---------------------------------------------
+// == TODO ==
+// CLEAN UP THIS MESS
+// ---------------------------------------------
+
 import { App, Editor, MarkdownView, Modal, Plugin, PluginSettingTab, Setting, Notice, requestUrl } from 'obsidian';
 import { readFrontmatter, parseFrontmatter } from './frontmatterUtils';
 import { MarkdownParser } from './mdparse';
@@ -334,15 +342,24 @@ export default class MainAPIR extends Plugin {
 										val = responseData.json[trimmedKey];
 									}
 
-									const propertyName = propertiesArray[index].trim();
+									let propertyName = propertiesArray[index].trim();
 									if (propertyName) {
+										const match = propertyName.match(/\[\[(.*?)\]\]/);
+										if (match) propertyName = match[1];
 										await this.app.fileManager.processFrontMatter(file, (existingFrontmatter) => {
 											if (typeof val === "object") {
 												Object.keys(val).forEach((key) => {
 													if (typeof val[key] === "number") {
-														val[key] = val[key].toString();
+														if (match) {
+															val[key] = "[[" + val[key].toString() + "]]";
+														} else {
+															val[key] = val[key].toString();
+														}
 													}
 												});
+											} 
+											if (match && typeof val !== "object") {
+												val = "[["+val+"]]"
 											}
 											existingFrontmatter[propertyName] = val;
 										});
