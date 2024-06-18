@@ -37,10 +37,11 @@ Este plugin se puede instalar desde Obsidian.
 - [x] Añadir personalización para la salida modal
 - [x] Guardar la respuesta en un archivo
 - [x] Eliminar uno a uno del localStorage
+- [x] Traducir la documentación
 - [ ] Consultas inline de la respuesta de una solicitud
 - [ ] Solicitudes predefinidas
 - [ ] GUI para bloques de código
-- [x] Traducir la documentación
+- [ ] Añadir la bandera `render` a los bloques de código
 
 ## ❤️ Patrocinadores
 

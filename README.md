@@ -38,10 +38,12 @@ The plugin can be installed from within Obsidian.
 - [x] Add customization for modal output
 - [x] Save response to a file
 - [x] Remove one by one from localStorage
+- [x] Translate documentation
 - [ ] Inline query from response
 - [ ] Predefined requests
 - [ ] GUI for code-blocks
-- [x] Translate documentation
+- [ ] Add `render` flag to code-blocks
+
 
 ## ❤️ Sponsors
 

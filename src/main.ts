@@ -132,7 +132,7 @@ export default class MainAPIR extends Plugin {
 							URL = "https://" + URL;
 						}
 					} else if (lowercaseLine.includes("show:")) {
-						show = line.replace(/show:/i, "").trim();
+						show = checkFrontmatter(line.replace(/show:/i, "").trim()) ?? "";
 						if (!show) {
 							el.createEl("strong", { text: "Error: show value is empty" });
 							return;
@@ -379,10 +379,8 @@ export default class MainAPIR extends Plugin {
 
 							if (replacedText === 'undefined') {
 								show = show.trim();
-								if (show[show.length - 1] === ',') {
-									show = show.slice(0, -1);
-								}
-								replacedText = show;
+								if (show[show.length - 1] === ',') show = show.slice(0, -1);
+								if (!show.includes("->")) replacedText = show;
 							}
 
 							el.createEl("pre", { text: replacedText });
