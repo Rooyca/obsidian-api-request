@@ -15,3 +15,6 @@ export const varname_regx = /{{this\.([^{}]*)}}/g;
 
 // Matches "{{this." or "}}" globally
 export const no_varname_regx = /{{this\.|}}/g;
+
+// Matches "{{KEY}}" globally
+export const key_regx = /{{(?!this\.)[^{}]*}}/g;

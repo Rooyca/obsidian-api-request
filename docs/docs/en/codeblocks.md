@@ -21,6 +21,7 @@ Flags are the way to specify the parameters of our request and also the format i
 | [save-to](#save-to) |   |
 | [properties](#properties) | |
 | [render](#render)| false |
+| [res-type](#res-type)| |
 
 ### url
 
@@ -268,4 +269,13 @@ render
 ```
 ~~~
 
+## res-type
 
+Specifies the type of the response. If this flag is not present the plugin will try to guess the type based on the response content-type. This could be used *as an optional fallback feature*.
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/posts/1
+res-type: json
+```
+~~~

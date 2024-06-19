@@ -89,5 +89,12 @@
     background-color: #f44336 !important;
 }
 
-
+.summary-text {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 10px;
+    color: #4CAF50;
+    cursor: pointer;
+    list-style: none;
+}
 

@@ -6,40 +6,44 @@
 // CLEAN UP THIS MESS
 // ---------------------------------------------
 
-import { App, Editor, MarkdownView, Modal, Plugin, PluginSettingTab, Setting, Notice, requestUrl } from 'obsidian';
-import { readFrontmatter, parseFrontmatter } from './frontmatterUtils';
-import { MarkdownParser } from './mdparse';
-import { saveToID, addBtnCopy, replaceOrder, nestedValue, toDocument } from './functions';
-import { num_braces_regx, num_hyphen_regx, nums_rex, in_braces_regx, varname_regx, no_varname_regx } from './regx';
-import { sanitizer } from './HtmlSanitizer';
+import { App, Editor, MarkdownView, Modal, Plugin, Notice, requestUrl, Setting } from 'obsidian';
+import { readFrontmatter, parseFrontmatter } from 'src/functions/frontmatterUtils';
+import { MarkdownParser } from 'src/functions/mdparse';
+import { saveToID, addBtnCopy, replaceOrder, nestedValue, toDocument } from 'src/functions/general';
+import { 
+	num_braces_regx,
+	num_hyphen_regx,
+	nums_rex,
+	in_braces_regx,
+	varname_regx,
+	no_varname_regx,
+	key_regx
+} from 'src/functions/regx';
+import { sanitizer } from 'src/functions/HtmlSanitizer';
+import APRSettings from 'src/settings/settingsTab';
+import { LoadAPIRSettings, DEFAULT_SETTINGS } from 'src/settings/settingsData';
 
 const parser = new MarkdownParser();
 
-interface LoadAPIRSettings {
-	URL: string;
-	MethodRequest: string;
-	DataRequest: string;
-	HeaderRequest: string;
-	DataResponse: string;
-	URLs: object[];
-	Name: string;
-	DisabledReq: string;
+export function checkGlobalValue(value: string, settings: LoadAPIRSettings) {
+	const match = value.match(key_regx);
+
+	if (match) {
+		for (let i = 0; i < match.length; i++) {
+			const key = match[i].replace(/{{|}}/g, "");
+			value = value.replace(match[i], settings.KeyValueCodeblocks.find((obj) => obj.key === key)?.value || "");
+		}
+	}
+	console.log(value)
+	return value;
 }
 
-const DEFAULT_SETTINGS: LoadAPIRSettings = {
-	URL: 'https://jsonplaceholder.typicode.com/todos/1',
-	MethodRequest: 'GET',
-	DataRequest: '',
-	HeaderRequest: '{"Content-Type": "application/json"}',
-	DataResponse: '',
-	URLs: [],
-	Name: '',
-	DisabledReq: 'This request is disabled',
-}
 
 // Checks if the frontmatter is present in the request property
 // If it is, it will replace the variable (this.VAR) with the frontmatter value
-export function checkFrontmatter(req_prop: string) {
+export function checkFrontmatter(req_prop: string, settings: LoadAPIRSettings) {
+	// search value globally
+	req_prop = checkGlobalValue(req_prop, settings);
 	const match = req_prop.match(varname_regx);
 
 	if (match) {
@@ -87,7 +91,7 @@ export default class MainAPIR extends Plugin {
 		try {
 			this.registerMarkdownCodeBlockProcessor("req", async (source, el, ctx) => {
 				const sourceLines = source.split("\n");
-				let [URL, show, saveTo, reqID] = [String(), String(), String(), String()];
+				let [URL, show, saveTo, reqID, resType] = [String(), String(), String(), String(), String()];
 				let [notifyIf, properties] = [[String()], [String()]];
 				// 'format' is not and empty objet, is a string that will be replaced by the response
 				let [method, format] = ["GET", "{}"];
@@ -124,7 +128,7 @@ export default class MainAPIR extends Plugin {
 						}
 
 					} else if (lowercaseLine.includes("url:")) {
-						URL = checkFrontmatter(line.replace(/url:/i, "").trim()) ?? "";
+						URL = checkFrontmatter(line.replace(/url:/i, "").trim(), this.settings) ?? "";
 						if (!URL) {
 							el.createEl("strong", { text: "Error: URL not found" });
 							return;
@@ -133,13 +137,13 @@ export default class MainAPIR extends Plugin {
 							URL = "https://" + URL;
 						}
 					} else if (lowercaseLine.includes("show:")) {
-						show = checkFrontmatter(line.replace(/show:/i, "").trim()) ?? "";
+						show = checkFrontmatter(line.replace(/show:/i, "").trim(), this.settings) ?? "";
 						if (!show) {
 							el.createEl("strong", { text: "Error: show value is empty" });
 							return;
 						}
 					} else if (lowercaseLine.includes("headers:")) {
-						const tempHeaders = checkFrontmatter(line.replace(/headers:/i, "")) ?? "";
+						const tempHeaders = checkFrontmatter(line.replace(/headers:/i, ""), this.settings) ?? "";
 						if (tempHeaders) {
 							try {
 								headers = JSON.parse(tempHeaders);
@@ -149,7 +153,7 @@ export default class MainAPIR extends Plugin {
 							}
 						}
 					} else if (lowercaseLine.includes("body:")) {
-						body = checkFrontmatter(line.replace(/body:/i, ""));
+						body = checkFrontmatter(line.replace(/body:/i, ""), this.settings);
 					} else if (lowercaseLine.includes("format:")) {
 						format = line.replace(/format:/i, "");
 						if (!format.includes("{}")) {
@@ -177,7 +181,9 @@ export default class MainAPIR extends Plugin {
 					} else if (lowercaseLine.includes("properties:")) {
 						// remove all spaces and split by comma
 						properties = line.replace(/properties:/i, "").replace(/\s/g, "").split(",");
-					} 
+					} else if (lowercaseLine.includes("res-type:")) {
+						resType = line.replace(/res-type:/i, "").trim();
+					}
 				}
 
 				if (sourceLines.includes("disabled")) {
@@ -202,7 +208,7 @@ export default class MainAPIR extends Plugin {
 						}
 
 						// Check if the response is not JSON
-						if (!responseData.headers["content-type"].includes("application/json")) {
+						if (!responseData.headers["content-type"].includes("json") && resType !== "json") {
 							try {
 								el.innerHTML = parser.parse(sanitizer.SanitizeHtml(responseData.text));
 							} catch (e) {
@@ -352,12 +358,10 @@ export default class MainAPIR extends Plugin {
 										await this.app.fileManager.processFrontMatter(file, (existingFrontmatter) => {
 											if (typeof val === "object") {
 												Object.keys(val).forEach((key) => {
-													if (typeof val[key] === "number") {
-														if (match) {
-															val[key] = "[[" + val[key].toString() + "]]";
-														} else {
-															val[key] = val[key].toString();
-														}
+													if (match) {
+														val[key] = "[[" + val[key].toString() + "]]";
+													} else {
+														val[key] = val[key].toString();
 													}
 												});
 											} 
@@ -504,206 +508,3 @@ class ShowOutputModal extends Modal {
 	}
 }
 
-class APRSettings extends PluginSettingTab {
-	plugin: MainAPIR;
-
-	constructor(app: App, plugin: MainAPIR) {
-		super(app, plugin);
-		this.plugin = plugin;
-	}
-
-	display(): void {
-		const { containerEl } = this;
-
-		containerEl.empty();
-		containerEl.createEl('h2', { text: "Add New Request" });
-
-		new Setting(containerEl)
-			.setName('Name')
-			.setDesc('Name of request')
-			.addText(text => text
-				.setPlaceholder('Name')
-				.setValue(this.plugin.settings.Name)
-				.onChange(async (value) => {
-					if (value !== "") {
-						this.plugin.settings.Name = value;
-						await this.plugin.saveSettings();
-					}
-				}));
-
-		new Setting(containerEl)
-			.setName('URL')
-			.setDesc('Endpoint to fetch data from')
-			.addText(text => text
-				.setPlaceholder('URL')
-				.setValue(this.plugin.settings.URL)
-				.onChange(async (value) => {
-					this.plugin.settings.URL = value;
-					await this.plugin.saveSettings();
-				}));
-		new Setting(containerEl)
-			.setName('Method')
-			.setDesc("Select the desired method")
-			.addDropdown(dropDown => {
-				dropDown.addOption("GET", "GET");
-				dropDown.addOption("POST", "POST");
-				dropDown.addOption("POST", "PUT");
-				dropDown.addOption("DELETE", "DELETE");
-				dropDown.setValue(this.plugin.settings.MethodRequest)
-				dropDown.onChange(async value => {
-					this.plugin.settings.MethodRequest = value;
-					await this.plugin.saveSettings();
-				});
-			});
-		new Setting(containerEl)
-			.setName('Body')
-			.setDesc("Data to send in the body")
-			.addTextArea(text => text
-				.setPlaceholder('{"data":"data"}')
-				.setValue(this.plugin.settings.DataRequest)
-				.onChange(async (value) => {
-					this.plugin.settings.DataRequest = value;
-					await this.plugin.saveSettings();
-				}));
-		new Setting(containerEl)
-			.setName('Headers')
-			.setDesc("The headers of the request")
-			.addTextArea(text => text
-				.setPlaceholder('{"Content-Type": "application/json"}')
-				.setValue(this.plugin.settings.HeaderRequest)
-				.onChange(async (value) => {
-					this.plugin.settings.HeaderRequest = value;
-					await this.plugin.saveSettings();
-				}));
-		new Setting(containerEl)
-			.setName('What to display')
-			.setDesc("Write the name of the variables you want to show (spaced by comma)")
-			.addText(text => text
-				.setPlaceholder('varname')
-				.setValue(this.plugin.settings.DataResponse)
-				.onChange(async (value) => {
-					this.plugin.settings.DataResponse = value;
-					await this.plugin.saveSettings();
-				}));
-		new Setting(containerEl)
-			.addButton(button => {
-				button.setClass('btn-add-apir');
-				button.setButtonText('ADD').onClick(async () => {
-					const { Name } = this.plugin.settings;
-					if (Name === "") {
-						new Notice("Name is empty");
-						return;
-					}
-					const { URL, MethodRequest, DataResponse, DataRequest, HeaderRequest } = this.plugin.settings;
-					const { URLs } = this.plugin.settings;
-					URLs.push({
-						'url': URL, 
-						'Name': Name, 
-						'method': MethodRequest, 
-						'body': DataRequest,
-						'headers': HeaderRequest, 
-						'DataResponse': DataResponse
-					});
-					await this.plugin.saveSettings();
-					this.display();
-					this.plugin.addCommand({
-						id: 'response-in-document-' + Name,
-						name: 'Response for api: ' + Name,
-						editorCallback: (editor: Editor) => {
-							const rea = URLs[URLs.length - 1];
-							toDocument(rea, rea.DataResponse, editor);
-						}
-					});
-				});
-			});
-
-		containerEl.createEl('hr');
-
-		containerEl.createEl('h2', { text: 'Codeblock Settings' });
-		new Setting(containerEl)
-			.setName('Text when request is Disabled')
-			.setDesc("What to show when a request is disabled")
-			.addText(text => text
-				.setPlaceholder('This request is disabled')
-				.setValue(this.plugin.settings.DisabledReq)
-				.onChange(async (value) => {
-					this.plugin.settings.DisabledReq = value;
-					await this.plugin.saveSettings();
-				}));
-
-		containerEl.createEl('hr');
-
-		containerEl.createEl('h2', { text: 'Manage Requests' });
-		this.displayInfoApirs(containerEl);
-
-		new Setting(containerEl)
-			.addButton(button => {
-				button.setClass('btn-clear-apir');
-				button.setButtonText("Clear localStorage").onClick(async () => {
-					Object.keys(localStorage).forEach(key => {
-						if (key.startsWith("req-")) {
-							localStorage.removeItem(key);
-						}
-					});
-					this.display();
-				});
-			});
-	}
-
-	displayInfoApirs(containerEl: HTMLElement) {
-		// Render URL table
-		const { URLs } = this.plugin.settings;
-		const ct = containerEl.createEl('div', { cls: 'cocontainer' });
-		if (URLs.length > 0) {
-			const tableContainer = ct.createEl('div', { cls: 'table-container' });
-        
-			const table = tableContainer.createEl('table', { cls: 'api-table' });
-			const thead = table.createEl('thead');
-			const headerRow = thead.createEl('tr');
-			headerRow.createEl('th', { text: 'Name' });
-			headerRow.createEl('th', { text: 'URL' });
-
-			const tbody = table.createEl('tbody');
-			URLs.forEach((u) => {
-				const row = tbody.createEl('tr');
-
-				row.createEl('td', { text: u.Name });
-
-				const urlCell = row.createEl('td');
-				urlCell.createEl('a', { text: u.url.length > 50 ? u.url.substring(0, 50) + "..." : u.url, cls: 'api-url' });
-
-				urlCell.addEventListener('click', async () => {
-					const index = URLs.indexOf(u);
-					URLs.splice(index, 1);
-					await this.plugin.saveSettings();
-					this.display();
-				});
-			});
-		}
-
-		// Render localStorage table
-		containerEl.createEl('div', { cls: 'table-container full-width' });
-		const table = ct.createEl('table', { cls: 'api-table full-width' });
-		const thead = table.createEl('thead');
-		const headerRow = thead.createEl('tr');
-		const hr = headerRow.createEl('th', { text: 'ID' });
-
-		const tbody = table.createEl('tbody');
-		Object.keys(localStorage).forEach(key => {
-			if (key.startsWith("req-")) {
-				const row = tbody.createEl('tr');
-				const idCell = row.createEl('td', { text: key });
-
-				idCell.addEventListener('click', async () => {
-					localStorage.removeItem(key);
-					this.display();
-				});
-			}
-		});
-		// if table is empty
-		if (tbody.children.length === 0) {
-			hr.innerText = 'No response saved';
-		}
-	}
-
-}
