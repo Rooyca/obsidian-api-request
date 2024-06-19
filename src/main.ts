@@ -93,6 +93,7 @@ export default class MainAPIR extends Plugin {
 				let [method, format] = ["GET", "{}"];
 				let [headers, body, reqRepeat] = [Object(), Object(), { "times": 1, "every": 1000 }];
 				const allowedMethods = ["GET", "POST", "PUT", "DELETE"];
+				let render = false;
 
 				for (const line of sourceLines) {
 					const lowercaseLine = line.toLowerCase();
@@ -176,12 +177,14 @@ export default class MainAPIR extends Plugin {
 					} else if (lowercaseLine.includes("properties:")) {
 						// remove all spaces and split by comma
 						properties = line.replace(/properties:/i, "").replace(/\s/g, "").split(",");
-					}
+					} 
 				}
 
 				if (sourceLines.includes("disabled")) {
 					el.createEl("strong", { text: this.settings.DisabledReq });
 					return;
+				} else if (sourceLines.includes("render")) {
+					render = true;
 				}
 
 				for (let i = 0; i < reqRepeat.times; i++) {
@@ -359,7 +362,7 @@ export default class MainAPIR extends Plugin {
 												});
 											} 
 											if (match && typeof val !== "object") {
-												val = "[["+val+"]]"
+												val = "[[" + val + "]]"
 											}
 											existingFrontmatter[propertyName] = val;
 										});
@@ -383,7 +386,8 @@ export default class MainAPIR extends Plugin {
 								if (!show.includes("->")) replacedText = show;
 							}
 
-							el.createEl("pre", { text: replacedText });
+							!render ? el.createEl("pre", { text: replacedText }) : el.innerHTML = parser.parse(sanitizer.SanitizeHtml(replacedText));
+
 							if (reqID) saveToID(reqID, replacedText);
 							addBtnCopy(el, replacedText);
 						}
