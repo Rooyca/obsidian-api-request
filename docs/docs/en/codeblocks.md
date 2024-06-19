@@ -20,6 +20,7 @@ Flags are the way to specify the parameters of our request and also the format i
 | [notify-if](#notify-if) | |
 | [save-to](#save-to) |   |
 | [properties](#properties) | |
+| [render](#render)| false |
 
 ### url
 
@@ -94,6 +95,7 @@ Multiple outputs can be displayed by separating them with a comma.
 url: https://api.chess.com/pub/player/hikaru/stats
 show: chess_daily -> last -> rating, chess_daily -> best -> rating
 format: <p>Last game: {}</p> <strong>Best game: {}</strong>
+render
 ```
 ~~~
 
@@ -133,6 +135,7 @@ Specifies the format in which the response should be displayed. The default valu
 url: https://jsonplaceholder.typicode.com/posts/1
 show: title, body
 format: <h1>{}</h1> <p>{}</p>
+render
 ```
 ~~~
 
@@ -206,6 +209,7 @@ Specifies the number of times the request should be repeated and the interval be
 ```req 
 url: api.coincap.io/v2/rates/bitcoin
 req-repeat: 5@5
+render
 ```
 ~~~
 
@@ -220,6 +224,7 @@ Specifies the condition to trigger a notification. Can be used to monitor a spec
 url: api.coincap.io/v2/rates/bitcoin
 req-repeat: 5@5
 notify-if: data.rateUsd < 69889
+render
 ```
 ~~~
 
@@ -240,7 +245,7 @@ save-to: posts/1.json
 
 !!! warning "To use this flag you need a JSON response and the `show` flag"
 
-Specifies the frontmatter properties to update with the response. The data should be strings separated by commas.
+Specifies the frontmatter properties to update with the response. The data should be strings separated by commas. To set internal links use the `[[..]]` syntax.
 
 ~~~markdown
 ```req 
@@ -249,4 +254,18 @@ show: id, title
 properties: id, title
 ```
 ~~~
+
+### render
+
+If present the response will be rendered as HTML. It's useful when the response is an image or a table. The HTML is sanitized to prevent XSS attacks.
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/photos/1
+show: url
+format: ![img]({})
+render
+```
+~~~
+
 

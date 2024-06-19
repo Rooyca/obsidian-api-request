@@ -20,6 +20,7 @@ Las banderas son la forma de especificar los parámetros de nuestra solicitud y 
 | [notify-if](#notify-if) | |
 | [save-to](#save-to) |   |
 | [properties](#properties) | |
+| [render](#render) | false |
 
 ### url
 
@@ -94,6 +95,7 @@ Se pueden mostrar múltiples salidas separándolas con coma.
 url: https://api.chess.com/pub/player/hikaru/stats
 show: chess_daily -> last -> rating, chess_daily -> best -> rating
 format: <p>Último juego: {}</p> <strong>Mejor juego: {}</strong>
+render
 ```
 ~~~
 
@@ -133,6 +135,7 @@ Especifica el formato en el que se debe mostrar la respuesta. El valor predeterm
 url: https://jsonplaceholder.typicode.com/posts/1
 show: title, body
 format: <h1>{}</h1> <p>{}</p>
+render
 ```
 ~~~
 
@@ -205,6 +208,7 @@ Especifica la cantidad de veces que se debe repetir la solicitud y el intervalo 
 ```req 
 url: api.coincap.io/v2/rates/bitcoin
 req-repeat: 5@5
+render
 ```
 ~~~
 
@@ -219,6 +223,7 @@ Especifica la condición para activar una notificación. Puede usarse para monit
 url: api.coincap.io/v2/rates/bitcoin
 req-repeat: 5@5
 notify-if: data.rateUsd < 69889
+render
 ```
 ~~~
 
@@ -239,7 +244,7 @@ save-to: posts/1.json
 
 !!! warning "Para usar esta bandera necesitas una respuesta de tipo JSON y la bandera `show`"
 
-Especifica las propiedades del frontmatter que se actualizarán con la respuesta. Los datos deben ser cadenas separadas por comas.
+Especifica las propiedades del frontmatter que se actualizarán con la respuesta. Los datos deben ser cadenas separadas por comas. Para establecer enlaces internos, usa la sintaxis `[[..]]`.
 
 ~~~markdown
 ```req 
@@ -248,3 +253,17 @@ show: id, title
 properties: id, title
 ```
 ~~~
+
+### render
+
+Si se especifica, la respuesta se renderizará. El valor predeterminado es `false`. Se puede usar para mostrar imágenes, tablas, etc. La respuesta se saneará antes de renderizarla.
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/photos/1
+show: url
+format: ![img]({})
+render
+```
+~~~
+
