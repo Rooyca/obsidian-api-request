@@ -87,7 +87,7 @@ export default class MainAPIR extends Plugin {
 		try {
 			this.registerMarkdownCodeBlockProcessor("req", async (source, el, ctx) => {
 				const sourceLines = source.split("\n");
-				let [URL, show, saveTo, reqID] = [String(), String(), String(), String()];
+				let [URL, show, saveTo, reqID, resType] = [String(), String(), String(), String(), String()];
 				let [notifyIf, properties] = [[String()], [String()]];
 				// 'format' is not and empty objet, is a string that will be replaced by the response
 				let [method, format] = ["GET", "{}"];
@@ -177,7 +177,9 @@ export default class MainAPIR extends Plugin {
 					} else if (lowercaseLine.includes("properties:")) {
 						// remove all spaces and split by comma
 						properties = line.replace(/properties:/i, "").replace(/\s/g, "").split(",");
-					} 
+					} else if (lowercaseLine.includes("res-type:")) {
+						resType = line.replace(/res-type:/i, "").trim();
+					}
 				}
 
 				if (sourceLines.includes("disabled")) {
@@ -202,7 +204,7 @@ export default class MainAPIR extends Plugin {
 						}
 
 						// Check if the response is not JSON
-						if (!responseData.headers["content-type"].includes("application/json")) {
+						if (!responseData.headers["content-type"].includes("json") && resType !== "json") {
 							try {
 								el.innerHTML = parser.parse(sanitizer.SanitizeHtml(responseData.text));
 							} catch (e) {

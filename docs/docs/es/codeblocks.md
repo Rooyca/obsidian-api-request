@@ -21,6 +21,7 @@ Las banderas son la forma de especificar los parámetros de nuestra solicitud y 
 | [save-to](#save-to) |   |
 | [properties](#properties) | |
 | [render](#render) | false |
+| [res-type](#res-type) | |
 
 ### url
 
@@ -267,3 +268,13 @@ render
 ```
 ~~~
 
+## res-type
+
+Espefica el tipo de respuesta. Si esta bandera no está presente, el plugin intentará adivinar el tipo basado en el tipo de contenido de la respuesta. Esto podría usarse *como una característica opcional de respaldo*.
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/posts/1
+res-type: json
+```
+~~~
