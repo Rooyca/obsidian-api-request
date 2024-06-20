@@ -6,7 +6,7 @@
 // CLEAN UP THIS MESS
 // ---------------------------------------------
 
-import { App, Editor, MarkdownView, Modal, Plugin, Notice, requestUrl, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Plugin, Notice, requestUrl } from 'obsidian';
 import { readFrontmatter, parseFrontmatter } from 'src/functions/frontmatterUtils';
 import { MarkdownParser } from 'src/functions/mdparse';
 import { saveToID, addBtnCopy, replaceOrder, nestedValue, toDocument } from 'src/functions/general';
