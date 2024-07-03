@@ -34,7 +34,6 @@ export function checkGlobalValue(value: string, settings: LoadAPIRSettings) {
 			value = value.replace(match[i], settings.KeyValueCodeblocks.find((obj) => obj.key === key)?.value || "");
 		}
 	}
-	console.log(value)
 	return value;
 }
 
@@ -91,7 +90,7 @@ export default class MainAPIR extends Plugin {
 		try {
 			this.registerMarkdownCodeBlockProcessor("req", async (source, el, ctx) => {
 				const sourceLines = source.split("\n");
-				let [URL, show, saveTo, reqID, resType] = [String(), String(), String(), String(), String()];
+				let [URL, show, saveTo, reqID, resType, maketable] = [String(), String(), String(), String(), String(), String()];
 				let [notifyIf, properties] = [[String()], [String()]];
 				// 'format' is not and empty objet, is a string that will be replaced by the response
 				let [method, format] = ["GET", "{}"];
@@ -183,6 +182,8 @@ export default class MainAPIR extends Plugin {
 						properties = line.replace(/properties:/i, "").replace(/\s/g, "").split(",");
 					} else if (lowercaseLine.includes("res-type:")) {
 						resType = line.replace(/res-type:/i, "").trim();
+					} else if (lowercaseLine.includes("maketable:")) {
+						maketable = line.replace(/maketable:/i, "").trim();
 					}
 				}
 
@@ -307,7 +308,38 @@ export default class MainAPIR extends Plugin {
 														el.createEl("strong", { text: "Error: {..} used on non-array element" });
 													}
 												} else {
-													traverse(current[part], idx + 1);
+													const nextParts = part.split('&').map(p => p.trim());
+													if (nextParts.length > 1) {
+														nextParts.forEach(p => {
+															const subParts = p.split('.').map(sp => sp.trim());
+															let subCurrent = current;
+															subParts.forEach((sp, subIdx) => {
+																if (subCurrent && subCurrent.hasOwnProperty(sp)) {
+																	if (subIdx === subParts.length - 1) {
+																		traverse(subCurrent[sp], idx + 1);
+																	} else {
+																		subCurrent = subCurrent[sp];
+																	}
+																} else {
+																	el.createEl("strong", { text: `Error: property ${sp} does not exist on current object` });
+																}
+															});
+														});
+													} else {
+														const subParts = part.split('.').map(sp => sp.trim());
+														let subCurrent = current;
+														subParts.forEach((sp, subIdx) => {
+															if (subCurrent && subCurrent.hasOwnProperty(sp)) {
+																if (subIdx === subParts.length - 1) {
+																	traverse(subCurrent[sp], idx + 1);
+																} else {
+																	subCurrent = subCurrent[sp];
+																}
+															} else {
+																el.createEl("strong", { text: `Error: property ${sp} does not exist on current object` });
+															}
+														});
+													}
 												}
 											};
 
@@ -317,6 +349,8 @@ export default class MainAPIR extends Plugin {
 
 										temp_show = processNestedObject(responseData.json, parts);
 										show = temp_show;
+
+
 									}
 								} else {
 									for (let i: number = range[0]; i <= range[1]; i++) {
@@ -378,16 +412,44 @@ export default class MainAPIR extends Plugin {
 								const trimmedKey = key.trim();
 								return trimmedKey.includes("->")
 									? nestedValue(responseData, trimmedKey)
-									: JSON.stringify(responseData.json[trimmedKey]);
+									: JSON.stringify(responseData.json[trimmedKey]) || trimmedKey;
 							};
 
-							const values = show.split(",").map(trimAndProcessKey);
+							const values = show.split(",")
+								.map(trimAndProcessKey)
+								.filter((key) => key !== "");
 							let replacedText = replaceOrder(format, values);
 
 							if (replacedText === 'undefined') {
 								show = show.trim();
 								if (show[show.length - 1] === ',') show = show.slice(0, -1);
 								if (!show.includes("->")) replacedText = show;
+							}
+
+							if (maketable) {
+								const titles = maketable.split(",");
+								const table = el.createEl("table");
+								const thead = table.createEl("thead");
+								const tbody = table.createEl("tbody");
+								const trHead = thead.createEl("tr");
+
+								// Create table headers
+								titles.forEach((title) => {
+									const th = trHead.createEl("th");
+									th.createEl("strong", { text: title.trim() });
+								});
+
+								// Create table body rows
+								let trBody = tbody.createEl("tr");
+								values.forEach((value, index) => {
+									if (index % titles.length === 0 && index !== 0) {
+										trBody = tbody.createEl("tr"); // Create a new row after every set of columns
+									}
+									const td = trBody.createEl("td");
+									td.createEl("strong", { text: value.trim() });
+								});
+
+								return;
 							}
 
 							!render ? el.createEl("pre", { text: replacedText }) : el.innerHTML = parser.parse(sanitizer.SanitizeHtml(replacedText));

@@ -34,7 +34,6 @@ export function replaceOrder(stri: string, val) {
 		if (val[index] === undefined) break;
 		replaced += "\n" + stri.replace(/{}/g, val[index++]);
 	}
-
 	return replaced;
 }
 

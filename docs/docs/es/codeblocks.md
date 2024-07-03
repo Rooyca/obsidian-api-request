@@ -22,6 +22,7 @@ Las banderas son la forma de especificar los parámetros de nuestra solicitud y 
 | [properties](#properties) | |
 | [render](#render) | false |
 | [res-type](#res-type) | |
+| [maketable](#maketable)| |
 
 ### url
 
@@ -124,6 +125,16 @@ También es posible iterar sobre un rango especificado de índices del arreglo u
 ```req 
 url: https://jsonplaceholder.typicode.com/users
 show: {0-2-1} -> address -> city
+```
+~~~
+
+To access multiple elements at the same time when using `{..}` use `&` to separate the keys and use `.` to access the values.
+
+~~~markdown
+```req 
+url: http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=rooyca&api_key=API_KEY&format=json&limit=4
+show: recenttracks -> track -> {..} -> name & artist.#text & streamable
+maketable: name, artist, stream
 ```
 ~~~
 
@@ -278,3 +289,17 @@ url: https://jsonplaceholder.typicode.com/posts/1
 res-type: json
 ```
 ~~~
+
+## maketable
+
+Converts the response into a table. It's useful when the response is an array of objects. This flags expects a list of titles separated by commas.
+
+~~~markdown
+```req 
+url: http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=rooyca&api_key=API_KEY&format=json&limit=4
+show: recenttracks -> track -> {..} -> name & artist.#text & streamable
+maketable: name, artist, stream
+```
+~~~
+
+!!! note "In the example above, the response will be converted into a table with the titles `name`, `artist`, and `stream`."
