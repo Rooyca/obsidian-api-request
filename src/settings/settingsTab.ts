@@ -130,6 +130,17 @@ export default class APRSettings extends PluginSettingTab {
 					this.plugin.settings.DisabledReq = value;
 					await this.plugin.saveSettings();
 				}));
+		new Setting(containerEl)
+			.setName('Status-bar text')
+			.setDesc("Text to display in the status bar when there are code blocks (use %d to show the number of blocks)")
+			.addText(text => text
+				.setPlaceholder('Count blocks: %d')
+				.setValue(this.plugin.settings.countBlocksText)
+				.onChange(async (value) => {
+					if (!value.includes("%d")) value = "🗲 %d";
+					this.plugin.settings.countBlocksText = value;
+					await this.plugin.saveSettings();
+				}));
 
 		const codeblock = containerEl.createEl('details');
 		codeblock.createEl('summary', { text: 'Click to Add Key/Value ↴', cls: 'summary-text' });

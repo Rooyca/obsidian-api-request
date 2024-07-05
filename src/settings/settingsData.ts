@@ -10,6 +10,7 @@ export interface LoadAPIRSettings {
 	Key: string;
 	Value: string;
 	KeyValueCodeblocks: object[];
+	countBlocksText: string;
 }
 
 export const DEFAULT_SETTINGS: LoadAPIRSettings = {
@@ -24,4 +25,5 @@ export const DEFAULT_SETTINGS: LoadAPIRSettings = {
 	Key: '',
 	Value: '',
 	KeyValueCodeblocks: [],
+	countBlocksText: 'Count blocks: %d',
 }

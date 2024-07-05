@@ -6,7 +6,7 @@
 // CLEAN UP THIS MESS
 // ---------------------------------------------
 
-import { App, Editor, MarkdownView, Modal, Plugin, Notice, requestUrl } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Plugin, Notice, requestUrl, setIcon, debounce } from 'obsidian';
 import { readFrontmatter, parseFrontmatter } from 'src/functions/frontmatterUtils';
 import { MarkdownParser } from 'src/functions/mdparse';
 import { saveToID, addBtnCopy, replaceOrder, nestedValue, toDocument } from 'src/functions/general';
@@ -78,6 +78,26 @@ export default class MainAPIR extends Plugin {
 	async onload() {
 		console.log('loading APIR');
 		await this.loadSettings();
+
+		async function updateStatusBar() {
+			const statusbar = document.getElementsByClassName("status-bar-item plugin-api-request");
+			while (statusbar[0]) {
+				statusbar[0].parentNode?.removeChild(statusbar[0]);
+			}
+
+			// count the number of code-blocks
+			const markdownContent = this.app.workspace.getActiveViewOfType(MarkdownView)!.getViewData();
+			const codeBlocks = markdownContent.match(/```req/g)?.length || 0;
+			if (codeBlocks > 0) {
+				const item = this.addStatusBarItem();
+
+				const statusText = this.settings.countBlocksText.replace("%d", codeBlocks.toString());
+				item.createEl("span", { text: statusText });
+			}
+		}
+
+		this.registerEvent(this.app.workspace.on('file-open', debounce(updateStatusBar.bind(this), 300)));
+		this.registerEvent(this.app.workspace.on('editor-change', updateStatusBar.bind(this)));
 
 		this.addCommand({
 			id: 'show-response-in-modal',
@@ -406,6 +426,7 @@ export default class MainAPIR extends Plugin {
 										});
 									}
 								}));
+								return;
 							}
 
 							const trimAndProcessKey = (key: string) => {
