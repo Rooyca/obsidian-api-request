@@ -292,7 +292,7 @@ res-type: json
 
 ## maketable
 
-Converts the response into a table. It's useful when the response is an array of objects. This flags expects a list of titles separated by commas.
+Convierte la respuesta en una tabla. Es útil cuando la respuesta es un array de objetos. Esta opción espera una lista de títulos separados por comas.
 
 ~~~markdown
 ```req 
@@ -302,4 +302,4 @@ maketable: name, artist, stream
 ```
 ~~~
 
-!!! note "In the example above, the response will be converted into a table with the titles `name`, `artist`, and `stream`."
+!!! note "En el ejemplo anterior, la respuesta se convertirá en una tabla con los títulos `name`, `artist` y `stream`."

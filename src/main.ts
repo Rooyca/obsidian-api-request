@@ -6,7 +6,7 @@
 // CLEAN UP THIS MESS
 // ---------------------------------------------
 
-import { App, Editor, MarkdownView, Modal, Plugin, Notice, requestUrl, setIcon, debounce } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Plugin, Notice, requestUrl, debounce } from 'obsidian';
 import { readFrontmatter, parseFrontmatter } from 'src/functions/frontmatterUtils';
 import { MarkdownParser } from 'src/functions/mdparse';
 import { saveToID, addBtnCopy, replaceOrder, nestedValue, toDocument } from 'src/functions/general';
@@ -86,7 +86,7 @@ export default class MainAPIR extends Plugin {
 			}
 
 			// count the number of code-blocks
-			const markdownContent = this.app.workspace.getActiveViewOfType(MarkdownView)!.getViewData();
+			const markdownContent = this.app.workspace.getActiveViewOfType(MarkdownView)?.getViewData();
 			const codeBlocks = markdownContent.match(/```req/g)?.length || 0;
 			if (codeBlocks > 0) {
 				const item = this.addStatusBarItem();
@@ -108,7 +108,7 @@ export default class MainAPIR extends Plugin {
 		});
 
 		try {
-			this.registerMarkdownCodeBlockProcessor("req", async (source, el, ctx) => {
+			this.registerMarkdownCodeBlockProcessor("req", async (source, el) => {
 				const sourceLines = source.split("\n");
 				let [URL, show, saveTo, reqID, resType, maketable] = [String(), String(), String(), String(), String(), String()];
 				let [notifyIf, properties] = [[String()], [String()]];
@@ -314,6 +314,8 @@ export default class MainAPIR extends Plugin {
 													if (typeof current === "object") {
 														current = JSON.stringify(current, null, 2);
 													}
+													console.log(typeof current)
+													if (typeof current === 'string') current = encodeURIComponent(current);
 													result += current + ", ";
 													return;
 												}
@@ -374,7 +376,7 @@ export default class MainAPIR extends Plugin {
 									}
 								} else {
 									for (let i: number = range[0]; i <= range[1]; i++) {
-										temp_show += show.replace(numberBracesRegex![0], i.toString()) + ", ";
+										temp_show += show.replace(numberBracesRegex[0], i.toString()) + ", ";
 									}
 									show = temp_show;
 								}
@@ -467,11 +469,13 @@ export default class MainAPIR extends Plugin {
 										trBody = tbody.createEl("tr"); // Create a new row after every set of columns
 									}
 									const td = trBody.createEl("td");
-									td.createEl("strong", { text: value.trim() });
+									td.createEl("strong", { text: decodeURIComponent(value) });
 								});
 
 								return;
 							}
+
+							replacedText = decodeURIComponent(replacedText);
 
 							!render ? el.createEl("pre", { text: replacedText }) : el.innerHTML = parser.parse(sanitizer.SanitizeHtml(replacedText));
 
@@ -511,7 +515,7 @@ export default class MainAPIR extends Plugin {
 			this.addCommand({
 				id: 'response-in-document-' + this.settings.URLs[i]["Name"],
 				name: 'Response for api: ' + this.settings.URLs[i]["Name"],
-				editorCallback: (editor: Editor, view: MarkdownView) => {
+				editorCallback: (editor: Editor) => {
 					const rea = this.settings.URLs[i];
 					toDocument(rea, this.settings.URLs[i]["DataResponse"], editor);
 				}

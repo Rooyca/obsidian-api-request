@@ -39,11 +39,10 @@ The plugin can be installed from within Obsidian.
 - [x] Save response to a file
 - [x] Remove one by one from localStorage
 - [x] Translate documentation
+- [x] Add `render` flag to code-blocks
 - [ ] Inline query from response
 - [ ] Predefined requests
 - [ ] GUI for code-blocks
-- [ ] Add `render` flag to code-blocks
-
 
 ## ❤️ Sponsors
 
