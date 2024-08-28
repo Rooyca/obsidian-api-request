@@ -1,7 +1,7 @@
 {
 	"id": "api-request",
 	"name": "APIRequest",
-	"version": "1.4.0",
+	"version": "1.4.1",
 	"minAppVersion": "0.15.0",
 	"description": "Fetch data from APIs or other sources. Responses in JSON, MD or HTML directly in your notes.",
 	"author": "rooyca",

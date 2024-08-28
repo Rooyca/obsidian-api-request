@@ -118,6 +118,8 @@ export default class MainAPIR extends Plugin {
 				const allowedMethods = ["GET", "POST", "PUT", "DELETE"];
 				let render = false;
 
+				let response_disabled;
+
 				for (const line of sourceLines) {
 					const lowercaseLine = line.toLowerCase();
 					if (lowercaseLine.includes("method:")) {
@@ -185,8 +187,7 @@ export default class MainAPIR extends Plugin {
 						if (sourceLines.includes("disabled")) {
 							const idExists = localStorage.getItem(reqID);
 							if (idExists) {
-								el.createDiv({ text: parser.parse(idExists) });
-								return;
+								response_disabled = parser.parse(idExists);
 							} else {
 								sourceLines.splice(sourceLines.indexOf("disabled"), 1);
 							}
@@ -207,16 +208,25 @@ export default class MainAPIR extends Plugin {
 					}
 				}
 
-				if (sourceLines.includes("disabled")) {
-					el.createEl("strong", { text: this.settings.DisabledReq });
-					return;
-				} else if (sourceLines.includes("render")) {
+				if (sourceLines.includes("render")) {
 					render = true;
-				}
+				};
 
 				for (let i = 0; i < reqRepeat.times; i++) {
 					try {
-						const responseData = await requestUrl({ url: URL, method, headers, body });
+						let responseData;
+
+						if (!response_disabled) {
+							responseData  = await requestUrl({ url: URL, method, headers, body });
+							try {
+								responseData = responseData.json;
+							} catch(e) {
+								console.error(e)
+							}
+						} else {
+							responseData = JSON.parse(response_disabled);
+						}
+
 						// Save to a file
 						if (saveTo) {
 							try {
@@ -228,18 +238,23 @@ export default class MainAPIR extends Plugin {
 							}
 						}
 
-						// Check if the response is not JSON
-						if (!responseData.headers["content-type"].includes("json") && resType !== "json") {
-							try {
-								el.innerHTML = parser.parse(sanitizer.SanitizeHtml(responseData.text));
-							} catch (e) {
-								new Notice("Error: " + e.message);
-								el.innerHTML = "<pre>" + sanitizer.SanitizeHtml(responseData.text) + "</pre>";
-							}
+						try {
+							// Check if the response is not JSON
+							if (!responseData.headers["content-type"].includes("json") && resType !== "json") {
+								try {
+									el.innerHTML = parser.parse(sanitizer.SanitizeHtml(responseData.text));
+								} catch (e) {
+									new Notice("Error: " + e.message);
+									console.log("Here we are!")
+									el.innerHTML = "<pre>" + sanitizer.SanitizeHtml(responseData.text) + "</pre>";
+								}
 
-							if (reqID) saveToID(reqID, responseData.text);
-							addBtnCopy(el, responseData.text);
-							return;
+								if (reqID) saveToID(reqID, responseData.text);
+								addBtnCopy(el, responseData.text);
+								return;
+							}
+						} catch (e) {
+							console.error(e.message);
 						}
 
 						if (notifyIf) {
@@ -248,7 +263,7 @@ export default class MainAPIR extends Plugin {
 							const value = notifyIf[2]
 							const int_value = parseInt(value);
 
-							const jsonPathValue = jsonPath.split(".").reduce((acc, cv) => acc[cv], responseData.json);
+							const jsonPathValue = jsonPath.split(".").reduce((acc, cv) => acc[cv], responseData);
 							const lastValue = jsonPath.split(".").pop();
 							if (symbol === ">" && jsonPathValue > int_value) {
 								new Notice("APIR: " + lastValue + " is greater than " + int_value);
@@ -268,7 +283,7 @@ export default class MainAPIR extends Plugin {
 								el.createEl("strong", { text: "Error: Properties are not allowed without SHOW" });
 								return;
 							}
-							el.innerHTML = "<pre>" + JSON.stringify(responseData.json, null, 2) + "</pre>";
+							el.innerHTML = "<pre>" + JSON.stringify(responseData, null, 2) + "</pre>";
 							if (reqID) saveToID(reqID, el.innerText);
 							addBtnCopy(el, el.innerText);
 						} else {
@@ -298,8 +313,8 @@ export default class MainAPIR extends Plugin {
 								const numberBracesRegex = show.match(num_braces_regx);
 
 								if (!numberBracesRegex) {
-									if (Array.isArray(responseData.json)) {
-										for (let i = 0; i < responseData.json.length; i++) {
+									if (Array.isArray(responseData)) {
+										for (let i = 0; i < responseData.length; i++) {
 											temp_show += show.replace(in_braces_regx, i.toString()) + ", ";
 										}
 										show = temp_show;
@@ -369,7 +384,7 @@ export default class MainAPIR extends Plugin {
 											return result;
 										};
 
-										temp_show = processNestedObject(responseData.json, parts);
+										temp_show = processNestedObject(responseData, parts);
 										show = temp_show;
 
 
@@ -403,8 +418,8 @@ export default class MainAPIR extends Plugin {
 
 									if (trimmedKey.includes("->")) {
 										val = nestedValue(responseData, trimmedKey);
-									} else if (responseData.json && responseData.json[trimmedKey]) {
-										val = responseData.json[trimmedKey];
+									} else if (responseData && responseData[trimmedKey]) {
+										val = responseData[trimmedKey];
 									}
 
 									let propertyName = propertiesArray[index].trim();
@@ -435,7 +450,7 @@ export default class MainAPIR extends Plugin {
 								const trimmedKey = key.trim();
 								return trimmedKey.includes("->")
 									? nestedValue(responseData, trimmedKey)
-									: JSON.stringify(responseData.json[trimmedKey]) || trimmedKey;
+									: JSON.stringify(responseData[trimmedKey]) || trimmedKey;
 							};
 
 							const values = show.split(",")
@@ -479,7 +494,11 @@ export default class MainAPIR extends Plugin {
 
 							!render ? el.createEl("pre", { text: replacedText }) : el.innerHTML = parser.parse(sanitizer.SanitizeHtml(replacedText));
 
-							if (reqID) saveToID(reqID, replacedText);
+							// check if reqID doesnt already exists on localStorage
+							const idExists = localStorage.getItem(reqID);
+							if (!idExists) {
+								if (reqID) saveToID(reqID, JSON.stringify(responseData));
+							}
 							addBtnCopy(el, replacedText);
 						}
 					} catch (error) {
