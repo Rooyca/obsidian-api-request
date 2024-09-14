@@ -218,13 +218,26 @@ export default class MainAPIR extends Plugin {
 
 						if (!response_disabled) {
 							responseData  = await requestUrl({ url: URL, method, headers, body });
-							try {
-								responseData = responseData.json;
-							} catch(e) {
-								console.error(e)
-							}
 						} else {
-							responseData = JSON.parse(response_disabled);
+							responseData = { json: JSON.parse(response_disabled) };
+						}
+
+						try {
+							// Check if the response is not JSON
+							if (!responseData.headers["content-type"].includes("json") && resType !== "json") {
+								try {
+									el.innerHTML = parser.parse(sanitizer.SanitizeHtml(responseData.text));
+								} catch (e) {
+									new Notice("Error: " + e.message);
+									el.innerHTML = "<pre>" + sanitizer.SanitizeHtml(responseData.text) + "</pre>";
+								}
+
+								if (reqID) saveToID(reqID, responseData.text);
+								addBtnCopy(el, responseData.text);
+								return;
+							}
+						} catch (e) {
+							console.error(e.message);
 						}
 
 						// Save to a file
@@ -238,32 +251,13 @@ export default class MainAPIR extends Plugin {
 							}
 						}
 
-						try {
-							// Check if the response is not JSON
-							if (!responseData.headers["content-type"].includes("json") && resType !== "json") {
-								try {
-									el.innerHTML = parser.parse(sanitizer.SanitizeHtml(responseData.text));
-								} catch (e) {
-									new Notice("Error: " + e.message);
-									console.log("Here we are!")
-									el.innerHTML = "<pre>" + sanitizer.SanitizeHtml(responseData.text) + "</pre>";
-								}
-
-								if (reqID) saveToID(reqID, responseData.text);
-								addBtnCopy(el, responseData.text);
-								return;
-							}
-						} catch (e) {
-							console.error(e.message);
-						}
-
 						if (notifyIf) {
 							const jsonPath = notifyIf[0];
 							const symbol = notifyIf[1];
 							const value = notifyIf[2]
 							const int_value = parseInt(value);
 
-							const jsonPathValue = jsonPath.split(".").reduce((acc, cv) => acc[cv], responseData);
+							const jsonPathValue = jsonPath.split(".").reduce((acc, cv) => acc[cv], responseData.json);
 							const lastValue = jsonPath.split(".").pop();
 							if (symbol === ">" && jsonPathValue > int_value) {
 								new Notice("APIR: " + lastValue + " is greater than " + int_value);
@@ -283,7 +277,7 @@ export default class MainAPIR extends Plugin {
 								el.createEl("strong", { text: "Error: Properties are not allowed without SHOW" });
 								return;
 							}
-							el.innerHTML = "<pre>" + JSON.stringify(responseData, null, 2) + "</pre>";
+							el.innerHTML = "<pre>" + JSON.stringify(responseData.json, null, 2) + "</pre>";
 							if (reqID) saveToID(reqID, el.innerText);
 							addBtnCopy(el, el.innerText);
 						} else {
@@ -313,8 +307,8 @@ export default class MainAPIR extends Plugin {
 								const numberBracesRegex = show.match(num_braces_regx);
 
 								if (!numberBracesRegex) {
-									if (Array.isArray(responseData)) {
-										for (let i = 0; i < responseData.length; i++) {
+									if (Array.isArray(responseData.json)) {
+										for (let i = 0; i < responseData.json.length; i++) {
 											temp_show += show.replace(in_braces_regx, i.toString()) + ", ";
 										}
 										show = temp_show;
@@ -329,7 +323,6 @@ export default class MainAPIR extends Plugin {
 													if (typeof current === "object") {
 														current = JSON.stringify(current, null, 2);
 													}
-													console.log(typeof current)
 													if (typeof current === 'string') current = encodeURIComponent(current);
 													result += current + ", ";
 													return;
@@ -384,7 +377,7 @@ export default class MainAPIR extends Plugin {
 											return result;
 										};
 
-										temp_show = processNestedObject(responseData, parts);
+										temp_show = processNestedObject(responseData.json, parts);
 										show = temp_show;
 
 
@@ -418,8 +411,8 @@ export default class MainAPIR extends Plugin {
 
 									if (trimmedKey.includes("->")) {
 										val = nestedValue(responseData, trimmedKey);
-									} else if (responseData && responseData[trimmedKey]) {
-										val = responseData[trimmedKey];
+									} else if (responseData.json && responseData.json[trimmedKey]) {
+										val = responseData.json[trimmedKey];
 									}
 
 									let propertyName = propertiesArray[index].trim();
@@ -450,7 +443,7 @@ export default class MainAPIR extends Plugin {
 								const trimmedKey = key.trim();
 								return trimmedKey.includes("->")
 									? nestedValue(responseData, trimmedKey)
-									: JSON.stringify(responseData[trimmedKey]) || trimmedKey;
+									: JSON.stringify(responseData.json[trimmedKey]) || trimmedKey;
 							};
 
 							const values = show.split(",")
