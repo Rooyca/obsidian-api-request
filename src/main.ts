@@ -337,6 +337,10 @@ export default class MainAPIR extends Plugin {
 													} else {
 														el.createEl("strong", { text: "Error: {..} used on non-array element" });
 													}
+												} else if (part === "{gk}") {
+													Object.keys(current).forEach((key) => {
+														traverse(key, idx + 1);
+													});
 												} else {
 													const nextParts = part.split('&').map(p => p.trim());
 													if (nextParts.length > 1) {
