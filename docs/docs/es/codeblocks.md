@@ -128,6 +128,24 @@ show: {0-2-1} -> address -> city
 ```
 ~~~
 
+Puedes acceder al último elemento usando `{-1}`...
+
+~~~markdown
+```req
+url:https://api.modrinth.com/v2/project/distanthorizons
+show: game_versions -> {-1}
+```
+~~~
+
+... o obtener la cantidad de elementos usando `{len}`.
+
+~~~markdown
+```req
+url:https://api.modrinth.com/v2/project/distanthorizons
+show: game_versions -> {len}
+```
+~~~
+
 To access multiple elements at the same time when using `{..}` use `&` to separate the keys and use `.` to access the values.
 
 ~~~markdown
