@@ -127,6 +127,24 @@ show: {0-2-1} -> address -> city
 ```
 ~~~
 
+您可以使用 `{-1}` 访问最后一个元素...
+
+~~~markdown
+```req
+url:https://api.modrinth.com/v2/project/distanthorizons
+show: game_versions -> {-1}
+```
+~~~
+
+...或者使用 `{len}` 获取数组的长度。
+
+~~~markdown
+```req
+url:https://api.modrinth.com/v2/project/distanthorizons
+show: game_versions -> {len}
+```
+~~~
+
 使用 `{..}` 时，若要同时访问多个元素，请使用 `&` 分隔键，并使用 `.` 访问值。
 
 ~~~markdown
