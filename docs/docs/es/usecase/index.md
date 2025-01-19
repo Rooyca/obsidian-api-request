@@ -77,7 +77,7 @@ render
 ```
 ~~~
 
-![data-rendering](/en/usecase/data-rendering.jpg)
+![data-rendering](./data-rendering.jpg)
 
 ## Obtener Tareas de [todoist](https://todoist.com/)
 

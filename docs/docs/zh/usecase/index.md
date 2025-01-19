@@ -75,7 +75,7 @@ render
 ```
 ~~~
 
-![data-rendering](data-rendering.jpg)
+![data-rendering](./data-rendering.jpg)
 
 ## 从 [todoist](https://todoist.com/) 获取 TODOS
 
