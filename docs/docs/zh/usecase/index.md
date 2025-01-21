@@ -1,10 +1,8 @@
-# Ejemplos de uso
+# 用例
 
-A collection of use cases for this plugin. **If you have a one, please share it with us.**
-Una colección ejemplos de uso para este plugin. **Si tienes uno, por favor compártelo con nosotros.**
+此插件的用例集合。 **如果您有，请与我们分享。**
 
-
-## Renderizar Markdown
+## 渲染 Markdown
 
 ~~~makdown
 ```req
@@ -12,7 +10,7 @@ url: https://raw.githubusercontent.com/Rooyca/Rooyca/main/README.md
 ```
 ~~~
 
-## Ver el precio de BITCOIN (o cualquier criptomoneda)
+## 检查比特币（或任何加密货币）价格
 
 ~~~makdown
 ```req 
@@ -23,7 +21,7 @@ show: data -> rateUsd
 
 > 64992.8972508856324769
 
-Si queremos repetir esta solicitud 100 veces cada 5 segundos, podemos hacerlo de la siguiente manera:
+如果我们想每 5 秒重复此请求 100 次，我们可以这样做：
 
 ~~~makdown
 ```req 
@@ -33,7 +31,7 @@ req-repeat: 100@5
 ```
 ~~~
 
-Si deseamos llevar esto un paso más allá y recibir una notificación cuando el precio supere los 65000, podemos hacerlo de la siguiente manera:
+如果我们想更进一步，在价格超过 65000 时收到通知，我们可以这样做：
 
 ~~~makdown
 ```req 
@@ -44,9 +42,9 @@ notify-if: data.rateUsd > 65000
 ```
 ~~~
 
-!!! warning "Ten presente el uso de `data.rateUsd` en lugar de `data -> rateUsd`"
+!!! warning "请注意使用 `data.rateUsd` 而不是 `data -> rateUsd`"
 
-## Obtener el clima
+## 获取天气
 
 ~~~makdown
 ```req
@@ -55,7 +53,7 @@ show: main -> temp
 ```
 ~~~
 
-## Buscar peliculas
+## 搜索电影
 
 ~~~makdown
 ```req
@@ -64,9 +62,9 @@ show: results -> {..} -> title
 ```
 ~~~
 
-!!! info "Nota el uso de `{{this.title}}`. Esta es una característica que te permite pasar propiedades del front-matter."
+!!! info "请注意使用 `{{this.title}}`。此功能允许您传递前置属性。"
 
-## Renderizar datos
+## 渲染数据
 
 ~~~makdown
 ```req
@@ -79,7 +77,7 @@ render
 
 ![data-rendering](./data-rendering.jpg)
 
-## Obtener Tareas de [todoist](https://todoist.com/)
+## 从 [todoist](https://todoist.com/) 获取 TODOS
 
 ~~~makdown
 ```req
@@ -92,8 +90,8 @@ render
 ```
 ~~~
 
-!!! warning "Esto guardará la respuesta en localStorage bajo la clave `req-todos`"
+!!! warning "这将把响应保存在 localStorage 中的键 `req-todos` 下"
 
-## Tu caso de uso
+## 您的用例
 
-> **Si deseas compartir tu caso de uso, por favor siéntete libre de abrir una PR o un [Issue](https://github.com/Rooyca/obsidian-api-request/issues/new/choose)**
+> **如果您想分享您的用例，请随时打开 PR 或 [Issue](https://github.com/Rooyca/obsidian-api-request/issues/new/choose)。**
