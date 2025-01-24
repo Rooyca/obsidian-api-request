@@ -586,8 +586,8 @@ class ShowOutputModal extends Modal {
 		};
 
 		const parseAndCreate = (data: object) => (key: string) => {
-			const value = DataResponse.includes("->") ? nestedValue(data, key) : data[key];
-			contentEl.createEl('b', { text: key + " : " + JSON.stringify(value, null, 2) });
+			const value = DataResponse.includes("->") ? nestedValue(data, key) : data.json?.[key];
+			contentEl.createEl('b', { text: `${key} : ${JSON.stringify(value, null, 2)}` });
 		};
 
 		const requestOptions = {
