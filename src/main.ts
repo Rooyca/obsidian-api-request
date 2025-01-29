@@ -587,7 +587,16 @@ class ShowOutputModal extends Modal {
 
 		const parseAndCreate = (data: object) => (key: string) => {
 			const value = DataResponse.includes("->") ? nestedValue(data, key) : data.json?.[key];
-			contentEl.createEl('b', { text: `${key} : ${JSON.stringify(value, null, 2)}` });
+			contentEl.createEl('b', { text: key });
+
+			let textValue;
+			if (typeof value === "string") {
+				textValue = value;
+			} else {
+				textValue = JSON.stringify(value, null, 2);
+			}
+
+			contentEl.createEl('textarea', { text: textValue, cls: 'modal_textarea' });
 		};
 
 		const requestOptions = {
@@ -603,7 +612,7 @@ class ShowOutputModal extends Modal {
 					const DataResponseArray = DataResponse.split(",");
 					DataResponseArray.forEach(parseAndCreate(data));
 				} else {
-					contentEl.createEl('b', { text: JSON.stringify(data.json, null, 2) });
+					contentEl.createEl('b', { text: JSON.stringify(data.json, null, 2), cls: 'modal_textarea' });
 				}
 			})
 			.catch(handleError);

@@ -34,3 +34,9 @@ nav:
       - bloques de código: es/codeblocks.md
       - configuraciones: es/settings.md
       - ejemplos de uso: es/usecase
+  - 中文:
+    - 概述: zh/index.md
+    - 用法: 
+        - 代码块: zh/codeblocks.md
+        - 设置: zh/settings.md
+        - 用例: zh/usecase
