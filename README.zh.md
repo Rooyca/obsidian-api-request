@@ -5,14 +5,12 @@
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/rooyca/obsidian-api-request?logo=github&color=ee8449&style=flat-square)](https://github.com/rooyca/obsidian-api-request/releases/latest)
 <img alt="GitHub Release" src="https://img.shields.io/github/downloads/rooyca/obsidian-api-request/total?logo=github&&color=ee8449&style=flat-square">
 
-[![Spanish](https://img.shields.io/badge/Spanish-8A2BE2)](README.es.md)
+[![Español](https://img.shields.io/badge/Español-8A2BE2)](README.es.md)
 [![English](https://img.shields.io/badge/English-8A2BE2)](README.md)
 
 
 这个[Obsidian](https://obsidian.md/)插件能让用户直接在笔记中进行 HTTP 请求，并在代码块、模式窗口中显示响应，或直接将其粘贴到活动文档中。
 
-
-![req_img](showcase_1.gif)
 
 ## 🚀 Installation
 
@@ -30,18 +28,15 @@ The plugin can be installed from within Obsidian.
 
 ### [Read the docs](https://rooyca.github.io/obsidian-api-request/)
 
-![showcase](showcase_2.gif)
-
 ## ✅ To-do
 
-- [x] Add more request types (POST, PUT, DELETE)
-- [x] Add support for authentication
-- [x] Add customization for modal output
-- [x] Save response to a file
+- [ ] Translate documentation
+- [x] Data re-usage (`{{ls.UUID>JSONPath}}` syntax, where `ls` stands for `localStorage`)
+- [x] Support for comments using `#` or `//` syntax 
 - [ ] Inline query from response
-- [ ] Predefined requests
-- [ ] GUI for code-blocks
-- [x] Remove one by one from localStorage
+- [ ] Add tests (!!!)
+- [ ] Re-implement `repeat` flag (repeat requests X times or every X seconds)
+- [ ] Re-implement `properties` flag (specifies the frontmatter properties to update with the response)
 
 ## ❤️ Sponsors
 

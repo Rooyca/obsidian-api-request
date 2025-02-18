@@ -1,10 +1,10 @@
 # 👨🏻‍💻 Codeblocks
 
-The `codeblock` is a versatile block that can be used to write code in different languages. In this case, we will use it to make requests.
+The `codeblock` is a versatile block that can be used to write code in different languages. In this case, we will use it to make API requests.
 
 ## 🏳️ Flags
 
-Flags are the way to specify the parameters of our request and also the format in which we want our response.
+Flags are the way to specify the parameters of our request.
 
 | Flag         | Default  |
 | ------------| ---------|
@@ -13,23 +13,20 @@ Flags are the way to specify the parameters of our request and also the format i
 | [body](#body) |         |
 | [headers](#headers) |   |
 | [show](#show) | ALL     |
-| [format](#format) | `{}` |
-| [req-id](#req-id) | req-general |
+| [req-uuid](#req-uuid) | req-general |
 | [disabled](#disabled) | |
-| [req-repeat](#req-repeat) | 1t@1s |
-| [notify-if](#notify-if) | |
-| [save-to](#save-to) |   |
+| [save-as](#save-as) |   |
+| [auto-update](#auto-update) | |
+| [format](#format) | |
 | [properties](#properties) | |
-| [render](#render)| false |
-| [res-type](#res-type)| |
-| [maketable](#maketable)| |
 
 ### url
 
-Is the only **required** flag. It specifies the endpoint of the request. Variables defined in the `frontmatter` can be used.
+Is the only **required** flag. It specifies the endpoint of the request.
 
 ~~~markdown
 ```req 
+# this is just a comment
 url: https://jsonplaceholder.typicode.com/users/{{this.id}}
 ```
 ~~~
@@ -39,7 +36,7 @@ url: https://jsonplaceholder.typicode.com/users/{{this.id}}
 
 ### method
 
-Specifies the request method. The default value is `GET` and the available values are:
+Specifies the request method. The default value is `GET` and the available methods are:
 
 - GET
 - POST
@@ -55,21 +52,21 @@ method: post
 
 ### body
 
-Specifies the body of the request. The default value is an empty object. The data should be in JSON format with double quotes separating the keys and values with a colon and space. Variables defined in the `frontmatter` can be used.
+Specifies the body of the request. The default value is an empty object. The data should be in JSON format, separating key and value with a colon plus space (`, `).
 
 ~~~markdown
 ```req 
 url: https://jsonplaceholder.typicode.com/posts
 method: post
-body: {"title": {{this.title}}, "body": "bar", "userId": 1}
+body: {"title": {{this.filename}}, "body": "bar", "userId": 1}
 ```
 ~~~
 
-!!! note "Where `{{this.title}}` is a variable (`title`) defined in the frontmatter."
+!!! note "Where `{{this.filename}}` is the name of the working file."
 
 ### headers
 
-Specifies the headers of the request. The default value is an empty object. The data should be in JSON format with double quotes separating the keys and values with a colon and space. Variables defined in the `frontmatter` can be used.
+Specifies the headers of the request. The default value is an empty object. The data should be in JSON format, separating key and value with a colon plus space (`, `).
 
 ~~~markdown
 ```req 
@@ -81,117 +78,90 @@ headers: {"Content-type": "application/json; charset=UTF-8"}
 
 ### show
 
-Specifies the response data to display. Accessing nested objects is done using a right arrow `->`. The default value is `ALL`.
+Specifies the response data to display. See [JSONPath examples](https://github.com/JSONPath-Plus/JSONPath?tab=readme-ov-file#syntax-through-examples), or try the online tool by [jsonpath-plus](https://jsonpath-plus.github.io/JSONPath/demo/).
+
 
 ~~~markdown
 ```req
 url: https://api.chess.com/pub/player/hikaru/stats
-show: chess_daily -> last -> rating
+show: $['chess_daily']['last']['rating']
 ```
 ~~~
 
-Multiple outputs can be displayed by separating them with a comma.
+Multiple outputs can be displayed by using `[]`.
 
 ~~~markdown
 ```req
 url: https://api.chess.com/pub/player/hikaru/stats
-show: chess_daily -> last -> rating, chess_daily -> best -> rating
-format: <p>Last game: {}</p> <strong>Best game: {}</strong>
-render
+show: $.chess_daily[last,best].rating
 ```
 ~~~
 
-Looping over an array is also possible using `{..}`. The following example retrieves the city from all users.
+Looping over an array is also possible. The following example retrieves the city from all users.
 
 ~~~markdown
 ```req 
 url: https://jsonplaceholder.typicode.com/users
-show: {..} -> address -> city
+show: $..address.city
 ```
 ~~~
 
-Looping over a specified number of elements of the array is also possible using `{n..n}`.
+Looping over a specified number of elements of the array is also possible.
 
 ~~~markdown
 ```req 
 url: https://jsonplaceholder.typicode.com/users
-show: {0..2} -> address -> city
+show: $..[:3].address.city
 ```
 ~~~
 
-It's also possible to loop over a specified range of indexes of the array using `{n-n-n}`.
+It's also possible to loop over a specified range of indexes of the array.
 
 ~~~markdown
 ```req 
 url: https://jsonplaceholder.typicode.com/users
-show: {0-2-1} -> address -> city
+show: $..[3,2,6].address.city
 ```
 ~~~
 
-You can access the last element using `{-1}`...
+You can access the last element using `(@.length-1)` or just `[-1:]`.
 
 ~~~markdown
 ```req
-url:https://api.modrinth.com/v2/project/distanthorizons
-show: game_versions -> {-1}
+url: https://api.modrinth.com/v2/project/distanthorizons
+show: $.game_versions[(@.length-1)]
 ```
 ~~~
 
-... or get the length of the array using `{len}`.
-
-~~~markdown
-```req
-url:https://api.modrinth.com/v2/project/distanthorizons
-show: game_versions -> {len}
-```
-~~~
-
-To access multiple elements at the same time when using `{..}` use `&` to separate the keys and use `.` to access the values.
+To access multiple elements at the same time.
 
 ~~~markdown
 ```req 
 url: http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=rooyca&api_key=API_KEY&format=json&limit=4
-show: recenttracks -> track -> {..} -> name & artist.#text & streamable
-maketable: name, artist, stream
+show: $..recenttracks.track[0:][streamable,name,artist]
 ```
 ~~~
 
-### format
 
-Specifies the format in which the response should be displayed. The default value is `{}`. It can be any string (including `markdown` and `html`). If more than one output is specified, more then one format should be specified, otherwise, the same format will be applied to all outputs.
+### req-uuid
 
-~~~markdown
-```req 
-url: https://jsonplaceholder.typicode.com/posts/1
-show: title, body
-format: <h1>{}</h1> <p>{}</p>
-render
-```
-~~~
-
-!!! note "In this example, first `{}` will be replaced by the title, and second `{}` will be replaced by the body."
-
-
-### req-id
-
-Specifies the id of the request. The default value is `req-general`. This is useful when we want to store the response in `localStorage` and use it in other blocks or notes.
+Specifies the unique identifier of the request. This is useful when we want to store the response in `localStorage` and use it in other blocks or notes.
 
 
 ~~~markdown
 ```req 
 url: https://jsonplaceholder.typicode.com/users/1
-show: name
-req-id: name
+show: $.name
+req-uuid: name
 ```
 ~~~
 
-Stored responses can be accessed using the `req-id` with the `disabled` flag (which won't trigger a new request).
+Stored responses can be accessed using the `req-uuid` (which won't trigger a new request).
 
 ~~~markdown
 ```req 
 url: https://jsonplaceholder.typicode.com/users/1
-req-id: name
-disabled
+req-uuid: name
 ```
 ~~~
 
@@ -199,11 +169,11 @@ Responses can also be accessed using [dataview](https://blacksmithgu.github.io/d
 
 ~~~markdown
 ```dataview
-dv.paragraph(localStorage.getItem("req-name"))
+dv.paragraph(localStorage.getItem("req-UUID"))
 ```
 ~~~
 
-!!! info "Is mandatory to use `req-` before whatever you defined in `req-id` flag."
+!!! info "Is mandatory to use `req-` before whatever you defined in `req-uuid` flag."
 
 To remove responses from localStorage, run:
 
@@ -213,112 +183,69 @@ localStorage.removeItem("req-name")
 ```
 ~~~
 
-To remove all responses, go to settings and click on the `Clear ID's` button.
+To remove responses, go to settings and click over the response you want to delete.
 
 ### disabled
 
-Disables the request. If a `req-id` is specified, APIR will check for the response in `localStorage`. If it's not found, it will make a new request and store it. After that, APIR will use the stored response.
+Disables the request. The codeblock won't be executed.
 
 ~~~markdown
 ```req 
 url: https://jsonplaceholder.typicode.com/users/1
-show: name
-req-id: name
+show: $.name
+req-uuid: name
 disabled
 ```
 ~~~
 
-### req-repeat
-
-!!! warning "This only works with JSON responses"
-
-Specifies the number of times the request should be repeated and the interval between each repetition. The default value is `1@1` (read as `X time(s) every X second(s)`).
-
-
-~~~markdown
-```req 
-url: api.coincap.io/v2/rates/bitcoin
-req-repeat: 5@5
-render
-```
-~~~
-
-### notify-if
-
-!!! warning "This only works with JSON responses"
-
-Specifies the condition to trigger a notification. Can be used to monitor a specific value. The path syntax used to access nested objects varies from the `show` flag, here dots are used instead of arrows and not spaces are allowed in the path.
-
-~~~markdown
-```req 
-url: api.coincap.io/v2/rates/bitcoin
-req-repeat: 5@5
-notify-if: data.rateUsd < 69889
-render
-```
-~~~
-
-!!! note "In the example above, a notification will be triggered everytime the value of `data.rateUsd` is less than `69889`."
-
-### save-to
+### save-as
 
 Specifies the path to save the response. It'll save the entire response. A file extension is required. It won't create directories.
 
 ~~~markdown
 ```req 
 url: https://jsonplaceholder.typicode.com/posts/1
-save-to: posts/1.json
+save-as: posts/1.json
 ```
 ~~~
 
-### properties
+## auto-update
+
+If present, the codeblock will automatically update the response every time is possible. This is only needed when using the flag `req-uuid`, because the default behavior of the codeblock is to run every time the note is loaded.
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/posts/1
+req-uuid: firstPost
+auto-update
+save-as: posts/1.json
+```
+~~~
+
+## format
+
+Specifies the format in which the response should be displayed. It can be any string (including `html`). If more than one output is specified, more then one format should be specified, otherwise it'd just render the first output.
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/posts/1
+show: $.[title,body]
+format: <h1>{}</h1> <p>{}</p>
+```
+~~~
+
+!!! note "In this example, first `{}` will be replaced with the *title*, and second `{}` will be replaced with the *body*."
+
+## properties
 
 !!! warning "To use this flag you need a JSON response and the `show` flag"
 
-Specifies the frontmatter properties to update with the response. The data should be strings separated by commas. To set internal links use the `[[..]]` syntax.
+Specifies the frontmatter properties to update with the response. The data should be strings separated by commas. To set internal links use the this `[[..]]` syntax.
 
 ~~~markdown
 ```req 
 url: https://jsonplaceholder.typicode.com/posts/1
-show: id, title
+show: $.[id,title]
 properties: id, title
 ```
 ~~~
-
-### render
-
-If present the response will be rendered as HTML. It's useful when the response is an image or a table. The HTML is sanitized to prevent XSS attacks.
-
-~~~markdown
-```req 
-url: https://jsonplaceholder.typicode.com/photos/1
-show: url
-format: ![img]({})
-render
-```
-~~~
-
-## res-type
-
-Specifies the type of the response. If this flag is not present the plugin will try to guess the type based on the response content-type. This could be used *as an optional fallback feature*.
-
-~~~markdown
-```req 
-url: https://jsonplaceholder.typicode.com/posts/1
-res-type: json
-```
-~~~
-
-## maketable
-
-Converts the response into a table. It's useful when the response is an array of objects. This flags expects a list of titles separated by commas.
-
-~~~markdown
-```req 
-url: http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=rooyca&api_key=API_KEY&format=json&limit=4
-show: recenttracks -> track -> {..} -> name & artist.#text & streamable
-maketable: name, artist, stream
-```
-~~~
-
-!!! note "In the example above, the response will be converted into a table with the titles `name`, `artist`, and `stream`."

@@ -5,8 +5,8 @@
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/rooyca/obsidian-api-request?logo=github&color=ee8449&style=flat-square)](https://github.com/rooyca/obsidian-api-request/releases/latest)
 <img alt="GitHub Release" src="https://img.shields.io/github/downloads/rooyca/obsidian-api-request/total?logo=github&&color=ee8449&style=flat-square">
 
-[![Inglés](https://img.shields.io/badge/Inglés-8A2BE2)](README.md)
-[![Chino](https://img.shields.io/badge/Chino-8A2BE2)](README.zh.md)
+[![English](https://img.shields.io/badge/English-8A2BE2)](README.md)
+[![中文](https://img.shields.io/badge/中文-8A2BE2)](README.zh.md)
 
 Este plugin para [Obsidian](https://obsidian.md/) permite a los usuarios realizar solicitudes HTTP desde sus notas y mostrar la respuesta en un bloque de código, una ventana modal o pegarla directamente en su documento actual.
 
@@ -34,14 +34,9 @@ Este plugin se puede instalar desde Obsidian.
 
 - [x] Añadir más tipos de solicitudes (POST, PUT, DELETE)
 - [x] Añadir soporte para autenticación
-- [x] Añadir personalización para la salida modal
 - [x] Guardar la respuesta en un archivo
 - [x] Eliminar uno a uno del localStorage
-- [x] Traducir la documentación
-- [ ] Consultas inline de la respuesta de una solicitud
-- [ ] Solicitudes predefinidas
-- [ ] GUI para bloques de código
-- [ ] Añadir la bandera `render` a los bloques de código
+- [ ] Traducir la documentación
 
 ## ❤️ Patrocinadores
 

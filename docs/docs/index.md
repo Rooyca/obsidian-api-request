@@ -6,5 +6,4 @@
 
 > [![Español](https://img.shields.io/badge/Español-8A2BE2)](es/index.md)
 > [![English](https://img.shields.io/badge/English-8A2BE2)](en/index.md)
-
-![req_img](https://raw.githubusercontent.com/Rooyca/obsidian-api-request/master/showcase_1.gif)
+> [![中文](https://img.shields.io/badge/中文-8A2BE2)](zh/index.md) 

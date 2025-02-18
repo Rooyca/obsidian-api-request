@@ -26,11 +26,14 @@ nav:
     - Overview: en/index.md
     - Usage:
       - codeblocks: en/codeblocks.md
-      - settings: en/settings.md
       - usecase: en/usecase
   - Español:
     - Inicio: es/index.md
     - Uso:
       - bloques de código: es/codeblocks.md
-      - configuraciones: es/settings.md
       - ejemplos de uso: es/usecase
+  - 中文:
+    - 概述: zh/index.md
+    - 用法: 
+        - 代码块: zh/codeblocks.md
+        - 用例: zh/usecase
