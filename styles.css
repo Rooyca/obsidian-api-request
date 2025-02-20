@@ -95,3 +95,13 @@
     list-style: none;
 }
 
+.modal_textarea {
+  width: 100%;
+  min-height: 60px;
+  border: none; 
+  outline: none;
+  padding: 8px; 
+  font-size: 16px;
+  margin-top: 10px;
+}
+
