@@ -1,6 +1,6 @@
 {
 	"name": "api-request",
-	"version": "1.4.6",
+	"version": "2.0.0",
 	"description": "Fetch data from APIs or other sources. Responses in JSON, MD or HTML directly in your notes.",
 	"main": "main.js",
 	"scripts": {
@@ -20,5 +20,8 @@
 		"obsidian": "latest",
 		"tslib": "2.4.0",
 		"typescript": "4.7.4"
+	},
+	"dependencies": {
+		"jsonpath-plus": "^10.2.0"
 	}
 }

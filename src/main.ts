@@ -1,67 +1,141 @@
-// ⚠️ MESSY CODE AHEAD ⚠️
-// PROCEDE UNDER YOUR OWN RISK
-// DON'T JUDGE ME... TOO MUCH
-// ---------------------------------------------
-// == TODO ==
-// CLEAN UP THIS MESS
-// ---------------------------------------------
+import {
+	MarkdownView,
+	Plugin,
+	Notice,
+	requestUrl,
+	debounce,
+} from "obsidian";
+import {
+	readFrontmatter,
+	parseFrontmatter,
+} from "src/functions/frontmatterUtils";
+import { addBtnCopy } from "src/functions/general";
+import { varname_regx, no_varname_regx, key_regx } from "src/functions/regx";
+import APRSettings from "src/settings/settingsTab";
+import { JSONPath } from "jsonpath-plus";
+import { LoadAPIRSettings, DEFAULT_SETTINGS } from "src/settings/settingsData";
 
-import { App, Editor, MarkdownView, Modal, Plugin, Notice, requestUrl, debounce } from 'obsidian';
-import { readFrontmatter, parseFrontmatter } from 'src/functions/frontmatterUtils';
-import { MarkdownParser } from 'src/functions/mdparse';
-import { saveToID, addBtnCopy, replaceOrder, nestedValue, toDocument } from 'src/functions/general';
-import { 
-	num_braces_regx,
-	num_hyphen_regx,
-	nums_rex,
-	in_braces_regx,
-	varname_regx,
-	no_varname_regx,
-	key_regx
-} from 'src/functions/regx';
-import { sanitizer } from 'src/functions/HtmlSanitizer';
-import APRSettings from 'src/settings/settingsTab';
-import { LoadAPIRSettings, DEFAULT_SETTINGS } from 'src/settings/settingsData';
-
-const parser = new MarkdownParser();
-
+// Get global variables (defined in settings)
 export function checkGlobalValue(value: string, settings: LoadAPIRSettings) {
 	const match = value.match(key_regx);
 
 	if (match) {
 		for (let i = 0; i < match.length; i++) {
 			const key = match[i].replace(/{{|}}/g, "");
-			value = value.replace(match[i], settings.KeyValueCodeblocks.find((obj) => obj.key === key)?.value || "");
+			value = value.replace(
+				match[i],
+				settings.KeyValueCodeblocks.find((obj) => obj.key === key)
+					?.value || "",
+			);
 		}
 	}
 	return value;
 }
 
+// Get data from localStorage using this syntax: {{ls.UUID>JSONPath}}
+// where `ls` stands for `localStorage`
+export function checkLocalStorage(value: string) {
+	const match = value.match(key_regx);
 
-// Checks if the frontmatter is present in the request property
-// If it is, it will replace the variable (this.VAR) with the frontmatter value
-export function checkFrontmatter(req_prop: string, settings: LoadAPIRSettings) {
+	if (match) {
+		for (let i = 0; i < match.length; i++) {
+			const key = match[i].replace(/{{|}}/g, "");
+			let uuid = key.split(">")[0];
+			const jsonPath = key.split(">")[1];
+			uuid = uuid.split(".")[1]
+			const data = localStorage.getItem(uuid);
+			if (data) {
+				const parsedData = JSON.parse(data);
+				const output = JSONPath({ path: jsonPath, json: parsedData });
+				value = value.replace(match[i], output);
+			}
+		}
+	}
+	return value;
+}
+
+// parse headers and body to valid JSON
+export function parseToValidJson(input, type) {
+	const trimmedInput = input.trim();
+
+	if (!trimmedInput) {
+		return null;
+	}
+
+	try {
+		// Replace single quotes with double quotes and ensure keys/values are properly quoted
+		const formattedInput = trimmedInput
+			.replace(/"/g, "") // Remove all quotes
+			.replace(/'/g, '"') // Replace single quotes with double quotes
+			.replace(
+				/\s*([^,{"]+):\s*([^,"}]+)/g,
+				'"$1":"$2"',
+			); // Add double quotes around unquoted keys and values
+
+		return JSON.parse(formattedInput);
+	} catch (e) {
+		throw new Error(
+			`Invalid ${type} format. Details: ${e.message}`,
+		);
+	}
+}
+
+// format the output to be displayed
+export function formatOutput(output: string): string {
+	// If output is Array
+	if (Array.isArray(output)) {
+		// If it's an Array of one element, format that element
+		if (output.length === 1) {
+			return formatOutput(output[0]);
+		}
+		// If it's an array of multiples elements, use resistivity
+		return output
+			.map((item) => formatOutput(item))
+			.join(", ");
+	}
+
+	// If output it's an object, convert it to string
+	if (typeof output === "object" && output !== null) {
+		return JSON.stringify(output, null, 2);
+	}
+
+	// Any other case, convert it to string
+	return String(output ?? "");
+}
+
+// Check if the value has variables and replace them
+export function checkVariables(req_prop: string, settings: LoadAPIRSettings) {
+	// search value in localStorage
+	req_prop = checkLocalStorage(req_prop);
 	// search value globally
 	req_prop = checkGlobalValue(req_prop, settings);
 	const match = req_prop.match(varname_regx);
 
 	if (match) {
-
 		for (let i = 0; i < match.length; i++) {
 			const var_name = match[i].replace(no_varname_regx, "");
 
 			// if {{this.file.name}} return filename
 			if (var_name == "file.name") {
-				req_prop = req_prop.replace(match[i], this.app.workspace.getActiveFile().basename);
+				req_prop = req_prop.replace(
+					match[i],
+					this.app.workspace.getActiveFile().basename,
+				);
 				continue;
 			}
-			
-			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+
+			const activeView =
+				this.app.workspace.getActiveViewOfType(MarkdownView);
 			const markdownContent = activeView.editor.getValue();
 
 			try {
-				const frontmatterData = parseFrontmatter(readFrontmatter(markdownContent));
-				req_prop = req_prop.replace(match[i], frontmatterData[var_name] || "");
+				const frontmatterData = parseFrontmatter(
+					readFrontmatter(markdownContent),
+				);
+				req_prop = req_prop.replace(
+					match[i],
+					frontmatterData[var_name] || "",
+				);
 			} catch (e) {
 				console.error(e.message);
 				new Notice("Error: " + e.message);
@@ -76,551 +150,349 @@ export default class MainAPIR extends Plugin {
 	settings: LoadAPIRSettings;
 
 	async onload() {
-		console.log('loading APIR');
+		console.log("loading APIR");
 		await this.loadSettings();
 
 		async function updateStatusBar() {
-			const statusbar = document.getElementsByClassName("status-bar-item plugin-api-request");
+			const statusbar = document.getElementsByClassName(
+				"status-bar-item plugin-api-request",
+			);
 			while (statusbar[0]) {
 				statusbar[0].parentNode?.removeChild(statusbar[0]);
 			}
 
 			// count the number of code-blocks
-			const markdownContent = this.app.workspace.getActiveViewOfType(MarkdownView)?.getViewData();
+			const markdownContent = this.app.workspace
+				.getActiveViewOfType(MarkdownView)
+				?.getViewData();
 			const codeBlocks = markdownContent.match(/```req/g)?.length || 0;
 			if (codeBlocks > 0) {
 				const item = this.addStatusBarItem();
 
-				const statusText = this.settings.countBlocksText.replace("%d", codeBlocks.toString());
+				const statusText = this.settings.countBlocksText.replace(
+					"%d",
+					codeBlocks.toString(),
+				);
 				item.createEl("span", { text: statusText });
 			}
 		}
 
-		this.registerEvent(this.app.workspace.on('file-open', debounce(updateStatusBar.bind(this), 300)));
-		this.registerEvent(this.app.workspace.on('editor-change', updateStatusBar.bind(this)));
-
-		this.addCommand({
-			id: 'show-response-in-modal',
-			name: 'Show response in Modal',
-			callback: () => {
-				new ShowOutputModal(this.app, this.settings.URL, this.settings.MethodRequest, this.settings.DataRequest, this.settings.HeaderRequest, this.settings.DataResponse).open();
-			}
-		});
+		// count number of codeblocks on "file-open" and "changes to the file"
+		this.registerEvent(
+			this.app.workspace.on(
+				"file-open",
+				debounce(updateStatusBar.bind(this), 300),
+			),
+		);
+		this.registerEvent(
+			this.app.workspace.on("editor-change", updateStatusBar.bind(this)),
+		);
 
 		try {
-			this.registerMarkdownCodeBlockProcessor("req", async (source, el) => {
-				const sourceLines = source.split("\n");
-				let [URL, show, saveTo, reqID, resType, maketable] = [String(), String(), String(), String(), String(), String()];
-				let [notifyIf, properties] = [[String()], [String()]];
-				// 'format' is not and empty objet, is a string that will be replaced by the response
-				let [method, format] = ["GET", "{}"];
-				let [headers, body, reqRepeat] = [Object(), Object(), { "times": 1, "every": 1000 }];
-				const allowedMethods = ["GET", "POST", "PUT", "DELETE"];
-				let render = false;
+			this.registerMarkdownCodeBlockProcessor(
+				"req",
+				async (source, el) => {
+					// split the content by lines
+					const sourceLines = source.split("\n");
+					// create variables
+					let [URL, show, saveTo] = [String(), String(), String()];
+					let properties = [String()];
+					let uuid;
+					let autoUpdate = false;
+					let method = "GET";
+					let format = String();
+					let [headers, body] = [Object(), Object()];
+					const allowedMethods = ["GET", "POST", "PUT", "DELETE"];
 
-				let response_disabled;
+					for (const line of sourceLines) {
+						// convert line to lowercase
+						// this way we can check for the keywords without worrying about the case
+						const lowercaseLine = line.toLowerCase();
 
-				for (const line of sourceLines) {
-					const lowercaseLine = line.toLowerCase();
-					if (lowercaseLine.includes("method:")) {
-						method = line.replace(/method:/i, "").toUpperCase();
-						method = method.trim();
-						if (!allowedMethods.includes(method)) {
-							el.createEl("strong", { text: `Error: Method ${method} not supported` });
+						// comments
+						if (
+							lowercaseLine.startsWith("#") ||
+							lowercaseLine.startsWith("//")
+						) {
+							continue;
+
+							// return if request is disabled
+						} else if (lowercaseLine.startsWith("disabled")) {
+							el.createEl("strong", {
+								text: this.settings.DisabledReq,
+							});
 							return;
-						}
-					} else if (lowercaseLine.includes("notify-if:")) {
-						const tempNotifyIf = line.replace(/notify-if:/i, "");
-						notifyIf = tempNotifyIf.trim().split(" ");
-					} else if (lowercaseLine.includes("req-repeat:")) {
-						const repeat_values: string[] = line.replace(/req-repeat:/i, "").trim().split("@");
 
-						// Function to check if a string is a valid integer
-						const isValidNumber = (value: string): boolean => {
-							return /^\d+$/.test(value);
-						};
+							// get the method and check if is a valid method
+						} else if (lowercaseLine.startsWith("method:")) {
+							method = line.replace(/method:/i, "").toUpperCase().trim();
+							if (!allowedMethods.includes(method)) {
+								el.createEl("strong", {
+									text: `Error: Method ${method} not supported`,
+								});
+								return;
+							}
 
-						// Check if there are two values and they are valid numbers
-						if (repeat_values.length === 2 && isValidNumber(repeat_values[0]) && isValidNumber(repeat_values[1])) {
-							reqRepeat = { "times": parseInt(repeat_values[0]), "every": parseInt(repeat_values[1]) * 1000 };
-						} else {
-							el.createEl("strong", { text: "Error: req-repeat format is not valid (use T@S)" });
-							return;
-						}
+							// get the url and *return* if is null
+						} else if (lowercaseLine.startsWith("url:")) {
+							URL =
+								checkVariables(
+									line.replace(/url:/i, "").trim(),
+									this.settings,
+								) ?? "";
+							if (!URL) {
+								el.createEl("strong", {
+									text: "Error: URL not found",
+								});
+								return;
+							}
 
-					} else if (lowercaseLine.includes("url:")) {
-						URL = checkFrontmatter(line.replace(/url:/i, "").trim(), this.settings) ?? "";
-						if (!URL) {
-							el.createEl("strong", { text: "Error: URL not found" });
-							return;
-						}
-						if (URL && !URL.startsWith("http")) {
-							URL = "https://" + URL;
-						}
-					} else if (lowercaseLine.includes("show:")) {
-						show = checkFrontmatter(line.replace(/show:/i, "").trim(), this.settings) ?? "";
-						if (!show) {
-							el.createEl("strong", { text: "Error: show value is empty" });
-							return;
-						}
-					} else if (lowercaseLine.includes("headers:")) {
-						const tempHeaders = checkFrontmatter(line.replace(/headers:/i, ""), this.settings) ?? "";
-						if (tempHeaders) {
+							// extract data using jsonpath-plus (https://www.npmjs.com/package/jsonpath-plus)
+						} else if (lowercaseLine.startsWith("show:")) {
+							show =
+								checkVariables(
+									line.replace(/show: /i, "").trim(),
+									this.settings,
+								) ?? "";
+							if (!show) {
+								el.createEl("strong", {
+									text: "Error: show value is empty",
+								});
+								return;
+							}
+
+							// get headers. They can use double, single quotes or none
+						} else if (lowercaseLine.startsWith("headers:")) {
+							const tempHeaders =
+								checkVariables(
+									line.replace("headers:", "").trim(),
+									this.settings,
+								) ?? "";
+
 							try {
-								headers = JSON.parse(tempHeaders);
+								headers = parseToValidJson(
+									tempHeaders,
+									"headers",
+								);
 							} catch (e) {
-								el.createEl("strong", { text: "Error: Headers format is not valid" });
+								el.createEl("strong", { text: e.message });
 								return;
 							}
-						}
-					} else if (lowercaseLine.includes("body:")) {
-						body = checkFrontmatter(line.replace(/body:/i, ""), this.settings);
-					} else if (lowercaseLine.includes("format:")) {
-						format = line.replace(/format:/i, "");
-						if (!format.includes("{}")) {
-							el.createEl("strong", { text: "Error: Use {} to show response in the document." });
-							return;
-						}
-					} else if (lowercaseLine.includes("req-id:")) {
-						reqID = line.replace(/id:/i, "").trim();
 
-						if (sourceLines.includes("disabled")) {
-							const idExists = localStorage.getItem(reqID);
-							if (idExists) {
-								response_disabled = parser.parse(idExists);
-							} else {
-								sourceLines.splice(sourceLines.indexOf("disabled"), 1);
+							// get body. They can use double, single quotes or none
+						} else if (lowercaseLine.startsWith("body:")) {
+							const tempBody =
+								checkVariables(
+									line.replace("body:", "").trim(),
+									this.settings,
+								) ?? "";
+
+							try {
+								body = parseToValidJson(tempBody, "body");
+							} catch (e) {
+								el.createEl("strong", { text: e.message });
+								return;
 							}
+
+							// save the entire JSON to a file. (filename and extension are needed)
+						} else if (lowercaseLine.startsWith("save-as:")) {
+							saveTo = line.replace(/save-as:/i, "").trim();
+							if (!saveTo) {
+								el.createEl("strong", {
+									text: "Error: save-as is empty. Please provide a filename with extension",
+								});
+								return;
+							}
+						} else if (lowercaseLine.startsWith("req-uuid:")) {
+							uuid = line.replace(/req-uuid:/i, "").trim();
+							if (!uuid) {
+								el.createEl("strong", {
+									text: "Error: req-uuid is empty. Please provide a unique identifier",
+								});
+								return;
+							}
+							uuid = `req-${uuid}`
+						} else if (lowercaseLine.startsWith("auto-update")) {
+							autoUpdate = true;
+						} else if (lowercaseLine.startsWith("format:")) {
+							format = line.replace(/format:/i, "").trim();
+						} else if (lowercaseLine.startsWith("properties:")) {
+							properties = line
+								.replace(/properties:/i, "")
+								.trim()
+								.split(",");
 						}
-					} else if (lowercaseLine.includes("save-to:")) {
-						saveTo = line.replace(/save-to:/i, "").trim();
-						if (!saveTo) {
-							el.createEl("strong", { text: "Error: save-to value is empty. Please provide a filename with extension" });
-							return;
-						}
-					} else if (lowercaseLine.includes("properties:")) {
-						// remove all spaces and split by comma
-						properties = line.replace(/properties:/i, "").replace(/\s/g, "").split(",");
-					} else if (lowercaseLine.includes("res-type:")) {
-						resType = line.replace(/res-type:/i, "").trim();
-					} else if (lowercaseLine.includes("maketable:")) {
-						maketable = line.replace(/maketable:/i, "").trim();
 					}
-				}
 
-				if (sourceLines.includes("render")) {
-					render = true;
-				};
+					let responseData;
+					let responseDataText;
 
-				for (let i = 0; i < reqRepeat.times; i++) {
-					try {
-						let responseData;
-
-						if (!response_disabled) {
-							responseData  = await requestUrl({ url: URL, method, headers, body });
-						} else {
-							responseData = { json: JSON.parse(response_disabled) };
+					// Check if the response is cached in localStorage
+					if (uuid && !autoUpdate) {
+						const cachedResponse = localStorage.getItem(uuid);
+						if (cachedResponse) {
+							responseData = JSON.parse(cachedResponse);
+							const temp_uuid = uuid.split("req-")[1]
+							new Notice(`Using cached data with UUID: ${temp_uuid}`);
 						}
+					}
 
+					// If no cached data or auto-update is requested, make a new request
+					if (!responseData || autoUpdate) {
 						try {
-							// Check if the response is not JSON
-							if (!responseData.headers["content-type"].includes("json") && resType !== "json") {
-								try {
-									el.innerHTML = parser.parse(sanitizer.SanitizeHtml(responseData.text));
-								} catch (e) {
-									new Notice("Error: " + e.message);
-									el.innerHTML = "<pre>" + sanitizer.SanitizeHtml(responseData.text) + "</pre>";
-								}
+							const response = await requestUrl({
+								url: URL,
+								method,
+								headers,
+								body,
+							});
+							responseData = await response.json;
+							responseDataText = response.text;
 
-								if (reqID) saveToID(reqID, responseData.text);
-								addBtnCopy(el, responseData.text);
-								return;
+							// Cache the response in localStorage if req-uuid is provided
+							if (uuid) {
+								localStorage.setItem(
+									uuid,
+									JSON.stringify(responseData),
+								);
 							}
 						} catch (e) {
 							console.error(e.message);
+							new Notice("Error: " + e.message);
+							responseData = `Error: ${e.message}`;
 						}
+					}
 
-						// Save to a file
-						if (saveTo) {
-							try {
-								await this.app.vault.create(saveTo, responseData.text);
-								new Notice("Saved to: " + saveTo);
-							} catch (e) {
-								console.error(e.message);
-								new Notice("Error: " + e.message);
-							}
-						}
+					let output = responseData;
 
-						if (notifyIf) {
-							const jsonPath = notifyIf[0];
-							const symbol = notifyIf[1];
-							const value = notifyIf[2]
-							const int_value = parseInt(value);
+					if (show) {
+						// Use JSONPath to filter the output based on the `show` path
+						output = JSONPath({ path: show, json: output });
 
-							const jsonPathValue = jsonPath.split(".").reduce((acc, cv) => acc[cv], responseData.json);
-							const lastValue = jsonPath.split(".").pop();
-							if (symbol === ">" && jsonPathValue > int_value) {
-								new Notice("APIR: " + lastValue + " is greater than " + int_value);
-							} else if (symbol === "<" && jsonPathValue < int_value) {
-								new Notice("APIR: " + lastValue + " is less than " + int_value);
-							} else if (symbol === "=" && jsonPathValue === value) {
-								new Notice("APIR: " + lastValue + " is equal to " + value);
-							} else if (symbol === ">=" && jsonPathValue >= int_value) {
-								new Notice("APIR: " + lastValue + " is greater than or equal to " + int_value);
-							} else if (symbol === "<=" && jsonPathValue <= int_value) {
-								new Notice("APIR: " + lastValue + " is less than or equal to " + int_value);
-							}
-						}
+						if (properties.length > 0 && properties[0] !== '') {
+							// Format the output and split it into an array
+							const stringOutput = formatOutput(output);
+							const splitOutput = stringOutput.split(",");
 
-						if (!show) {
-							if (properties.length > 0 && properties[0] !== '') {
-								el.createEl("strong", { text: "Error: Properties are not allowed without SHOW" });
+							// Get the active Markdown view and its associated file
+							const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+							if (!activeView?.file) {
+								console.error("No active Markdown view or file found.");
 								return;
 							}
-							el.innerHTML = "<pre>" + JSON.stringify(responseData.json, null, 2) + "</pre>";
-							if (reqID) saveToID(reqID, el.innerText);
-							addBtnCopy(el, el.innerText);
-						} else {
-							const checkBracesRegex = show.match(in_braces_regx);
-							if (checkBracesRegex) {
-								if (show.includes(",")) {
-									el.createEl("strong", { text: "Error: comma is not allowed when using {}" });
-									return;
-								}
+							const file: TFile = activeView.file;
 
-								let temp_show = "";
-								let range: number[] = [];
+							// Function to update the frontmatter
+							const updateFrontmatter = async (propertyName: string, value: string) => {
+								// Handle wikilink formatting if the property name contains [[...]]
+								const match = propertyName.match(/\[\[(.*?)\]\]/);
+								const cleanPropertyName = match ? match[1] : propertyName;
 
-								try {
-									const rangeMatch = show.match(nums_rex);
-									if (rangeMatch) {
-										range = rangeMatch.map(Number);
-										if (range[0] > range[1]) {
-											el.createEl("strong", { text: "Error: range is not valid" });
-											return;
-										}
-									}
-								} catch (e) {
-									console.error(e.message);
-								}
-
-								const numberBracesRegex = show.match(num_braces_regx);
-
-								if (!numberBracesRegex) {
-									if (Array.isArray(responseData.json)) {
-										for (let i = 0; i < responseData.json.length; i++) {
-											temp_show += show.replace(in_braces_regx, i.toString()) + ", ";
-										}
-										show = temp_show;
-									} else {
-										const parts = show.split('->').map(part => part.trim());
-
-										const processNestedObject = (obj: any, parts: string[]): string => {
-											let result = "";
-
-											const traverse = (current: any, idx: number) => {
-												if (idx >= parts.length) {
-													if (typeof current === "object") {
-														current = JSON.stringify(current, null, 2);
-													}
-													if (typeof current === 'string') current = encodeURIComponent(current);
-													result += current + ", ";
-													return;
-												}
-
-												const part = parts[idx];
-												if (part === "{..}") {
-													if (Array.isArray(current)) {
-														current.forEach((item, i) => {
-															traverse(item, idx + 1);
-														});
-													} else {
-														el.createEl("strong", { text: "Error: {..} used on non-array element" });
-													}
-												} else if (part == "{-1}") {
-													result = current[current.length - 1]
-												} else if (part == "{len}") {
-													result = current.length.toString()
-												} else if (part === "{gk}") {
-													Object.keys(current).forEach((key) => {
-														traverse(key, idx + 1);
-													});
-												} else {
-													const nextParts = part.split('&').map(p => p.trim());
-													if (nextParts.length > 1) {
-														nextParts.forEach(p => {
-															const subParts = p.split('.').map(sp => sp.trim());
-															let subCurrent = current;
-															subParts.forEach((sp, subIdx) => {
-																if (subCurrent && subCurrent.hasOwnProperty(sp)) {
-																	if (subIdx === subParts.length - 1) {
-																		traverse(subCurrent[sp], idx + 1);
-																	} else {
-																		subCurrent = subCurrent[sp];
-																	}
-																} else {
-																	el.createEl("strong", { text: `Error: property ${sp} does not exist on current object` });
-																}
-															});
-														});
-													} else {
-														const subParts = part.split('.').map(sp => sp.trim());
-														let subCurrent = current;
-														subParts.forEach((sp, subIdx) => {
-															if (subCurrent && subCurrent.hasOwnProperty(sp)) {
-																if (subIdx === subParts.length - 1) {
-																	traverse(subCurrent[sp], idx + 1);
-																} else {
-																	subCurrent = subCurrent[sp];
-																}
-															} else {
-																el.createEl("strong", { text: `Error: property ${sp} does not exist on current object` });
-															}
-														});
-													}
-												}
-											};
-
-											traverse(obj, 0);
-											return result;
-										};
-
-										temp_show = processNestedObject(responseData.json, parts);
-										show = temp_show;
-
-
-									}
-								} else {
-									for (let i: number = range[0]; i <= range[1]; i++) {
-										temp_show += show.replace(numberBracesRegex[0], i.toString()) + ", ";
-									}
-									show = temp_show;
-								}
-
-								if (show.match(num_hyphen_regx)) {
-									show = show.replace(in_braces_regx, "-");
-									for (let i = 0; i < range.length; i++) {
-										temp_show += show.replace("-", range[i].toString()) + ", ";
-									}
-									show = temp_show;
-								} 
-							}
-
-							// adding properties to frontmatter
-							if (properties.length > 0 && properties[0] !== '') {
-								const showArray = show.split(",");
-								const propertiesArray = properties;
-								const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-								const file: TFile = activeView!.file;
-
-								await Promise.all(showArray.map(async (key, index) => {
-									const trimmedKey = key.trim();
-									let val = "";
-
-									if (trimmedKey.includes("->")) {
-										val = nestedValue(responseData, trimmedKey);
-									} else if (responseData.json && responseData.json[trimmedKey]) {
-										val = responseData.json[trimmedKey];
-									}
-
-									let propertyName = propertiesArray[index].trim();
-									if (propertyName) {
-										const match = propertyName.match(/\[\[(.*?)\]\]/);
-										if (match) propertyName = match[1];
-										await this.app.fileManager.processFrontMatter(file, (existingFrontmatter) => {
-											if (typeof val === "object") {
-												Object.keys(val).forEach((key) => {
-													if (match) {
-														val[key] = "[[" + val[key].toString() + "]]";
-													} else {
-														val[key] = val[key].toString();
-													}
-												});
-											} 
-											if (match && typeof val !== "object") {
-												val = "[[" + val + "]]"
-											}
-											existingFrontmatter[propertyName] = val;
-										});
-									}
-								}));
-								return;
-							}
-
-							const trimAndProcessKey = (key: string) => {
-								const trimmedKey = key.trim();
-								return trimmedKey.includes("->")
-									? nestedValue(responseData, trimmedKey)
-									: JSON.stringify(responseData.json[trimmedKey]) || trimmedKey;
+								// Update the frontmatter
+								await this.app.fileManager.processFrontMatter(file, (existingFrontmatter) => {
+									existingFrontmatter[cleanPropertyName] = match ? `[[${value}]]` : value;
+								});
 							};
 
-							const values = show.split(",")
-								.map(trimAndProcessKey)
-								.filter((key) => key !== "");
-							let replacedText = replaceOrder(format, values);
+							// If there's only one property, assign the entire splitOutput to that property
+							if (properties.length === 1) {
+								const propertyName = properties[0]?.trim();
 
-							if (replacedText === 'undefined') {
-								show = show.trim();
-								if (show[show.length - 1] === ',') show = show.slice(0, -1);
-								if (!show.includes("->")) replacedText = show;
+								// Skip if the property name is empty
+								if (!propertyName) return;
+
+								// Update the frontmatter
+								await updateFrontmatter(propertyName, stringOutput);
+							} else {
+								// If there are multiple properties, iterate over them
+								for (let index = 0; index < properties.length; index++) {
+									const propertyName = properties[index]?.trim();
+
+									// Skip if the property name is empty
+									if (!propertyName) continue;
+
+									// Extract the value from the output
+									const valueOutput = splitOutput[index] || "";
+
+									// Update the frontmatter
+									await updateFrontmatter(propertyName, valueOutput);
+								}
 							}
-
-							if (maketable) {
-								const titles = maketable.split(",");
-								const table = el.createEl("table");
-								const thead = table.createEl("thead");
-								const tbody = table.createEl("tbody");
-								const trHead = thead.createEl("tr");
-
-								// Create table headers
-								titles.forEach((title) => {
-									const th = trHead.createEl("th");
-									th.createEl("strong", { text: title.trim() });
-								});
-
-								// Create table body rows
-								let trBody = tbody.createEl("tr");
-								values.forEach((value, index) => {
-									if (index % titles.length === 0 && index !== 0) {
-										trBody = tbody.createEl("tr"); // Create a new row after every set of columns
-									}
-									const td = trBody.createEl("td");
-									td.createEl("strong", { text: decodeURIComponent(value) });
-								});
-
-								return;
-							}
-
-							replacedText = decodeURIComponent(replacedText);
-
-							!render ? el.createEl("pre", { text: replacedText }) : el.innerHTML = parser.parse(sanitizer.SanitizeHtml(replacedText));
-
-							// check if reqID doesnt already exists on localStorage
-							const idExists = localStorage.getItem(reqID);
-							if (!idExists) {
-								if (reqID) saveToID(reqID, JSON.stringify(responseData));
-							}
-							addBtnCopy(el, replacedText);
 						}
-					} catch (error) {
-						console.error(error);
-						el.createEl("strong", { text: "Error: " + error.message });
-						new Notice("Error: " + error.message);
 					}
-					await sleep(reqRepeat.every);
-				}
-				return; 
-			});
+
+					const formattedOutput = formatOutput(output);
+
+					// if a *format* is defined in the codeblock
+					// render the response, else just *return* the response as String
+					if (format) {
+						const parts = formattedOutput.split(",");
+						el.innerHTML = format.replace(/{}/g, () => parts.shift() || "");
+					} else {
+						el.createEl("pre", { text: formattedOutput });
+					}
+					
+					// add a button to copy the output
+					addBtnCopy(el, formattedOutput);
+
+					// Save to a file
+					if (saveTo) {
+						try {
+							// try to create the file. It'll fail if already exists
+							await this.app.vault.create(
+								saveTo,
+								responseDataText,
+							);
+							new Notice("Saved to: " + saveTo);
+						} catch (e) {
+							// try to modify the file
+							const file =
+								this.app.vault.getAbstractFileByPath(saveTo);
+							await this.app.vault.modify(file, responseDataText);
+							new Notice("File modified");
+						}
+					}
+				},
+			);
 		} catch (e) {
 			console.error(e.message);
 			new Notice("Error: " + e.message);
 		}
 
-		this.addCommand({
-			id: 'response-in-document',
-			name: 'Paste response in current document',
-			editorCallback: (editor: Editor) => {
-				const set = this.settings;
-				const requestOptions = {
-					url: set.URL,
-					method: set.MethodRequest,
-					headers: JSON.parse(set.HeaderRequest),
-					...(set.MethodRequest !== "GET" && { body: set.DataRequest })
-				};
-				toDocument(requestOptions, set.DataResponse, editor);
-			}
-		});
+		// TODO
+		// Make *Inline queries* using responses from codeblocks
 
-		for (let i = 0; i < this.settings.URLs.length; i++) {
-			this.addCommand({
-				id: 'response-in-document-' + this.settings.URLs[i]["Name"],
-				name: 'Response for api: ' + this.settings.URLs[i]["Name"],
-				editorCallback: (editor: Editor) => {
-					const rea = this.settings.URLs[i];
-					toDocument(rea, this.settings.URLs[i]["DataResponse"], editor);
-				}
-			});
-		}
+		//this.registerMarkdownPostProcessor(async (element, context) => {
+		//	const codeblocks = element.findAll("code");
+		//	for (const codeblock of codeblocks) {
+		//		const text = codeblock.innerText.trim();
+		//
+		//		const inlineMatches = text.match(/{{(.*?)}}/g);
+		//		if (inlineMatches) {
+		//			inlineMatches.forEach((match) => {
+		//				const varName = match.replace(/{{|}}/g, "").trim();
+		//				const value = localStorage.getItem(varName);
+		//				element.innerHTML = element.innerHTML.replace(match, value);
+		//			});
+		//		}
+		//}});
 
 		this.addSettingTab(new APRSettings(this.app, this));
 	}
 
 	onunload() {
-		console.log('unloading APIR');
-		// Clean up localStorage
-		// Object.keys(localStorage).forEach(key => {
-		// 	if (key.startsWith("req-")) {
-		// 		localStorage.removeItem(key);
-		// 	}
-		// });
+		console.log("unloading APIR");
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign(
+			{},
+			DEFAULT_SETTINGS,
+			await this.loadData(),
+		);
 	}
 
 	async saveSettings() {
 		await this.saveData(this.settings);
 	}
 }
-
-class ShowOutputModal extends Modal {
-	constructor(app: App, URL: string, MethodRequest: string, DataRequest: string, HeaderRequest: string, DataResponse: string) {
-		super(app);
-		this.props = {
-			URL,
-			MethodRequest,
-			DataRequest,
-			HeaderRequest,
-			DataResponse,
-		};
-	}
-
-	onOpen() {
-		const { contentEl } = this;
-		const { URL, MethodRequest, DataRequest, HeaderRequest, DataResponse } = this.props;
-
-		const handleError = (error: Error) => {
-			console.error(error);
-			new Notice("Error: " + error.message);
-		};
-
-		const parseAndCreate = (data: object) => (key: string) => {
-			const value = DataResponse.includes("->") ? nestedValue(data, key) : data.json?.[key];
-			contentEl.createEl('b', { text: key });
-
-			let textValue;
-			if (typeof value === "string") {
-				textValue = value;
-			} else {
-				textValue = JSON.stringify(value, null, 2);
-			}
-
-			contentEl.createEl('textarea', { text: textValue, cls: 'modal_textarea' });
-		};
-
-		const requestOptions = {
-			url: URL,
-			method: MethodRequest,
-			headers: JSON.parse(HeaderRequest),
-			...(MethodRequest !== "GET" && { body: DataRequest })
-		};
-
-		requestUrl(requestOptions)
-			.then((data) => {
-				if (DataResponse !== "") {
-					const DataResponseArray = DataResponse.split(",");
-					DataResponseArray.forEach(parseAndCreate(data));
-				} else {
-					contentEl.createEl('b', { text: JSON.stringify(data.json, null, 2), cls: 'modal_textarea' });
-				}
-			})
-			.catch(handleError);
-	}
-
-	onClose() {
-		const { contentEl } = this;
-		contentEl.empty();
-	}
-}
-

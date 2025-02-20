@@ -13,23 +13,17 @@ Las banderas son la forma de especificar los parámetros de nuestra solicitud y 
 | [body](#body) |         |
 | [headers](#headers) |   |
 | [show](#show) | ALL     |
-| [format](#format) | `{}` |
-| [req-id](#req-id) | req-general |
+| [req-uuid](#req-uuid) | |
 | [disabled](#disabled) | |
-| [req-repeat](#req-repeat) | 1t@1s |
-| [notify-if](#notify-if) | |
-| [save-to](#save-to) |   |
-| [properties](#properties) | |
-| [render](#render) | false |
-| [res-type](#res-type) | |
-| [maketable](#maketable)| |
+| [save-as](#save-as) |   |
 
 ### url
 
 Es la única bandera **obligatoria**. Especifica la URL de la solicitud. Se pueden utilizar variables definidas en el `frontmatter`.
 
 ~~~markdown
-```req 
+```req
+# un comentario
 url: https://jsonplaceholder.typicode.com/users/{{this.id}}
 ```
 ~~~
@@ -55,7 +49,7 @@ method: post
 
 ### body
 
-Especifica el cuerpo de la solicitud. El valor predeterminado es un objeto vacío. Los datos deben estar en formato JSON con comillas dobles separando las claves y valores con dos puntos y espacio. Se pueden utilizar variables definidas en el `frontmatter`.
+Especifica el cuerpo de la solicitud. El valor predeterminado es un objeto vacío. Los datos deben estar en formato JSON separando las claves y valores con dos puntos y espacio. Se pueden utilizar variables definidas en el `frontmatter`.
 
 ~~~markdown
 ```req 
@@ -69,7 +63,7 @@ body: {"title": {{this.title}}, "body": "bar", "userId": 1}
 
 ### headers
 
-Especifica los encabezados de la solicitud. El valor predeterminado es un objeto vacío. Los datos deben estar en formato JSON con comillas dobles separando las claves y valores con dos puntos y espacio. Se pueden utilizar variables definidas en el `frontmatter`.
+Especifica los encabezados de la solicitud. El valor predeterminado es un objeto vacío. Los datos deben estar en formato JSON separando las claves y valores con dos puntos y espacio. Se pueden utilizar variables definidas en el `frontmatter`.
 
 ~~~markdown
 ```req 
@@ -81,115 +75,88 @@ headers: {"Content-type": "application/json; charset=UTF-8"}
 
 ### show
 
-Especifica los datos de respuesta que se van a mostrar. Para acceder a objetos anidados, se utiliza una flecha derecha `->`. El valor predeterminado es `ALL`.
+Especifica los datos de respuesta que se van a mostrar. Ver [ejemplos de JSONPath](https://github.com/JSONPath-Plus/JSONPath?tab=readme-ov-file#syntax-through-examples), o prueba la herramienta online de [jsonpath-plus](https://jsonpath-plus.github.io/JSONPath/demo/).
 
 ~~~markdown
 ```req
 url: https://api.chess.com/pub/player/hikaru/stats
-show: chess_daily -> last -> rating
+show: $['chess_daily']['last']['rating']
 ```
 ~~~
 
-Se pueden mostrar múltiples salidas separándolas con coma.
+Se pueden mostrar múltiples resultados usando `[]`.
 
 ~~~markdown
 ```req
 url: https://api.chess.com/pub/player/hikaru/stats
-show: chess_daily -> last -> rating, chess_daily -> best -> rating
-format: <p>Último juego: {}</p> <strong>Mejor juego: {}</strong>
-render
+show: $.chess_daily[last,best].rating
 ```
 ~~~
 
-También es posible iterar sobre un arreglo usando `{..}`. El siguiente ejemplo muestra la ciudad de todos los usuarios.
+También es posible iterar sobre un arreglo. El siguiente ejemplo muestra la ciudad de todos los usuarios.
 
 ~~~markdown
 ```req 
 url: https://jsonplaceholder.typicode.com/users
-show: {..} -> address -> city
+show: $..address.city
 ```
 ~~~
 
-También es posible iterar sobre un número especificado de elementos del arreglo usando `{n..n}`.
+También es posible iterar sobre un número especificado de elementos del arreglo.
 
 ~~~markdown
 ```req 
 url: https://jsonplaceholder.typicode.com/users
-show: {0..2} -> address -> city
+show: $..[:3].address.city
 ```
 ~~~
 
-También es posible iterar sobre un rango especificado de índices del arreglo usando `{n-n-n}`.
+También es posible iterar sobre un rango especificado de índices del arreglo.
 
 ~~~markdown
 ```req 
 url: https://jsonplaceholder.typicode.com/users
-show: {0-2-1} -> address -> city
+show: $..[3,2,6].address.city
 ```
 ~~~
 
-Puedes acceder al último elemento usando `{-1}`...
+Puedes acceder al último elemento usando `(@.length-1)` o simplemente `[-1:]`.
 
 ~~~markdown
 ```req
-url:https://api.modrinth.com/v2/project/distanthorizons
-show: game_versions -> {-1}
+url: https://api.modrinth.com/v2/project/distanthorizons
+show: $.game_versions[(@.length-1)]
 ```
 ~~~
 
-... o obtener la cantidad de elementos usando `{len}`.
-
-~~~markdown
-```req
-url:https://api.modrinth.com/v2/project/distanthorizons
-show: game_versions -> {len}
-```
-~~~
-
-To access multiple elements at the same time when using `{..}` use `&` to separate the keys and use `.` to access the values.
+Para acceder a multiples resultados podemos usar:
 
 ~~~markdown
 ```req 
 url: http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=rooyca&api_key=API_KEY&format=json&limit=4
-show: recenttracks -> track -> {..} -> name & artist.#text & streamable
-maketable: name, artist, stream
+show: $..recenttracks.track[0:][streamable,name,artist]
 ```
 ~~~
 
-### format
+### req-uuid
 
-Especifica el formato en el que se debe mostrar la respuesta. El valor predeterminado es `{}`. Puede ser cualquier cadena (incluyendo `markdown` y `html`). Si se especifican más de una salida, se deben especificar más formatos, de lo contrario, se aplicará el mismo formato para todas las salidas.
-
-~~~markdown
-```req 
-url: https://jsonplaceholder.typicode.com/posts/1
-show: title, body
-format: <h1>{}</h1> <p>{}</p>
-render
-```
-~~~
-
-!!! note "En este ejemplo, primero `{}` será reemplazado por el título, y segundo `{}` será reemplazado por el cuerpo."
-
-### req-id
-
-Especifica el ID con la que se almacenará la solicitud. El valor predeterminado es `req-general`. Esto es útil cuando queremos almacenar la respuesta en `localStorage` y usarla en otros bloques o notas.
+Especifica el ID con la que se almacenará la solicitud. Esto es útil cuando queremos almacenar la respuesta en `localStorage` y usarla en otros bloques o notas.
 
 
 ~~~markdown
 ```req 
 url: https://jsonplaceholder.typicode.com/users/1
-show: name
-req-id: name
+show: $.name
+req-uuid: name
 ```
 ~~~
 
-Las respuestas almacenadas se pueden ver usando el `req-id` con la bandera `disabled` (que no activará una nueva solicitud).
+Las respuestas almacenadas se pueden ver usando el `req-uuid` con la bandera `disabled` (que no activará una nueva solicitud).
 
 ~~~markdown
 ```req 
 url: https://jsonplaceholder.typicode.com/users/1
-req-id: name
+req-uuid: name
 disabled
 ```
 ~~~
@@ -202,7 +169,7 @@ dv.paragraph(localStorage.getItem("req-name"))
 ```
 ~~~
 
-!!! info "Es obligatorio usar `req-` antes de lo que sea que hayas definido en la bandera `req-id`."
+!!! info "Es obligatorio usar `req-` antes de lo que sea que hayas definido en la bandera `req-uuid`."
 
 Para eliminar respuestas de localStorage, ejecuta:
 
@@ -212,112 +179,41 @@ localStorage.removeItem("req-name")
 ```
 ~~~
 
-Para eliminar todas las respuestas, ve a configuraciones y haz clic en el botón `Clear`.
+Para eliminar todas las respuestas, ve a configuraciones y haz clic sobre la respuesta que quieras eliminar.
 
 ### disabled
 
-Deshabilita la solicitud. Si se especifica un `req-id`, APIR buscará la respuesta en `localStorage`. Si no se encuentra, realizará una nueva solicitud y la almacenará. Después de eso se usará la respuesta recién almacenada.
+Deshabilita la solicitud. El codeblock no se ejecutará.
 
 ~~~markdown
 ```req 
 url: https://jsonplaceholder.typicode.com/users/1
-show: name
-req-id: name
+show: $.name
+req-uuid: name
 disabled
 ```
 ~~~
 
-### req-repeat
-
-!!! warning "Esto solo funciona con respuestas de tipo JSON"
-
-Especifica la cantidad de veces que se debe repetir la solicitud y el intervalo entre cada repetición. El valor predeterminado es `1@1` (leído como `X veces cada X segundo(s)`).
-
-
-~~~markdown
-```req 
-url: api.coincap.io/v2/rates/bitcoin
-req-repeat: 5@5
-render
-```
-~~~
-
-### notify-if
-
-!!! warning "Esto solo funciona con respuestas de tipo JSON"
-
-Especifica la condición para activar una notificación. Puede usarse para monitorear un valor específico. La sintaxis de ruta utilizada para acceder a objetos anidados varía respecto a la bandera `show`, aquí se usan puntos en lugar de flechas y no se permiten espacios en la ruta.
-
-~~~markdown
-```req 
-url: api.coincap.io/v2/rates/bitcoin
-req-repeat: 5@5
-notify-if: data.rateUsd < 69889
-render
-```
-~~~
-
-!!! note "En el ejemplo anterior, se activará una notificación cada vez que el valor de `data.rateUsd` sea menor que `69889`."
-
-### save-to
+### save-as
 
 Especifica la ruta para guardar la respuesta. Guardará toda la respuesta. Se requiere una extensión de archivo. No creará directorios.
 
 ~~~markdown
 ```req 
 url: https://jsonplaceholder.typicode.com/posts/1
-save-to: posts/1.json
+save-as: posts/1.json
 ```
 ~~~
 
-### properties
+### auto-update
 
-!!! warning "Para usar esta bandera necesitas una respuesta de tipo JSON y la bandera `show`"
-
-Especifica las propiedades del frontmatter que se actualizarán con la respuesta. Los datos deben ser cadenas separadas por comas. Para establecer enlaces internos, usa la sintaxis `[[..]]`.
+El codeblock se actualizará de manera automatica cada que sea posible. Esto solo es necesario cuando la bandera `req-uuid` está precente, porque el comportamiento predeterminado del codeblock es ejecutarse cada vez que se carga la nota.
 
 ~~~markdown
 ```req 
 url: https://jsonplaceholder.typicode.com/posts/1
-show: id, title
-properties: id, title
+req-uuid: firstPost
+auto-update
+save-as: posts/1.json
 ```
 ~~~
-
-### render
-
-Si se especifica, la respuesta se renderizará. El valor predeterminado es `false`. Se puede usar para mostrar imágenes, tablas, etc. La respuesta se saneará antes de renderizarla.
-
-~~~markdown
-```req 
-url: https://jsonplaceholder.typicode.com/photos/1
-show: url
-format: ![img]({})
-render
-```
-~~~
-
-## res-type
-
-Espefica el tipo de respuesta. Si esta bandera no está presente, el plugin intentará adivinar el tipo basado en el tipo de contenido de la respuesta. Esto podría usarse *como una característica opcional de respaldo*.
-
-~~~markdown
-```req 
-url: https://jsonplaceholder.typicode.com/posts/1
-res-type: json
-```
-~~~
-
-## maketable
-
-Convierte la respuesta en una tabla. Es útil cuando la respuesta es un array de objetos. Esta opción espera una lista de títulos separados por comas.
-
-~~~markdown
-```req 
-url: http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=rooyca&api_key=API_KEY&format=json&limit=4
-show: recenttracks -> track -> {..} -> name & artist.#text & streamable
-maketable: name, artist, stream
-```
-~~~
-
-!!! note "En el ejemplo anterior, la respuesta se convertirá en una tabla con los títulos `name`, `artist` y `stream`."

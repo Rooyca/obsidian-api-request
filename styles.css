@@ -55,13 +55,10 @@
     color: black;
 }
 
-/* I want to display the line over the entire row */
-
 .api-table tr:hover :not(th) {
     background-color: #F3A0A0;
     color: black;
     cursor: pointer;
-    text-decoration: line-through;
 }
 
 .api-table tr:hover a {
