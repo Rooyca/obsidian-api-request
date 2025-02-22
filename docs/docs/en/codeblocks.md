@@ -97,6 +97,15 @@ show: $.chess_daily[last,best].rating
 ```
 ~~~
 
+Or you can also use `+` to get multiple outputs.
+
+~~~markdown
+```req
+url: https://api.chess.com/pub/player/hikaru/stats
+show: $.chess_daily[last,best].rating + $.chess960_daily[last,best].rating
+```
+~~~
+
 Looping over an array is also possible. The following example retrieves the city from all users.
 
 ~~~markdown
@@ -209,7 +218,7 @@ save-as: posts/1.json
 ```
 ~~~
 
-## auto-update
+### auto-update
 
 If present, the codeblock will automatically update the response every time is possible. This is only needed when using the flag `req-uuid`, because the default behavior of the codeblock is to run every time the note is loaded.
 
@@ -222,7 +231,7 @@ save-as: posts/1.json
 ```
 ~~~
 
-## format
+### format
 
 Specifies the format in which the response should be displayed. It can be any string (including `html`). If more than one output is specified, more then one format should be specified, otherwise it'd just render the first output.
 
@@ -236,7 +245,7 @@ format: <h1>{}</h1> <p>{}</p>
 
 !!! note "In this example, first `{}` will be replaced with the *title*, and second `{}` will be replaced with the *body*."
 
-## properties
+### properties
 
 !!! warning "To use this flag you need a JSON response and the `show` flag"
 
