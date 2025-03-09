@@ -166,7 +166,7 @@ export default class MainAPIR extends Plugin {
             const markdownContent = this.app.workspace
                 .getActiveViewOfType(MarkdownView)
                 ?.getViewData();
-            const codeBlocks = markdownContent.match(/```req/g)?.length || 0;
+            const codeBlocks = markdownContent?.match(/```req/g)?.length || 0;
             if (codeBlocks > 0) {
                 const item = this.addStatusBarItem();
 
