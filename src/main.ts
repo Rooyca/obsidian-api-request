@@ -290,9 +290,9 @@ export default class MainAPIR extends Plugin {
 
                             try {
                                 body = parseToValidJson(tempBody, "body");
-                            } catch (e) {
-                                el.createEl("strong", { text: e.message });
-                                return;
+                            } catch {
+                                // use raw body if it's not a valid JSON
+                                body = tempBody;
                             }
 
                             // save the entire JSON to a file. (filename and extension are needed)
@@ -368,7 +368,7 @@ export default class MainAPIR extends Plugin {
 
                     if (show) {
                         // split show by `+` to check if user defined more than one path
-                        show = show.split("+");
+                        show = show.split(" + ");
                         
                         // check if the user defined more than one path
                         // if so, iterate over each path and get the data
