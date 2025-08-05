@@ -20,6 +20,44 @@ Flags are the way to specify the parameters of our request.
 | [format](#format) | |
 | [properties](#properties) | |
 
+---
+
+### LocalStorage & Variables
+
+API responses can be stored in `localStorage` and reused in other codeblocks or notes. To store a response, you must assign it a unique identifier using the `req-uuid` flag.
+
+You can access stored responses using the following syntax:
+
+```
+{{ls.UUID>JSONPath}}
+```
+
+* `UUID`: The unique identifier defined in the `req-uuid` flag.
+* `JSONPath`: The path to the specific data you want from the response.
+
+**Example:**
+If you have a request with `req-uuid: user`, you can access the user’s name like this:
+
+```
+{{ls.user>$.name}}
+```
+
+---
+
+You can also reference variables defined in the note's **frontmatter** using:
+
+```
+{{this.variableName}}
+```
+
+---
+
+For **global variables**, you can define them in the plugin settings. These are saved in `localStorage` and can be accessed with:
+
+```
+{{ls.variableName}}
+```
+
 ### url
 
 Is the only **required** flag. It specifies the endpoint of the request.
@@ -73,6 +111,18 @@ Specifies the headers of the request. The default value is an empty object. The 
 url: https://jsonplaceholder.typicode.com/posts
 method: post
 headers: {"Content-type": "application/json; charset=UTF-8"}
+```
+~~~
+
+You can use responses from other requests as headers/body/url/show. For example, if you have a request with `req-uuid: token`, you can use it like this:
+
+~~~makdown
+```req
+url: https://api.todoist.com/rest/v2/tasks
+headers: {"Authorization": "Bearer {{ls.token>$.access_token}}"}
+show: $..content
+format: - [ ] {}
+req-id: todos
 ```
 ~~~
 

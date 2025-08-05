@@ -38,6 +38,8 @@ The plugin can be installed from within Obsidian.
 - [ ] Add tests (!!!)
 - [ ] Re-implement `repeat` flag (repeat requests X times or every X seconds)
 
+## ❤️ Sponsors
+
 <a href="https://github.com/tlwt"><img src="https://github.com/tlwt.png" width="40px" /></a>
 
 ## ✍️ Feedback and Contributions

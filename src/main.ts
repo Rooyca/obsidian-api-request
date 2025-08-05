@@ -43,7 +43,15 @@ export function checkLocalStorage(value: string) {
             let uuid = key.split(">")[0];
             const jsonPath = key.split(">")[1];
             uuid = uuid.split(".")[1]
-            const data = localStorage.getItem(uuid);
+            
+            // Try with req- prefix first (for req-uuid data)
+            let data = localStorage.getItem(`req-${uuid}`);
+            
+            // If not found, try without prefix (for manual variables)
+            if (!data) {
+                data = localStorage.getItem(uuid);
+            }
+            
             if (data) {
                 const parsedData = JSON.parse(data);
                 const output = JSONPath({ path: jsonPath, json: parsedData });
