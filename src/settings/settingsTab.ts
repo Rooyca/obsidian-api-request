@@ -36,7 +36,7 @@ export default class APRSettings extends PluginSettingTab {
 					.setPlaceholder("Count blocks: %d")
 					.setValue(this.plugin.settings.countBlocksText)
 					.onChange(async (value) => {
-						if (!value.includes("%d")) value = "🗲 %d";
+						if (!value.includes("%d")) value = "APIR: %d";
 						this.plugin.settings.countBlocksText = value;
 						await this.plugin.saveSettings();
 					}),

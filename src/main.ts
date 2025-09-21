@@ -208,6 +208,7 @@ export default class MainAPIR extends Plugin {
                     let properties = [String()];
                     let uuid, show;
                     let autoUpdate = false;
+					let hidden = false;
                     let method = "GET";
                     let format = String();
                     let [headers, body] = [Object(), Object()];
@@ -260,7 +261,7 @@ export default class MainAPIR extends Plugin {
                         } else if (lowercaseLine.startsWith("show:")) {
                             show =
                                 checkVariables(
-                                    line.replace(/show: /i, "").trim(),
+                                    line.replace(/show:/i, "").trim(),
                                     this.settings,
                                 ) ?? "";
                             if (!show) {
@@ -323,6 +324,8 @@ export default class MainAPIR extends Plugin {
                             uuid = `req-${uuid}`
                         } else if (lowercaseLine.startsWith("auto-update")) {
                             autoUpdate = true;
+						} else if (lowercaseLine.startsWith("hidden")) {
+							hidden = true;
                         } else if (lowercaseLine.startsWith("format:")) {
                             format = line.replace(/format:/i, "").trim();
                         } else if (lowercaseLine.startsWith("properties:")) {
@@ -438,17 +441,6 @@ export default class MainAPIR extends Plugin {
 
                     const formattedOutput = formatOutput(output);
 
-                    // if a *format* is defined in the codeblock
-                    // render the response, else just *return* the response as String
-                    if (format) {
-                        const parts = formattedOutput.split(",");
-                        el.innerHTML = format.replace(/{}/g, () => parts.shift() || "");
-                    } else {
-                        el.createEl("pre", { text: formattedOutput });
-                    }
-                    
-                    // add a button to copy the output
-                    addBtnCopy(el, formattedOutput);
 
                     // Save to a file
                     if (saveTo) {
@@ -467,6 +459,20 @@ export default class MainAPIR extends Plugin {
                             new Notice("File modified");
                         }
                     }
+
+                    // if a *format* is defined in the codeblock
+                    // render the response, else just *return* the response as String
+                    if (hidden) {
+						return;
+                    } else if (format) {
+                        const parts = formattedOutput.split(",");
+                        el.innerHTML = format.replace(/{}/g, () => parts.shift() || "");
+					} else {
+                        el.createEl("pre", { text: formattedOutput });
+                    }
+                    
+                    // add a button to copy the output
+                    addBtnCopy(el, formattedOutput);
                 },
             );
         } catch (e) {

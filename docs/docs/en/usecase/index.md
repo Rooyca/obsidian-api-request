@@ -2,6 +2,32 @@
 
 A collection of use cases for this plugin. **If you have a one, please share it with us.**
 
+## Using inline responses with [Dataview](https://blacksmithgu.github.io/obsidian-dataview/)
+
+First, make a request and store the response using `req-uuid`:
+
+~~~markdown
+```req
+url: https://jsonplaceholder.typicode.com/comments/1
+req-uuid: test
+hidden
+```
+~~~
+
+Next, with **DataviewJS** and inline JavaScript queries enabled, you can access the saved data like this:
+
+```markdown
+The email is `$=dv.el("span", JSON.parse(localStorage.getItem("req-test")).email)`  
+and the ID is `$=dv.el("span", JSON.parse(localStorage.getItem("req-test")).id, { cls: "mod-warning" })`
+```
+
+This retrieves the email and ID from the saved response (the `req-` prefix is always required).
+Here, we’re also adding a custom class to the second inline query.
+
+Rendered output will look like this:
+
+> The email is [Eliseo@gardner.biz](mailto:Eliseo@gardner.biz) and the ID is <span style="color:red;">1</span> 
+
 ## Check BITCOIN (or any crypto) price
 
 ~~~makdown

@@ -14,9 +14,10 @@ Flags are the way to specify the parameters of our request.
 | [headers](#headers) |   |
 | [show](#show) | ALL     |
 | [req-uuid](#req-uuid) | req-general |
+| [hidden](#hidden) | FALSE |
 | [disabled](#disabled) | |
 | [save-as](#save-as) |   |
-| [auto-update](#auto-update) | |
+| [auto-update](#auto-update) | FALSE |
 | [format](#format) | |
 | [properties](#properties) | |
 
@@ -227,7 +228,7 @@ req-uuid: name
 Responses can also be accessed using [dataview](https://blacksmithgu.github.io/dataview/).
 
 ~~~markdown
-```dataview
+```dataviewjs
 dv.paragraph(localStorage.getItem("req-UUID"))
 ```
 ~~~
@@ -237,12 +238,24 @@ dv.paragraph(localStorage.getItem("req-UUID"))
 To remove responses from localStorage, run:
 
 ~~~markdown
-```dataview
+```dataviewjs
 localStorage.removeItem("req-name")
 ```
 ~~~
 
 To remove responses, go to settings and click over the response you want to delete.
+
+### hidden
+
+Executes the code block without displaying its output.
+
+~~~markdown
+```req 
+url: https://jsonplaceholder.typicode.com/users/1
+req-uuid: name
+hidden
+```
+~~~
 
 ### disabled
 

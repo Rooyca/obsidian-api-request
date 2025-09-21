@@ -34,7 +34,7 @@ The plugin can be installed from within Obsidian.
 - [ ] Translate (& update) documentation
 - [x] Data re-usage (`{{ls.UUID>JSONPath}}` syntax, where `ls` stands for `localStorage`)
 - [x] Support for comments using `#` or `//` syntax 
-- [ ] Inline query from response
+- [x] Inline query from response (using **Dataview**)
 - [ ] Add tests (!!!)
 - [ ] Re-implement `repeat` flag (repeat requests X times or every X seconds)
 
