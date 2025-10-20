@@ -352,6 +352,7 @@ export default class MainAPIR extends Plugin {
                     // If no cached data or auto-update is requested, make a new request
                     if (!responseData || autoUpdate) {
                         try {
+							body = JSON.stringify(body);
                             const response = await requestUrl({
                                 url: URL,
                                 method,

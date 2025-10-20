@@ -1,6 +1,6 @@
 {
 	"name": "api-request",
-	"version": "2.0.4",
+	"version": "2.0.5",
 	"description": "Fetch data from APIs or other sources. Responses in JSON, MD or HTML directly in your notes.",
 	"main": "main.js",
 	"scripts": {
