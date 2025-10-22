@@ -212,9 +212,11 @@ Specifies the unique identifier of the request. This is useful when we want to s
 ```req 
 url: https://jsonplaceholder.typicode.com/users/1
 show: $.name
-req-uuid: name
+req-uuid: test-{{this.username}}
 ```
 ~~~
+
+!!! note "Where `{{this.username}}` is a variable (`username`) defined in the frontmatter."
 
 Stored responses can be accessed using the `req-uuid` (which won't trigger a new request).
 

@@ -321,6 +321,11 @@ export default class MainAPIR extends Plugin {
                                 });
                                 return;
                             }
+							uuid =
+                                checkVariables(
+                                    uuid,
+                                    this.settings,
+                                ) ?? "";
                             uuid = `req-${uuid}`
                         } else if (lowercaseLine.startsWith("auto-update")) {
                             autoUpdate = true;
