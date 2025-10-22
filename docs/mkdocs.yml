@@ -23,15 +23,13 @@ theme:
 
 nav:
   - English: 
-    - Overview: en/index.md
-    - Usage:
-      - codeblocks: en/codeblocks.md
-      - usecase: en/usecase
+    - Usage: en/codeblocks.md
+    - Use Cases: en/usecase
   - Español:
     - Inicio: es/index.md
     - Uso:
-      - bloques de código: es/codeblocks.md
-      - ejemplos de uso: es/usecase
+      - Cómo usar: es/codeblocks.md
+      - Casos de uso: es/usecase
   - 中文:
     - 概述: zh/index.md
     - 用法: 

@@ -1,4 +1,4 @@
-# Usecase
+# Usecases
 
 A collection of use cases for this plugin. **If you have a one, please share it with us.**
 
