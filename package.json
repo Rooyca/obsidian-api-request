@@ -1,7 +1,7 @@
 {
 	"name": "api-request",
-	"version": "2.0.6",
-	"description": "Fetch data from APIs or other sources. Responses in JSON, MD or HTML directly in your notes.",
+	"version": "2.0.7",
+	"description": "Integrate API data into your notes with request caching, variable support, and precise JSON extraction.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

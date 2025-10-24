@@ -1,9 +1,9 @@
 {
 	"id": "api-request",
 	"name": "APIRequest",
-	"version": "2.0.6",
+	"version": "2.0.7",
 	"minAppVersion": "0.15.0",
-	"description": "Fetch data from APIs or other sources. Responses in JSON, MD or HTML directly in your notes.",
+	"description": "Integrate API data into your notes with request caching, variable support, and precise JSON extraction.",
 	"author": "rooyca",
 	"authorUrl": "https://github.com/rooyca",
 	"fundingUrl": "https://ko-fi.com/rooyca",

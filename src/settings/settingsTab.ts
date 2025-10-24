@@ -26,22 +26,46 @@ export default class APRSettings extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					}),
 			);
-		new Setting(containerEl)
-			.setName("Status-bar text")
-			.setDesc(
-				"Text to display in the status bar when there are code blocks (use %d to show the number of blocks)",
-			)
-			.addText((text) =>
-				text
-					.setPlaceholder("Count blocks: %d")
-					.setValue(this.plugin.settings.countBlocksText)
-					.onChange(async (value) => {
-						if (!value.includes("%d")) value = "APIR: %d";
-						this.plugin.settings.countBlocksText = value;
-						await this.plugin.saveSettings();
-					}),
-			);
 
+new Setting(containerEl)
+	.setName("Enable interactive status bar")
+	.setDesc("Show clickable status bar with request counter and navigation")
+	.addToggle((toggle) =>
+		toggle
+			.setValue(this.plugin.settings.enableStatusBar)
+			.onChange(async (value) => {
+				this.plugin.settings.enableStatusBar = value;
+				await this.plugin.saveSettings();
+				// Trigger status bar update
+				this.plugin.updateStatusBar();
+			}),
+	);
+
+new Setting(containerEl)
+	.setName("Active request color")
+	.setDesc("Color for active requests (not disabled or with auto-update)")
+	.addText((text) =>
+		text
+			.setPlaceholder("#4ade80")
+			.setValue(this.plugin.settings.statusBarActiveColor)
+			.onChange(async (value) => {
+				this.plugin.settings.statusBarActiveColor = value;
+				await this.plugin.saveSettings();
+			}),
+	);
+
+new Setting(containerEl)
+	.setName("Inactive request color")
+	.setDesc("Color for disabled requests")
+	.addText((text) =>
+		text
+			.setPlaceholder("#9ca3af")
+			.setValue(this.plugin.settings.statusBarInactiveColor)
+			.onChange(async (value) => {
+				this.plugin.settings.statusBarInactiveColor = value;
+				await this.plugin.saveSettings();
+			}),
+	);
 		containerEl.createEl("h2", { text: "Global variables" });
 		new Setting(containerEl).setName("Key").addText((text) =>
 			text
@@ -71,6 +95,7 @@ export default class APRSettings extends PluginSettingTab {
 				this.display();
 			});
 		});
+
 
 		containerEl.createEl("h2", { text: "Manage Global Variables" });
 		this.displayKeyValues();

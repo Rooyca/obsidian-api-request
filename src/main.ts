@@ -4,6 +4,7 @@ import {
     Notice,
     requestUrl,
     debounce,
+    Menu,
 } from "obsidian";
 import {
     readFrontmatter,
@@ -157,44 +158,35 @@ export function checkVariables(req_prop: string, settings: LoadAPIRSettings) {
 
 export default class MainAPIR extends Plugin {
     settings: LoadAPIRSettings;
+    private statusBarItem: HTMLElement;
+    private reqBlocks: ReqCodeBlock[] = [];
 
     async onload() {
-        console.log("loading APIR");
+        console.log("Loading: api-request");
         await this.loadSettings();
 
-        async function updateStatusBar() {
-            const statusbar = document.getElementsByClassName(
-                "status-bar-item plugin-api-request",
-            );
-            while (statusbar[0]) {
-                statusbar[0].parentNode?.removeChild(statusbar[0]);
-            }
+        // Create status bar item only if enabled in settings
+        this.statusBarItem = this.addStatusBarItem();
+        this.statusBarItem.addClass('plugin-api-request');
+        this.statusBarItem.style.cursor = 'pointer';
+        
+        // Add click handler for menu
+        this.statusBarItem.addEventListener('click', (e) => {
+            this.showRequestMenu(e);
+        });
 
-            // count the number of code-blocks
-            const markdownContent = this.app.workspace
-                .getActiveViewOfType(MarkdownView)
-                ?.getViewData();
-            const codeBlocks = markdownContent?.match(/```req/g)?.length || 0;
-            if (codeBlocks > 0) {
-                const item = this.addStatusBarItem();
-
-                const statusText = this.settings.countBlocksText.replace(
-                    "%d",
-                    codeBlocks.toString(),
-                );
-                item.createEl("span", { text: statusText });
-            }
-        }
+        // Debounced update function
+        const debouncedUpdate = debounce(this.updateStatusBar.bind(this), 300);
 
         // count number of codeblocks on "file-open" and "changes to the file"
         this.registerEvent(
-            this.app.workspace.on(
-                "file-open",
-                debounce(updateStatusBar.bind(this), 300),
-            ),
+            this.app.workspace.on("file-open", debouncedUpdate)
         );
         this.registerEvent(
-            this.app.workspace.on("editor-change", updateStatusBar.bind(this)),
+            this.app.workspace.on("editor-change", debouncedUpdate)
+        );
+        this.registerEvent(
+            this.app.workspace.on("active-leaf-change", debouncedUpdate)
         );
 
         try {
@@ -486,29 +478,186 @@ export default class MainAPIR extends Plugin {
             new Notice("Error: " + e.message);
         }
 
-        // TODO
-        // Make *Inline queries* using responses from codeblocks
-
-        //this.registerMarkdownPostProcessor(async (element, context) => {
-        //  const codeblocks = element.findAll("code");
-        //  for (const codeblock of codeblocks) {
-        //      const text = codeblock.innerText.trim();
-        //
-        //      const inlineMatches = text.match(/{{(.*?)}}/g);
-        //      if (inlineMatches) {
-        //          inlineMatches.forEach((match) => {
-        //              const varName = match.replace(/{{|}}/g, "").trim();
-        //              const value = localStorage.getItem(varName);
-        //              element.innerHTML = element.innerHTML.replace(match, value);
-        //          });
-        //      }
-        //}});
-
         this.addSettingTab(new APRSettings(this.app, this));
     }
 
+    // Parse all req code blocks from the active file
+    private parseReqBlocks(): ReqCodeBlock[] {
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (!view) return [];
+
+        const editor = view.editor;
+        const content = editor.getValue();
+        const lines = content.split('\n');
+        const blocks: ReqCodeBlock[] = [];
+        let blockIndex = 0;
+
+        let inReqBlock = false;
+        let currentBlock: Partial<ReqCodeBlock> = {};
+        let blockStartLine = 0;
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const trimmedLine = line.trim();
+            const lowercaseLine = trimmedLine.toLowerCase();
+
+            if (trimmedLine.startsWith('```req')) {
+                inReqBlock = true;
+                blockStartLine = i;
+                currentBlock = {
+                    uuid: null,
+                    index: blockIndex,
+                    lineStart: blockStartLine,
+                    disabled: false,
+                    autoUpdate: false,
+                    isActive: true
+                };
+            } else if (inReqBlock && trimmedLine === '```') {
+                // End of block - determine display name and active status
+                if (currentBlock.uuid) {
+                    // Remove 'req-' prefix for display
+                    currentBlock.displayName = currentBlock.uuid.replace('req-', '');
+                } else {
+                    currentBlock.displayName = `Block ${blockIndex + 1}`;
+                }
+
+                // Determine if active (green) or inactive (gray)
+                // Active = has uuid AND auto-update
+				currentBlock.isActive = (currentBlock.uuid !== null && currentBlock.autoUpdate) || 
+                       (!currentBlock.disabled && currentBlock.uuid === null);
+
+                blocks.push(currentBlock as ReqCodeBlock);
+                blockIndex++;
+                inReqBlock = false;
+                currentBlock = {};
+            } else if (inReqBlock) {
+                // Parse properties
+                if (lowercaseLine.startsWith('req-uuid:')) {
+                    let uuid = line.replace(/req-uuid:/i, '').trim();
+                    uuid = checkVariables.call(this, uuid, this.settings) ?? '';
+                    currentBlock.uuid = `req-${uuid}`;
+                }
+                if (lowercaseLine.startsWith('disabled')) {
+                    currentBlock.disabled = true;
+                }
+                if (lowercaseLine.startsWith('auto-update')) {
+                    currentBlock.autoUpdate = true;
+                }
+            }
+        }
+
+        return blocks;
+    }
+
+    // Update the status bar display
+    private updateStatusBar() {
+        // Check if status bar is enabled
+        if (!this.settings.enableStatusBar) {
+            this.statusBarItem.style.display = 'none';
+            return;
+        }
+
+        this.reqBlocks = this.parseReqBlocks();
+        
+        const count = this.reqBlocks.length;
+        
+        if (count === 0) {
+            this.statusBarItem.style.display = 'none';
+            return;
+        }
+
+        this.statusBarItem.style.display = 'flex';
+        this.statusBarItem.style.alignItems = 'center';
+        this.statusBarItem.style.gap = '4px';
+        
+        // Create icon with counter
+		// TODO
+		// Use native icons
+        this.statusBarItem.innerHTML = `
+            <span style="display: flex; align-items: center; gap: 4px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <span>${count} requests</span>
+            </span>
+        `;
+    }
+
+    // Show menu with all requests
+    private showRequestMenu(event: MouseEvent) {
+        const menu = new Menu();
+
+        if (this.reqBlocks.length === 0) {
+            menu.addItem((item) => {
+                item.setTitle('No req blocks found');
+                item.setDisabled(true);
+            });
+        } else {
+            this.reqBlocks.forEach((block) => {
+                menu.addItem((item) => {
+                    item.setTitle(block.displayName);
+                    item.setIcon('rocket');
+                    
+                    // Add color styling using settings colors
+                    const color = block.isActive 
+                        ? this.settings.statusBarActiveColor 
+                        : this.settings.statusBarInactiveColor;
+                    item.dom.style.color = color;
+                    
+                    item.onClick(() => {
+                        this.navigateToBlock(block);
+                    });
+                });
+            });
+        }
+
+        menu.showAtMouseEvent(event);
+    }
+
+    // Navigate to the code block in the editor
+    private navigateToBlock(block: ReqCodeBlock) {
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (!view) {
+            new Notice('No active markdown view');
+            return;
+        }
+
+        const editor = view.editor;
+        
+        // Set cursor to the start of the code block
+        editor.setCursor({
+            line: block.lineStart,
+            ch: 0
+        });
+
+        // Scroll to make it visible
+        editor.scrollIntoView({
+            from: { line: block.lineStart, ch: 0 },
+            to: { line: block.lineStart + 5, ch: 0 }
+        }, true);
+
+        // Select the entire block for visual feedback
+        const content = editor.getValue();
+        const lines = content.split('\n');
+        let endLine = block.lineStart;
+        
+        for (let i = block.lineStart + 1; i < lines.length; i++) {
+            if (lines[i].trim() === '```') {
+                endLine = i;
+                break;
+            }
+        }
+
+        editor.setSelection(
+            { line: block.lineStart, ch: 0 },
+            { line: endLine, ch: lines[endLine].length }
+        );
+    }
+
     onunload() {
-        console.log("unloading APIR");
+        console.log("Unloading: api-request");
     }
 
     async loadSettings() {
