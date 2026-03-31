@@ -5,6 +5,8 @@ import {
     requestUrl,
     debounce,
     Menu,
+    TFile,
+    TAbstractFile,
 } from "obsidian";
 import {
     readFrontmatter,
@@ -12,12 +14,61 @@ import {
 } from "src/functions/frontmatterUtils";
 import { addBtnCopy } from "src/functions/general";
 import { varname_regx, no_varname_regx, key_regx } from "src/functions/regx";
+import { 
+    isValidUrl, 
+    isValidMethod, 
+    sanitizeUuid, 
+    isValidJsonPath, 
+    sanitizeHtml,
+    isValidFormat,
+    isValidFilePath,
+    safeJsonParse,
+    isValidStorageKey
+} from "src/functions/security";
 import APRSettings from "src/settings/settingsTab";
 import { JSONPath } from "jsonpath-plus";
 import { LoadAPIRSettings, DEFAULT_SETTINGS } from "src/settings/settingsData";
 
-// Get global variables (defined in settings)
-export function checkGlobalValue(value: string, settings: LoadAPIRSettings) {
+/**
+ * Interface for tracking request code blocks in the editor
+ */
+interface ReqCodeBlock {
+    /** Unique identifier for the request (optional) */
+    uuid: string | null;
+    /** Index of the block in the document */
+    index: number;
+    /** Line number where the code block starts */
+    lineStart: number;
+    /** Whether the request is disabled */
+    disabled: boolean;
+    /** Whether the request should auto-update */
+    autoUpdate: boolean;
+    /** Whether the request is active (for UI styling) */
+    isActive: boolean;
+    /** Display name for the request in the UI */
+    displayName: string;
+}
+
+/**
+ * Interface for key-value pairs in plugin settings
+ */
+interface KeyValuePair {
+    /** The key identifier */
+    key: string;
+    /** The value associated with the key */
+    value: string;
+}
+
+/**
+ * Retrieves global variables defined in plugin settings and replaces them in the input string
+ * @param value - The string containing variable placeholders in the format {{KEY}}
+ * @param settings - The plugin settings containing key-value pairs
+ * @returns The string with variables replaced by their values
+ * @example
+ * // If settings has {key: "API_KEY", value: "12345"}
+ * checkGlobalValue("url={{API_KEY}}", settings) // returns "url=12345"
+ */
+export function checkGlobalValue(value: string, settings: LoadAPIRSettings): string {
     const match = value.match(key_regx);
 
     if (match) {
@@ -25,7 +76,7 @@ export function checkGlobalValue(value: string, settings: LoadAPIRSettings) {
             const key = match[i].replace(/{{|}}/g, "");
             value = value.replace(
                 match[i],
-                settings.KeyValueCodeblocks.find((obj) => obj.key === key)
+                (settings.KeyValueCodeblocks as KeyValuePair[]).find((obj) => obj.key === key)
                     ?.value || "",
             );
         }
@@ -33,9 +84,18 @@ export function checkGlobalValue(value: string, settings: LoadAPIRSettings) {
     return value;
 }
 
-// Get data from localStorage using this syntax: {{ls.UUID>JSONPath}}
-// where `ls` stands for `localStorage`
-export function checkLocalStorage(value: string) {
+/**
+ * Retrieves data from localStorage using the syntax {{ls.UUID>JSONPath}}
+ * where 'ls' stands for 'localStorage'
+ * 
+ * @param value - The string containing localStorage references
+ * @returns The string with localStorage references replaced by their values
+ * @security Validates UUID format and JSONPath expressions to prevent injection attacks
+ * @example
+ * // If localStorage has "req-mydata" with {user: {name: "John"}}
+ * checkLocalStorage("{{ls.mydata>$.user.name}}") // returns "John"
+ */
+export function checkLocalStorage(value: string): string {
     const match = value.match(key_regx);
 
     if (match) {
@@ -43,28 +103,57 @@ export function checkLocalStorage(value: string) {
             const key = match[i].replace(/{{|}}/g, "");
             let uuid = key.split(">")[0];
             const jsonPath = key.split(">")[1];
-            uuid = uuid.split(".")[1]
+            uuid = uuid.split(".")[1];
+            
+            // Validate uuid and jsonPath for security
+            const sanitizedUuid = sanitizeUuid(uuid);
+            if (!sanitizedUuid) {
+                console.warn("Invalid UUID format:", uuid);
+                continue;
+            }
+            
+            if (jsonPath && !isValidJsonPath(jsonPath)) {
+                console.warn("Invalid JSONPath expression:", jsonPath);
+                continue;
+            }
             
             // Try with req- prefix first (for req-uuid data)
-            let data = localStorage.getItem(`req-${uuid}`);
+            let data = localStorage.getItem(`req-${sanitizedUuid}`);
             
             // If not found, try without prefix (for manual variables)
             if (!data) {
-                data = localStorage.getItem(uuid);
+                data = localStorage.getItem(sanitizedUuid);
             }
             
             if (data) {
-                const parsedData = JSON.parse(data);
-                const output = JSONPath({ path: jsonPath, json: parsedData });
-                value = value.replace(match[i], output);
+                const parsedData = safeJsonParse(data);
+                if (parsedData && jsonPath) {
+                    try {
+                        const output = JSONPath({ path: jsonPath, json: parsedData });
+                        value = value.replace(match[i], output);
+                    } catch (e) {
+                        console.error("JSONPath evaluation error:", e);
+                    }
+                }
             }
         }
     }
     return value;
 }
 
-// parse headers and body to valid JSON
-export function parseToValidJson(input, type) {
+/**
+ * Parses and validates input string to JSON format
+ * Attempts to convert various quote styles to valid JSON
+ * 
+ * @param input - The input string to parse
+ * @param type - The type of data being parsed (for error messages)
+ * @returns Parsed JSON object or null if input is empty
+ * @throws Error if the input cannot be parsed to valid JSON
+ * @example
+ * parseToValidJson("{key: value}", "headers") // returns {"key": "value"}
+ * parseToValidJson("'key': 'value'", "body") // returns {"key": "value"}
+ */
+export function parseToValidJson(input: string, type: string): Record<string, any> | null {
     const trimmedInput = input.trim();
 
     if (!trimmedInput) {
@@ -89,7 +178,16 @@ export function parseToValidJson(input, type) {
     }
 }
 
-// format the output to be displayed
+/**
+ * Formats output for display in the code block
+ * Handles arrays, objects, and primitive values
+ * 
+ * @param output - The output to format (can be any type)
+ * @returns Formatted string representation of the output
+ * @example
+ * formatOutput([1, 2, 3]) // returns "1, 2, 3"
+ * formatOutput({key: "value"}) // returns '{\n  "key": "value"\n}'
+ */
 export function formatOutput(output: any): string {
     // If output is Array
     if (Array.isArray(output)) {
@@ -113,54 +211,98 @@ export function formatOutput(output: any): string {
     return String(output ?? "");
 }
 
-// Check if the value has variables and replace them
-export function checkVariables(req_prop: string, settings: LoadAPIRSettings) {
-    // search value in localStorage
-    req_prop = checkLocalStorage(req_prop);
-    // search value globally
-    req_prop = checkGlobalValue(req_prop, settings);
-    const match = req_prop.match(varname_regx);
+/**
+ * Checks if the value contains variables and replaces them with actual values
+ * Supports:
+ * - localStorage references: {{ls.UUID>JSONPath}}
+ * - Global variables: {{KEY}}
+ * - Frontmatter variables: {{this.propertyName}}
+ * - File name: {{this.file.name}}
+ * 
+ * @param req_prop - The string containing variable placeholders
+ * @param settings - The plugin settings
+ * @returns The string with variables replaced, or undefined if an error occurs
+ * @security All variable values are validated before substitution
+ * @example
+ * checkVariables("{{this.file.name}}", settings) // returns current file name
+ * checkVariables("{{API_KEY}}", settings) // returns value from global settings
+ */
+export function checkVariables(req_prop: string, settings: LoadAPIRSettings): string | undefined {
+    try {
+        // search value in localStorage
+        req_prop = checkLocalStorage(req_prop);
+        // search value globally
+        req_prop = checkGlobalValue(req_prop, settings);
+        const match = req_prop.match(varname_regx);
 
-    if (match) {
-        for (let i = 0; i < match.length; i++) {
-            const var_name = match[i].replace(no_varname_regx, "");
+        if (match) {
+            for (let i = 0; i < match.length; i++) {
+                const var_name = match[i].replace(no_varname_regx, "");
 
-            // if {{this.file.name}} return filename
-            if (var_name == "file.name") {
-                req_prop = req_prop.replace(
-                    match[i],
-                    this.app.workspace.getActiveFile().basename,
-                );
-                continue;
-            }
+                // if {{this.file.name}} return filename
+                if (var_name == "file.name") {
+                    const activeFile = this.app.workspace.getActiveFile();
+                    if (!activeFile) {
+                        console.warn("No active file found");
+                        continue;
+                    }
+                    req_prop = req_prop.replace(
+                        match[i],
+                        activeFile.basename,
+                    );
+                    continue;
+                }
 
-            const activeView =
-                this.app.workspace.getActiveViewOfType(MarkdownView);
-            const markdownContent = activeView.editor.getValue();
+                const activeView =
+                    this.app.workspace.getActiveViewOfType(MarkdownView);
+                
+                if (!activeView) {
+                    console.warn("No active markdown view found");
+                    continue;
+                }
+                
+                const markdownContent = activeView.editor.getValue();
 
-            try {
-                const frontmatterData = parseFrontmatter(
-                    readFrontmatter(markdownContent),
-                );
-                req_prop = req_prop.replace(
-                    match[i],
-                    frontmatterData[var_name] || "",
-                );
-            } catch (e) {
-                console.error(e.message);
-                new Notice("Error: " + e.message);
-                return;
+                try {
+                    const frontmatterData = parseFrontmatter(
+                        readFrontmatter(markdownContent),
+                    );
+                    req_prop = req_prop.replace(
+                        match[i],
+                        frontmatterData[var_name] || "",
+                    );
+                } catch (e: any) {
+                    console.error("Frontmatter parsing error:", e.message);
+                    new Notice("Error reading frontmatter: " + e.message);
+                    return undefined;
+                }
             }
         }
+        return req_prop;
+    } catch (e: any) {
+        console.error("Variable substitution error:", e);
+        new Notice("Error processing variables: " + e.message);
+        return undefined;
     }
-    return req_prop;
 }
 
+/**
+ * Main plugin class for API Request functionality
+ * Allows users to make HTTP requests directly from Obsidian code blocks
+ * and display responses with caching, variable substitution, and data extraction
+ */
 export default class MainAPIR extends Plugin {
+    /** Plugin settings */
     settings: LoadAPIRSettings;
+    /** Status bar element for displaying request count */
     private statusBarItem: HTMLElement;
+    /** List of request code blocks in the current file */
     private reqBlocks: ReqCodeBlock[] = [];
 
+    /**
+     * Called when the plugin is loaded
+     * Registers code block processor, event handlers, and settings tab
+     */
     async onload() {
         console.log("Loading: api-request");
         await this.loadSettings();
@@ -228,7 +370,7 @@ export default class MainAPIR extends Plugin {
                             // get the method and check if is a valid method
                         } else if (lowercaseLine.startsWith("method:")) {
                             method = line.replace(/method:/i, "").toUpperCase().trim();
-                            if (!allowedMethods.includes(method)) {
+                            if (!isValidMethod(method)) {
                                 el.createEl("strong", {
                                     text: `Error: Method ${method} not supported`,
                                 });
@@ -248,6 +390,14 @@ export default class MainAPIR extends Plugin {
                                 });
                                 return;
                             }
+                            
+                            // Validate URL for security
+                            if (!isValidUrl(URL)) {
+                                el.createEl("strong", {
+                                    text: "Error: Invalid or unsafe URL",
+                                });
+                                return;
+                            }
 
                             // extract data using jsonpath-plus (https://www.npmjs.com/package/jsonpath-plus)
                         } else if (lowercaseLine.startsWith("show:")) {
@@ -261,6 +411,17 @@ export default class MainAPIR extends Plugin {
                                     text: "Error: show value is empty",
                                 });
                                 return;
+                            }
+                            
+                            // Validate JSONPath for security
+                            const paths = show.split(" + ");
+                            for (const path of paths) {
+                                if (!isValidJsonPath(path.trim())) {
+                                    el.createEl("strong", {
+                                        text: "Error: Invalid JSONPath expression",
+                                    });
+                                    return;
+                                }
                             }
 
                             // get headers. They can use double, single quotes or none
@@ -276,8 +437,8 @@ export default class MainAPIR extends Plugin {
                                     tempHeaders,
                                     "headers",
                                 );
-                            } catch (e) {
-                                el.createEl("strong", { text: e.message });
+                            } catch (e: any) {
+                                el.createEl("strong", { text: e.message || "Error parsing headers" });
                                 return;
                             }
 
@@ -291,8 +452,9 @@ export default class MainAPIR extends Plugin {
 
                             try {
                                 body = parseToValidJson(tempBody, "body");
-                            } catch {
+                            } catch (e: any) {
                                 // use raw body if it's not a valid JSON
+                                console.log("Using raw body (not valid JSON):", e.message);
                                 body = tempBody;
                             }
 
@@ -305,6 +467,14 @@ export default class MainAPIR extends Plugin {
                                 });
                                 return;
                             }
+                            
+                            // Validate file path for security
+                            if (!isValidFilePath(saveTo)) {
+                                el.createEl("strong", {
+                                    text: "Error: Invalid file path. Path traversal and absolute paths are not allowed.",
+                                });
+                                return;
+                            }
                         } else if (lowercaseLine.startsWith("req-uuid:")) {
                             uuid = line.replace(/req-uuid:/i, "").trim();
                             if (!uuid) {
@@ -313,18 +483,35 @@ export default class MainAPIR extends Plugin {
                                 });
                                 return;
                             }
-							uuid =
+                            uuid =
                                 checkVariables(
                                     uuid,
                                     this.settings,
                                 ) ?? "";
-                            uuid = `req-${uuid}`
+                            
+                            // Sanitize UUID for security
+                            const sanitized = sanitizeUuid(uuid);
+                            if (!sanitized) {
+                                el.createEl("strong", {
+                                    text: "Error: Invalid UUID format",
+                                });
+                                return;
+                            }
+                            uuid = `req-${sanitized}`;
                         } else if (lowercaseLine.startsWith("auto-update")) {
                             autoUpdate = true;
-						} else if (lowercaseLine.startsWith("hidden")) {
-							hidden = true;
+                        } else if (lowercaseLine.startsWith("hidden")) {
+                            hidden = true;
                         } else if (lowercaseLine.startsWith("format:")) {
                             format = line.replace(/format:/i, "").trim();
+                            
+                            // Validate format for XSS prevention
+                            if (!isValidFormat(format)) {
+                                el.createEl("strong", {
+                                    text: "Error: Invalid format string. Script tags and event handlers are not allowed.",
+                                });
+                                return;
+                            }
                         } else if (lowercaseLine.startsWith("properties:")) {
                             properties = line
                                 .replace(/properties:/i, "")
@@ -333,23 +520,31 @@ export default class MainAPIR extends Plugin {
                         }
                     }
 
-                    let responseData;
-                    let responseDataText;
+                    let responseData: any;
+                    let responseDataText: string | undefined;
 
                     // Check if the response is cached in localStorage
                     if (uuid && !autoUpdate) {
-                        const cachedResponse = localStorage.getItem(uuid);
-                        if (cachedResponse) {
-                            responseData = JSON.parse(cachedResponse);
-                            const temp_uuid = uuid.split("req-")[1]
-                            new Notice(`Using cached data with UUID: ${temp_uuid}`);
+                        try {
+                            const cachedResponse = localStorage.getItem(uuid);
+                            if (cachedResponse) {
+                                responseData = safeJsonParse(cachedResponse);
+                                if (responseData) {
+                                    const temp_uuid = uuid.split("req-")[1];
+                                    new Notice(`Using cached data with UUID: ${temp_uuid}`);
+                                } else {
+                                    console.warn("Failed to parse cached data");
+                                }
+                            }
+                        } catch (e) {
+                            console.error("Error reading from localStorage:", e);
                         }
                     }
 
                     // If no cached data or auto-update is requested, make a new request
                     if (!responseData || autoUpdate) {
                         try {
-							body = method == "GET" ? undefined : JSON.stringify(body);
+                            body = method == "GET" ? undefined : JSON.stringify(body);
                             const response = await requestUrl({
                                 url: URL,
                                 method,
@@ -361,12 +556,17 @@ export default class MainAPIR extends Plugin {
 
                             // Cache the response in localStorage if req-uuid is provided
                             if (uuid) {
-                                localStorage.setItem(
-                                    uuid,
-                                    JSON.stringify(responseData),
-                                );
+                                try {
+                                    localStorage.setItem(
+                                        uuid,
+                                        JSON.stringify(responseData),
+                                    );
+                                } catch (e) {
+                                    console.error("Error saving to localStorage:", e);
+                                    new Notice("Warning: Failed to cache response");
+                                }
                             }
-                        } catch (e) {
+                        } catch (e: any) {
                             console.error(e.message);
                             new Notice("Error: " + e.message);
                             responseData = `Error: ${e.message}`;
@@ -382,8 +582,22 @@ export default class MainAPIR extends Plugin {
                         // check if the user defined more than one path
                         // if so, iterate over each path and get the data
                         output = show.length > 1 
-                          ? show.map((path) => JSONPath({ path: path.trim(), json: responseData })) 
-                          : JSONPath({ path: show[0], json: responseData });
+                          ? show.map((path) => {
+                                try {
+                                    return JSONPath({ path: path.trim(), json: responseData });
+                                } catch (e: any) {
+                                    console.error("JSONPath error for path:", path, e);
+                                    return `Error: ${e.message}`;
+                                }
+                            })
+                          : (() => {
+                                try {
+                                    return JSONPath({ path: show[0], json: responseData });
+                                } catch (e: any) {
+                                    console.error("JSONPath error:", e);
+                                    return `Error: ${e.message}`;
+                                }
+                            })();
 
                         if (properties.length > 0 && properties[0] !== '') {
                             // Format the output and split it into an array
@@ -446,26 +660,41 @@ export default class MainAPIR extends Plugin {
                             // try to create the file. It'll fail if already exists
                             await this.app.vault.create(
                                 saveTo,
-                                responseDataText,
+                                responseDataText || "",
                             );
                             new Notice("Saved to: " + saveTo);
-                        } catch (e) {
+                        } catch (e: any) {
                             // try to modify the file
-                            const file =
-                                this.app.vault.getAbstractFileByPath(saveTo);
-                            await this.app.vault.modify(file, responseDataText);
-                            new Notice("File modified");
+                            try {
+                                const file = this.app.vault.getAbstractFileByPath(saveTo);
+                                if (file instanceof TFile) {
+                                    await this.app.vault.modify(file, responseDataText || "");
+                                    new Notice("File modified");
+                                } else {
+                                    new Notice("Error: Could not save to file");
+                                    console.error("File save error:", e);
+                                }
+                            } catch (modifyError: any) {
+                                new Notice("Error: Failed to save file");
+                                console.error("File modification error:", modifyError);
+                            }
                         }
                     }
 
                     // if a *format* is defined in the codeblock
                     // render the response, else just *return* the response as String
                     if (hidden) {
-						return;
+                        return;
                     } else if (format) {
                         const parts = formattedOutput.split(",");
-                        el.innerHTML = format.replace(/{}/g, () => parts.shift() || "");
-					} else {
+                        // Sanitize the format output to prevent XSS
+                        const sanitizedFormat = sanitizeHtml(format);
+                        el.innerHTML = sanitizedFormat.replace(/{}/g, () => {
+                            const part = parts.shift() || "";
+                            // Escape the part to prevent XSS
+                            return sanitizeHtml(part);
+                        });
+                    } else {
                         el.createEl("pre", { text: formattedOutput });
                     }
                     
@@ -481,7 +710,12 @@ export default class MainAPIR extends Plugin {
         this.addSettingTab(new APRSettings(this.app, this));
     }
 
-    // Parse all req code blocks from the active file
+    /**
+     * Parses all req code blocks from the active file
+     * Extracts metadata like UUID, disabled status, and auto-update flag
+     * 
+     * @returns Array of parsed request code blocks
+     */
     private parseReqBlocks(): ReqCodeBlock[] {
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (!view) return [];
@@ -549,8 +783,11 @@ export default class MainAPIR extends Plugin {
         return blocks;
     }
 
-    // Update the status bar display
-    private updateStatusBar() {
+    /**
+     * Updates the status bar display with request count
+     * Shows/hides based on settings and number of requests
+     */
+    updateStatusBar() {
         // Check if status bar is enabled
         if (!this.settings.enableStatusBar) {
             this.statusBarItem.style.display = 'none';
@@ -585,7 +822,12 @@ export default class MainAPIR extends Plugin {
         `;
     }
 
-    // Show menu with all requests
+    /**
+     * Shows a menu with all available request blocks
+     * Allows navigation to specific blocks
+     * 
+     * @param event - The mouse event that triggered the menu
+     */
     private showRequestMenu(event: MouseEvent) {
         const menu = new Menu();
 
@@ -600,15 +842,19 @@ export default class MainAPIR extends Plugin {
                     item.setTitle(block.displayName);
                     item.setIcon('rocket');
                     
-                    // Add color styling using settings colors
-                    const color = block.isActive 
-                        ? this.settings.statusBarActiveColor 
-                        : this.settings.statusBarInactiveColor;
-                    item.dom.style.color = color;
-                    
+                    // Store color in a CSS variable that can be used by styles
+                    const isActive = block.isActive;
                     item.onClick(() => {
                         this.navigateToBlock(block);
                     });
+                    
+                    // Add custom styling via callback
+                    const color = isActive 
+                        ? this.settings.statusBarActiveColor 
+                        : this.settings.statusBarInactiveColor;
+                    
+                    // Use setIcon with color hint through title
+                    item.setTitle(`${block.displayName}${isActive ? ' 🟢' : ' ⚪'}`);
                 });
             });
         }
@@ -616,7 +862,12 @@ export default class MainAPIR extends Plugin {
         menu.showAtMouseEvent(event);
     }
 
-    // Navigate to the code block in the editor
+    /**
+     * Navigates to a specific code block in the editor
+     * Scrolls to the block and selects it for visual feedback
+     * 
+     * @param block - The request block to navigate to
+     */
     private navigateToBlock(block: ReqCodeBlock) {
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (!view) {
@@ -656,10 +907,16 @@ export default class MainAPIR extends Plugin {
         );
     }
 
+    /**
+     * Called when the plugin is unloaded
+     */
     onunload() {
         console.log("Unloading: api-request");
     }
 
+    /**
+     * Loads plugin settings from storage
+     */
     async loadSettings() {
         this.settings = Object.assign(
             {},
@@ -668,6 +925,9 @@ export default class MainAPIR extends Plugin {
         );
     }
 
+    /**
+     * Saves plugin settings to storage
+     */
     async saveSettings() {
         await this.saveData(this.settings);
     }

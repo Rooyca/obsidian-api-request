@@ -1,5 +1,11 @@
-// Adds the copy button to the code block
-// Take from: https://github.com/jdbrice/obsidian-code-block-copy/
+/**
+ * Adds a copy button to the code block element
+ * Button copies the specified text to clipboard when clicked
+ * 
+ * @param el - The HTML element to add the button to
+ * @param copyThis - The text to copy to clipboard
+ * @source https://github.com/jdbrice/obsidian-code-block-copy/
+ */
 export function addBtnCopy(el: HTMLElement, copyThis: string) {
 	const btnCopy = el.createEl("button", { cls: "copy-req", text: "copy" });
 	btnCopy.addEventListener('click', function () {

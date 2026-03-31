@@ -11,6 +11,15 @@
 
 This [Obsidian](https://obsidian.md/) plugin enables users to make API requests directly within their notes and display the response in a code-block.
 
+## 🔒 Security
+
+This plugin implements comprehensive security measures including:
+- Input validation for URLs, paths, and user data
+- XSS prevention through HTML sanitization
+- Protection against directory traversal attacks
+- Safe JSONPath expression evaluation
+- Secure localStorage handling
+
 ## 🚀 Installation
 
 The plugin can be installed from within Obsidian.
@@ -37,6 +46,38 @@ The plugin can be installed from within Obsidian.
 - [x] Inline query from response (using **Dataview**)
 - [ ] Add tests (!!!)
 - [ ] Re-implement `repeat` flag (repeat requests X times or every X seconds)
+- [x] Security improvements (input validation, XSS prevention, path traversal protection)
+- [x] TypeScript type safety improvements
+- [x] Comprehensive error handling
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting a pull request.
+
+### Development
+
+```bash
+# Install dependencies
+npm install
+
+# Build
+npm run build
+
+# Development mode (auto-rebuild)
+npm run dev
+```
+
+For more details, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## 🔒 Security Best Practices
+
+When using this plugin:
+
+1. **Use HTTPS**: Always use HTTPS URLs for API requests
+2. **Protect API Keys**: Store API keys in global variables, not in notes
+3. **Review Cached Data**: Regularly clear old cached responses
+4. **Validate Sources**: Only connect to trusted API endpoints
+
 
 ## ❤️ Sponsors
 
