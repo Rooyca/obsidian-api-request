@@ -40,7 +40,7 @@
 
 > 查看 [TODOS-v2.md](TODOS-v2.md) 中的所有更改
 
-- [ ] 翻译（和更新）文档
+- [x] 翻译（和更新）文档
 - [x] 数据重用（`{{ls.UUID>JSONPath}}` 语法，其中 `ls` 代表 `localStorage`）
 - [x] 支持使用 `#` 或 `//` 语法的注释
 - [x] 从响应中进行内联查询（使用 **Dataview**）

@@ -43,7 +43,7 @@ Este plugin se puede instalar desde Obsidian.
 
 > Consulta todos los cambios en [TODOS-v2.md](TODOS-v2.md)
 
-- [ ] Traducir (y actualizar) documentación
+- [x] Traducir (y actualizar) documentación
 - [x] Reutilización de datos (sintaxis `{{ls.UUID>JSONPath}}`, donde `ls` significa `localStorage`)
 - [x] Soporte para comentarios usando sintaxis `#` o `//`
 - [x] Consulta en línea desde la respuesta (usando **Dataview**)

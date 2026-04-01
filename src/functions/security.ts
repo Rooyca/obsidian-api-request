@@ -1,3 +1,5 @@
+import sanitizeHtmlLib from 'sanitize-html';
+
 /**
  * Security utilities for input validation and sanitization
  */
@@ -107,13 +109,19 @@ export function sanitizeHtml(html: string): string {
     if (!html || typeof html !== 'string') {
         return '';
     }
-    
-    // Remove script tags and event handlers
-    return html
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-        .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
-        .replace(/on\w+\s*=\s*[^\s>]*/gi, '')
-        .replace(/javascript:/gi, '');
+
+    return sanitizeHtmlLib(html, {
+        allowedTags: sanitizeHtmlLib.defaults.allowedTags.concat(['img']),
+        allowedAttributes: {
+            ...sanitizeHtmlLib.defaults.allowedAttributes,
+            '*': ['class', 'id']
+        },
+        allowedSchemes: ['http', 'https'],
+        allowedSchemesByTag: {
+            img: ['http', 'https', 'data']
+        },
+        disallowedTagsMode: 'discard'
+    });
 }
 
 /**

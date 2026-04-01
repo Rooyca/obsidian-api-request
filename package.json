@@ -1,6 +1,6 @@
 {
 	"name": "api-request",
-	"version": "2.0.9",
+	"version": "2.1.0",
 	"description": "Integrate API data into your notes with request caching, variable support, and precise JSON extraction.",
 	"main": "main.js",
 	"scripts": {
@@ -13,6 +13,7 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^16.11.6",
+		"@types/sanitize-html": "^2.16.1",
 		"@typescript-eslint/eslint-plugin": "^5.59.2",
 		"@typescript-eslint/parser": "5.29.0",
 		"builtin-modules": "3.3.0",
@@ -22,6 +23,7 @@
 		"typescript": "4.7.4"
 	},
 	"dependencies": {
-		"jsonpath-plus": "^10.3.0"
+		"jsonpath-plus": "^10.3.0",
+		"sanitize-html": "^2.17.2"
 	}
 }

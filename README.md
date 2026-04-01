@@ -40,7 +40,7 @@ The plugin can be installed from within Obsidian.
 
 > Check all changes on [TODOS-v2.md](TODOS-v2.md)
 
-- [ ] Translate (& update) documentation
+- [x] Translate (& update) documentation
 - [x] Data re-usage (`{{ls.UUID>JSONPath}}` syntax, where `ls` stands for `localStorage`)
 - [x] Support for comments using `#` or `//` syntax 
 - [x] Inline query from response (using **Dataview**)

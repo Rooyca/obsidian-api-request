@@ -1,7 +1,7 @@
 {
 	"id": "api-request",
 	"name": "APIRequest",
-	"version": "2.0.9",
+	"version": "2.1.0",
 	"minAppVersion": "0.15.0",
 	"description": "Integrate API data into your notes with request caching, variable support, and precise JSON extraction.",
 	"author": "rooyca",
