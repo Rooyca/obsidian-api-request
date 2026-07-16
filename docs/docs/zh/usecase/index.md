@@ -32,12 +32,12 @@ ID 是 `$=dv.el("span", JSON.parse(localStorage.getItem("req-test")).id, { cls: 
 
 ~~~makdown
 ```req 
-url: https://api.coincap.io/v2/rates/bitcoin
-show: $.data.rateUsd
+url: https://api.coinpaprika.com/v1/tickers/btc-bitcoin
+show: $.quotes.USD.price
 ```
 ~~~
 
-> 64992.8972508856324769
+> 64149.230100840585
 
 ## 获取天气信息
 
