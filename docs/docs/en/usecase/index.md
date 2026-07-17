@@ -32,12 +32,12 @@ Rendered output will look like this:
 
 ~~~makdown
 ```req 
-url: https://api.coincap.io/v2/rates/bitcoin
-show: $.data.rateUsd
+url: https://api.coinpaprika.com/v1/tickers/btc-bitcoin
+show: $.quotes.USD.price
 ```
 ~~~
 
-> 64992.8972508856324769
+> 64149.230100840585
 
 ## Get the weather
 
