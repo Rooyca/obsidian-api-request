@@ -1,6 +1,6 @@
 {
 	"name": "api-request",
-	"version": "2.1.1",
+	"version": "2.1.2",
 	"description": "Integrate API data into your notes with request caching, variable support, and precise JSON extraction.",
 	"main": "main.js",
 	"scripts": {
