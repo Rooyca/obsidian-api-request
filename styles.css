@@ -10,6 +10,16 @@
     box-shadow: none !important;
 }
 
+.plugin-api-request {
+    cursor: pointer;
+}
+
+.api-request-status-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
 .block-language-req:hover .copy-req {
     opacity: 1;
     background-color: var(--background-modifier-hover) !important;

@@ -16,7 +16,7 @@ export type Frontmatter = string | null | undefined;
  * @param md - The markdown content to extract frontmatter from
  * @returns The frontmatter content string, or undefined if not found
  */
-export function readFrontmatter(md: string) {
+export function readFrontmatter(md: string): string | undefined {
   const result = md.match(FRONTMATTER_REGEX);
 
   return result?.groups?.fm;
@@ -29,10 +29,10 @@ export function readFrontmatter(md: string) {
  * @returns Parsed frontmatter object
  * @throws Error if frontmatter is not defined or cannot be parsed
  */
-export function parseFrontmatter(input: Frontmatter) {
+export function parseFrontmatter(input: Frontmatter): Record<string, unknown> {
   if (input === undefined || input === null) { 
     throw new Error("Frontmatter not defined.");
   }
 
-  return parseYaml(input);
+  return parseYaml(input) as Record<string, unknown>;
 }

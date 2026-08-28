@@ -6,7 +6,7 @@ import {
     debounce,
     Menu,
     TFile,
-    TAbstractFile,
+    App,
 } from "obsidian";
 import {
     readFrontmatter,
@@ -23,7 +23,8 @@ import {
     isValidFormat,
     isValidFilePath,
     safeJsonParse,
-    isValidStorageKey
+    getErrorMessage,
+    unknownToString
 } from "src/functions/security";
 import APRSettings from "src/settings/settingsTab";
 import { JSONPath } from "jsonpath-plus";
@@ -127,9 +128,9 @@ export function checkLocalStorage(value: string): string {
             
             if (data) {
                 const parsedData = safeJsonParse(data);
-                if (parsedData && jsonPath) {
+                if (parsedData && jsonPath && typeof parsedData === "object") {
                     try {
-                        const output = JSONPath({ path: jsonPath, json: parsedData });
+                        const output = String(JSONPath({ path: jsonPath, json: parsedData }));
                         value = value.replace(match[i], output);
                     } catch (e) {
                         console.error("JSONPath evaluation error:", e);
@@ -153,7 +154,7 @@ export function checkLocalStorage(value: string): string {
  * parseToValidJson("{key: value}", "headers") // returns {"key": "value"}
  * parseToValidJson("'key': 'value'", "body") // returns {"key": "value"}
  */
-export function parseToValidJson(input: string, type: string): Record<string, any> | null {
+export function parseToValidJson(input: string, type: string): Record<string, unknown> | null {
     const trimmedInput = input.trim();
 
     if (!trimmedInput) {
@@ -170,10 +171,10 @@ export function parseToValidJson(input: string, type: string): Record<string, an
                 '"$1":"$2"',
             ); // Add double quotes around unquoted keys and values
 
-        return JSON.parse(formattedInput);
+        return JSON.parse(formattedInput) as Record<string, unknown>;
     } catch (e) {
         throw new Error(
-            `Invalid ${type} format. Details: ${e.message}`,
+            `Invalid ${type} format. Details: ${getErrorMessage(e)}`,
         );
     }
 }
@@ -188,7 +189,7 @@ export function parseToValidJson(input: string, type: string): Record<string, an
  * formatOutput([1, 2, 3]) // returns "1, 2, 3"
  * formatOutput({key: "value"}) // returns '{\n  "key": "value"\n}'
  */
-export function formatOutput(output: any): string {
+export function formatOutput(output: unknown): string {
     // If output is Array
     if (Array.isArray(output)) {
         // If it's an Array of one element, format that element
@@ -204,11 +205,11 @@ export function formatOutput(output: any): string {
 
     // If output is an object, convert it to string
     if (typeof output === "object" && output !== null) {
-        return JSON.stringify(output, null, 2);
+        return JSON.stringify(output, null, 2) ?? "";
     }
 
     // Any other case, convert it to string (handling null/undefined)
-    return String(output ?? "");
+    return unknownToString(output);
 }
 
 /**
@@ -227,7 +228,7 @@ export function formatOutput(output: any): string {
  * checkVariables("{{this.file.name}}", settings) // returns current file name
  * checkVariables("{{API_KEY}}", settings) // returns value from global settings
  */
-export function checkVariables(req_prop: string, settings: LoadAPIRSettings): string | undefined {
+export function checkVariables(req_prop: string, settings: LoadAPIRSettings, app: App): string | undefined {
     try {
         // search value in localStorage
         req_prop = checkLocalStorage(req_prop);
@@ -241,7 +242,7 @@ export function checkVariables(req_prop: string, settings: LoadAPIRSettings): st
 
                 // if {{this.file.name}} return filename
                 if (var_name == "file.name") {
-                    const activeFile = this.app.workspace.getActiveFile();
+                    const activeFile = app.workspace.getActiveFile();
                     if (!activeFile) {
                         console.warn("No active file found");
                         continue;
@@ -254,7 +255,7 @@ export function checkVariables(req_prop: string, settings: LoadAPIRSettings): st
                 }
 
                 const activeView =
-                    this.app.workspace.getActiveViewOfType(MarkdownView);
+                    app.workspace.getActiveViewOfType(MarkdownView);
                 
                 if (!activeView) {
                     console.warn("No active markdown view found");
@@ -267,21 +268,22 @@ export function checkVariables(req_prop: string, settings: LoadAPIRSettings): st
                     const frontmatterData = parseFrontmatter(
                         readFrontmatter(markdownContent),
                     );
+                    const value = frontmatterData[var_name];
                     req_prop = req_prop.replace(
                         match[i],
-                        frontmatterData[var_name] || "",
+                        unknownToString(value),
                     );
-                } catch (e: any) {
-                    console.error("Frontmatter parsing error:", e.message);
-                    new Notice("Error reading frontmatter: " + e.message);
+                } catch (e) {
+                    console.error("Frontmatter parsing error:", e);
+                    new Notice("Error reading frontmatter: " + getErrorMessage(e));
                     return undefined;
                 }
             }
         }
         return req_prop;
-    } catch (e: any) {
+    } catch (e) {
         console.error("Variable substitution error:", e);
-        new Notice("Error processing variables: " + e.message);
+        new Notice("Error processing variables: " + getErrorMessage(e));
         return undefined;
     }
 }
@@ -304,13 +306,12 @@ export default class MainAPIR extends Plugin {
      * Registers code block processor, event handlers, and settings tab
      */
     async onload() {
-        console.log("Loading: api-request");
+        console.debug("Loading: api-request");
         await this.loadSettings();
 
         // Create status bar item only if enabled in settings
         this.statusBarItem = this.addStatusBarItem();
         this.statusBarItem.addClass('plugin-api-request');
-        this.statusBarItem.style.cursor = 'pointer';
         
         // Add click handler for menu
         this.statusBarItem.addEventListener('click', (e) => {
@@ -318,7 +319,7 @@ export default class MainAPIR extends Plugin {
         });
 
         // Debounced update function
-        const debouncedUpdate = debounce(this.updateStatusBar.bind(this), 300);
+        const debouncedUpdate = debounce(() => this.updateStatusBar(), 300);
 
         // count number of codeblocks on "file-open" and "changes to the file"
         this.registerEvent(
@@ -340,13 +341,14 @@ export default class MainAPIR extends Plugin {
                     // create variables
                     let [URL, saveTo] = [String(), String()];
                     let properties = [String()];
-                    let uuid, show;
+                    let uuid: string | undefined;
+                    let show: string | undefined;
                     let autoUpdate = false;
 					let hidden = false;
                     let method = "GET";
                     let format = String();
-                    let [headers, body] = [Object(), Object()];
-                    const allowedMethods = ["GET", "POST", "PUT", "DELETE"];
+                    let headers: Record<string, string> = {};
+                    let body: Record<string, unknown> | string | undefined;
 
                     for (const line of sourceLines) {
                         // convert line to lowercase
@@ -383,6 +385,7 @@ export default class MainAPIR extends Plugin {
                                 checkVariables(
                                     line.replace(/url:/i, "").trim(),
                                     this.settings,
+                                    this.app,
                                 ) ?? "";
                             if (!URL) {
                                 el.createEl("strong", {
@@ -405,6 +408,7 @@ export default class MainAPIR extends Plugin {
                                 checkVariables(
                                     line.replace(/show:/i, "").trim(),
                                     this.settings,
+                                    this.app,
                                 ) ?? "";
                             if (!show) {
                                 el.createEl("strong", {
@@ -430,15 +434,16 @@ export default class MainAPIR extends Plugin {
                                 checkVariables(
                                     line.replace("headers:", "").trim(),
                                     this.settings,
+                                    this.app,
                                 ) ?? "";
 
                             try {
-                                headers = parseToValidJson(
+                                headers = (parseToValidJson(
                                     tempHeaders,
                                     "headers",
-                                );
-                            } catch (e: any) {
-                                el.createEl("strong", { text: e.message || "Error parsing headers" });
+                                ) ?? {}) as Record<string, string>;
+                            } catch (e) {
+                                el.createEl("strong", { text: getErrorMessage(e) || "Error parsing headers" });
                                 return;
                             }
 
@@ -448,13 +453,14 @@ export default class MainAPIR extends Plugin {
                                 checkVariables(
                                     line.replace("body:", "").trim(),
                                     this.settings,
+                                    this.app,
                                 ) ?? "";
 
                             try {
-                                body = parseToValidJson(tempBody, "body");
-                            } catch (e: any) {
+                                body = parseToValidJson(tempBody, "body") ?? undefined;
+                            } catch (e) {
                                 // use raw body if it's not a valid JSON
-                                console.log("Using raw body (not valid JSON):", e.message);
+                                console.debug("Using raw body (not valid JSON):", getErrorMessage(e));
                                 body = tempBody;
                             }
 
@@ -483,14 +489,15 @@ export default class MainAPIR extends Plugin {
                                 });
                                 return;
                             }
-                            uuid =
+                            const resolvedUuid =
                                 checkVariables(
                                     uuid,
                                     this.settings,
+                                    this.app,
                                 ) ?? "";
                             
                             // Sanitize UUID for security
-                            const sanitized = sanitizeUuid(uuid);
+                            const sanitized = sanitizeUuid(resolvedUuid);
                             if (!sanitized) {
                                 el.createEl("strong", {
                                     text: "Error: Invalid UUID format",
@@ -520,7 +527,7 @@ export default class MainAPIR extends Plugin {
                         }
                     }
 
-                    let responseData: any;
+                    let responseData: unknown;
                     let responseDataText: string | undefined;
 
                     // Check if the response is cached in localStorage
@@ -544,14 +551,14 @@ export default class MainAPIR extends Plugin {
                     // If no cached data or auto-update is requested, make a new request
                     if (!responseData || autoUpdate) {
                         try {
-                            body = method == "GET" ? undefined : JSON.stringify(body);
+                            const bodyString = method === "GET" ? undefined : JSON.stringify(body);
                             const response = await requestUrl({
                                 url: URL,
                                 method,
                                 headers,
-                                body,
+                                body: bodyString,
                             });
-                            responseData = await response.json;
+                            responseData = (await response.json) as unknown;
                             responseDataText = response.text;
 
                             // Cache the response in localStorage if req-uuid is provided
@@ -566,38 +573,38 @@ export default class MainAPIR extends Plugin {
                                     new Notice("Warning: Failed to cache response");
                                 }
                             }
-                        } catch (e: any) {
-                            console.error(e.message);
-                            new Notice("Error: " + e.message);
-                            responseData = `Error: ${e.message}`;
+                        } catch (e) {
+                            console.error(getErrorMessage(e));
+                            new Notice("Error: " + getErrorMessage(e));
+                            responseData = `Error: ${getErrorMessage(e)}`;
                         }
                     }
 
-                    let output = responseData;
+                    let output: unknown = responseData;
 
                     if (show) {
                         // split show by `+` to check if user defined more than one path
-                        show = show.split(" + ");
+                        const paths = show.split(" + ");
                         
                         // check if the user defined more than one path
                         // if so, iterate over each path and get the data
-                        output = show.length > 1 
-                          ? show.map((path) => {
+                        if (paths.length > 1) {
+                            output = paths.map((path) => {
                                 try {
-                                    return JSONPath({ path: path.trim(), json: responseData });
-                                } catch (e: any) {
+                                    return String(JSONPath({ path: path.trim(), json: responseData as object }));
+                                } catch (e) {
                                     console.error("JSONPath error for path:", path, e);
-                                    return `Error: ${e.message}`;
+                                    return `Error: ${getErrorMessage(e)}`;
                                 }
-                            })
-                          : (() => {
-                                try {
-                                    return JSONPath({ path: show[0], json: responseData });
-                                } catch (e: any) {
-                                    console.error("JSONPath error:", e);
-                                    return `Error: ${e.message}`;
-                                }
-                            })();
+                            });
+                        } else {
+                            try {
+                                output = String(JSONPath({ path: paths[0], json: responseData as object }));
+                            } catch (e) {
+                                console.error("JSONPath error:", e);
+                                output = `Error: ${getErrorMessage(e)}`;
+                            }
+                        }
 
                         if (properties.length > 0 && properties[0] !== '') {
                             // Format the output and split it into an array
@@ -620,7 +627,8 @@ export default class MainAPIR extends Plugin {
 
                                 // Update the frontmatter
                                 await this.app.fileManager.processFrontMatter(file, (existingFrontmatter) => {
-                                    existingFrontmatter[cleanPropertyName] = match ? `[[${value}]]` : value;
+                                    const fm = existingFrontmatter as Record<string, unknown>;
+                                    fm[cleanPropertyName] = match ? `[[${value}]]` : value;
                                 });
                             };
 
@@ -663,7 +671,7 @@ export default class MainAPIR extends Plugin {
                                 responseDataText || "",
                             );
                             new Notice("Saved to: " + saveTo);
-                        } catch (e: any) {
+                        } catch (e) {
                             // try to modify the file
                             try {
                                 const file = this.app.vault.getAbstractFileByPath(saveTo);
@@ -674,7 +682,7 @@ export default class MainAPIR extends Plugin {
                                     new Notice("Error: Could not save to file");
                                     console.error("File save error:", e);
                                 }
-                            } catch (modifyError: any) {
+                            } catch (modifyError) {
                                 new Notice("Error: Failed to save file");
                                 console.error("File modification error:", modifyError);
                             }
@@ -689,11 +697,13 @@ export default class MainAPIR extends Plugin {
                         const parts = formattedOutput.split(",");
                         // Sanitize the format output to prevent XSS
                         const sanitizedFormat = sanitizeHtml(format);
-                        el.innerHTML = sanitizedFormat.replace(/{}/g, () => {
+                        const html = sanitizedFormat.replace(/{}/g, () => {
                             const part = parts.shift() || "";
                             // Escape the part to prevent XSS
                             return sanitizeHtml(part);
                         });
+                        const parsed = new DOMParser().parseFromString(html, "text/html");
+                        el.replaceChildren(...Array.from(parsed.body.childNodes));
                     } else {
                         el.createEl("pre", { text: formattedOutput });
                     }
@@ -703,8 +713,8 @@ export default class MainAPIR extends Plugin {
                 },
             );
         } catch (e) {
-            console.error(e.message);
-            new Notice("Error: " + e.message);
+            console.error(getErrorMessage(e));
+            new Notice("Error: " + getErrorMessage(e));
         }
 
         this.addSettingTab(new APRSettings(this.app, this));
@@ -768,7 +778,7 @@ export default class MainAPIR extends Plugin {
                 // Parse properties
                 if (lowercaseLine.startsWith('req-uuid:')) {
                     let uuid = line.replace(/req-uuid:/i, '').trim();
-                    uuid = checkVariables.call(this, uuid, this.settings) ?? '';
+                    uuid = checkVariables(uuid, this.settings, this.app) ?? '';
                     currentBlock.uuid = `req-${uuid}`;
                 }
                 if (lowercaseLine.startsWith('disabled')) {
@@ -790,7 +800,7 @@ export default class MainAPIR extends Plugin {
     updateStatusBar() {
         // Check if status bar is enabled
         if (!this.settings.enableStatusBar) {
-            this.statusBarItem.style.display = 'none';
+            this.statusBarItem.setCssProps({ display: 'none' });
             return;
         }
 
@@ -799,27 +809,38 @@ export default class MainAPIR extends Plugin {
         const count = this.reqBlocks.length;
         
         if (count === 0) {
-            this.statusBarItem.style.display = 'none';
+            this.statusBarItem.setCssProps({ display: 'none' });
             return;
         }
 
-        this.statusBarItem.style.display = 'flex';
-        this.statusBarItem.style.alignItems = 'center';
-        this.statusBarItem.style.gap = '4px';
-        
-        // Create icon with counter
-		// TODO
-		// Use native icons
-        this.statusBarItem.innerHTML = `
-            <span style="display: flex; align-items: center; gap: 4px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                <span>${count} requests</span>
-            </span>
-        `;
+        this.statusBarItem.setCssProps({ display: 'flex' });
+        this.statusBarItem.empty();
+
+        const span = this.statusBarItem.createSpan({
+            cls: 'api-request-status-bar',
+        });
+
+        const svg = span.createSvg('svg', {
+            attr: {
+                width: '14',
+                height: '14',
+                viewBox: '0 0 24 24',
+                fill: 'none',
+                stroke: 'currentColor',
+                'stroke-width': '2',
+            },
+        });
+        svg.createSvg('path', {
+            attr: { d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' },
+        });
+        svg.createSvg('polyline', {
+            attr: { points: '17 8 12 3 7 8' },
+        });
+        svg.createSvg('line', {
+            attr: { x1: '12', y1: '3', x2: '12', y2: '15' },
+        });
+
+        span.createSpan({ text: `${count} requests` });
     }
 
     /**
@@ -839,22 +860,11 @@ export default class MainAPIR extends Plugin {
         } else {
             this.reqBlocks.forEach((block) => {
                 menu.addItem((item) => {
-                    item.setTitle(block.displayName);
+                    item.setTitle(`${block.displayName}${block.isActive ? ' 🟢' : ' ⚪'}`);
                     item.setIcon('rocket');
-                    
-                    // Store color in a CSS variable that can be used by styles
-                    const isActive = block.isActive;
                     item.onClick(() => {
                         this.navigateToBlock(block);
                     });
-                    
-                    // Add custom styling via callback
-                    const color = isActive 
-                        ? this.settings.statusBarActiveColor 
-                        : this.settings.statusBarInactiveColor;
-                    
-                    // Use setIcon with color hint through title
-                    item.setTitle(`${block.displayName}${isActive ? ' 🟢' : ' ⚪'}`);
                 });
             });
         }
@@ -911,18 +921,15 @@ export default class MainAPIR extends Plugin {
      * Called when the plugin is unloaded
      */
     onunload() {
-        console.log("Unloading: api-request");
+        console.debug("Unloading: api-request");
     }
 
     /**
      * Loads plugin settings from storage
      */
     async loadSettings() {
-        this.settings = Object.assign(
-            {},
-            DEFAULT_SETTINGS,
-            await this.loadData(),
-        );
+        const data = (await this.loadData()) as Partial<LoadAPIRSettings> | null;
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, data ?? {});
     }
 
     /**

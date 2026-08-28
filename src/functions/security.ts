@@ -29,7 +29,7 @@ export function isValidUrl(url: string): boolean {
         // }
         
         return true;
-    } catch (e) {
+    } catch {
         return false;
     }
 }
@@ -181,10 +181,10 @@ export function isValidFilePath(filePath: string): boolean {
  * @param jsonString - The JSON string to parse
  * @returns Parsed object or null if invalid
  */
-export function safeJsonParse(jsonString: string): any {
+export function safeJsonParse(jsonString: string): unknown {
     try {
         return JSON.parse(jsonString);
-    } catch (e) {
+    } catch {
         return null;
     }
 }
@@ -201,4 +201,39 @@ export function isValidStorageKey(key: string): boolean {
     
     // Only allow safe characters
     return /^[a-zA-Z0-9\-_]+$/.test(key);
+}
+
+/**
+ * Normalizes an unknown caught value into a readable error message.
+ * @param err - The value thrown in a catch block.
+ * @returns The error message, or a string representation of the value.
+ */
+export function getErrorMessage(err: unknown): string {
+    if (err instanceof Error) {
+        return err.message;
+    }
+    return String(err);
+}
+
+/**
+ * Converts an unknown value to a string, avoiding `[object Object]` output.
+ * Objects and arrays are serialized as JSON; null/undefined become an empty string.
+ * @param value - The value to stringify.
+ * @returns A string representation of the value.
+ */
+export function unknownToString(value: unknown): string {
+    if (value === null || value === undefined) {
+        return "";
+    }
+    switch (typeof value) {
+        case "string":
+            return value;
+        case "number":
+        case "boolean":
+        case "bigint":
+        case "symbol":
+            return String(value);
+        default:
+            return JSON.stringify(value) ?? "";
+    }
 }

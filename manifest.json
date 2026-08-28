@@ -1,11 +1,11 @@
 {
 	"id": "api-request",
 	"name": "APIRequest",
-	"version": "2.1.2",
-	"minAppVersion": "0.15.0",
+	"version": "2.1.3",
+	"minAppVersion": "1.4.4",
 	"description": "Integrate API data into your notes with request caching, variable support, and precise JSON extraction.",
 	"author": "rooyca",
 	"authorUrl": "https://github.com/rooyca",
 	"fundingUrl": "https://ko-fi.com/rooyca",
-	"isDesktopOnly": false
+	"isDesktopOnly": true
 }

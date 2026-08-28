@@ -13,9 +13,9 @@ export default class APRSettings extends PluginSettingTab {
 		const { containerEl } = this;
 
 		containerEl.empty();
-		containerEl.createEl("h2", { text: "Codeblocks" });
+		new Setting(containerEl).setName("Codeblocks").setHeading();
 		new Setting(containerEl)
-			.setName("Text when request is Disabled")
+			.setName("Text when request is disabled")
 			.setDesc("What to show when a request is disabled")
 			.addText((text) =>
 				text
@@ -66,7 +66,7 @@ new Setting(containerEl)
 				await this.plugin.saveSettings();
 			}),
 	);
-		containerEl.createEl("h2", { text: "Global variables" });
+		new Setting(containerEl).setName("Global variables").setHeading();
 		new Setting(containerEl).setName("Key").addText((text) =>
 			text
 				.setPlaceholder("key")
@@ -97,10 +97,10 @@ new Setting(containerEl)
 		});
 
 
-		containerEl.createEl("h2", { text: "Manage Global Variables" });
+		new Setting(containerEl).setName("Manage global variables").setHeading();
 		this.displayKeyValues();
 
-		containerEl.createEl("h2", { text: "Saved API Requests" });
+		new Setting(containerEl).setName("Saved API requests").setHeading();
 		this.displayInfoApirs();
 	}
 
@@ -130,10 +130,10 @@ new Setting(containerEl)
 				row.createEl("td", { text: u.key });
 				row.createEl("td", { text: u.value });
 
-				row.addEventListener("click", async () => {
+				row.addEventListener("click", () => {
 					const index = KeyValueCodeblocks.indexOf(u);
 					KeyValueCodeblocks.splice(index, 1);
-					await this.plugin.saveSettings();
+					void this.plugin.saveSettings();
 					this.display();
 				});
 			});
@@ -157,7 +157,7 @@ new Setting(containerEl)
 				const row = tbody.createEl("tr");
 				const idCell = row.createEl("td", { text: key });
 
-				idCell.addEventListener("click", async () => {
+				idCell.addEventListener("click", () => {
 					localStorage.removeItem(key);
 					this.display();
 				});
