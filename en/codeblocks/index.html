@@ -1,0 +1,2078 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+        <link rel="next" href="../../es/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Usage - APIRequest</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#codeblocks" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="APIRequest" class="md-header__button md-logo" aria-label="APIRequest" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            APIRequest
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Usage
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Rooyca/obsidian-api-request/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="APIRequest" class="md-nav__button md-logo" aria-label="APIRequest" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    APIRequest
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Rooyca/obsidian-api-request/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    English
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    English
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏳️ Flags
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔒 Security Considerations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔒 Security Considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#input-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#variables-data-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📖 Variables &amp; Data Reuse
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📖 Variables &amp; Data Reuse">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#localstorage-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LocalStorage &amp; Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frontmatter-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontmatter Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#global-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#special-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Special Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flag-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flag Details
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Flag Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        url
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        method
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#body" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        body
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        headers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        show
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#req-uuid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        req-uuid
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hidden" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        hidden
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disabled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        disabled
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#save-as" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        save-as
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auto-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        auto-update
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 Common Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="💡 Common Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#authentication-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-reading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 Further Reading
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❓ Troubleshooting
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usecase" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use Cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Español
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Español
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../es/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inicio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Uso
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Uso
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../es/codeblocks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cómo usar
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../es/usecase" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Casos de uso
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中文
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    中文
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../zh/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    概述
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    用法
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    用法
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../zh/codeblocks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    代码块
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../zh/usecase" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    用例
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏳️ Flags
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔒 Security Considerations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔒 Security Considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#input-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#variables-data-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📖 Variables &amp; Data Reuse
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📖 Variables &amp; Data Reuse">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#localstorage-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LocalStorage &amp; Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frontmatter-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontmatter Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#global-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#special-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Special Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flag-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flag Details
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Flag Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        url
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        method
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#body" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        body
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        headers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        show
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#req-uuid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        req-uuid
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hidden" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        hidden
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disabled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        disabled
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#save-as" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        save-as
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auto-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        auto-update
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 Common Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="💡 Common Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#authentication-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-reading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 Further Reading
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❓ Troubleshooting
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="codeblocks">👨🏻‍💻 Codeblocks</h1>
+<p>The <code>codeblock</code> is a versatile block that can be used to make API requests directly from your notes. This guide covers all available flags and how to use them effectively and securely.</p>
+<h2 id="flags">🏳️ Flags</h2>
+<p>Flags are the way to specify the parameters of our request. All flags are <strong>case-insensitive</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#url">url</a></td>
+<td></td>
+<td>✅ Yes</td>
+<td>The API endpoint to request</td>
+</tr>
+<tr>
+<td><a href="#method">method</a></td>
+<td>GET</td>
+<td>No</td>
+<td>HTTP method (GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS)</td>
+</tr>
+<tr>
+<td><a href="#body">body</a></td>
+<td></td>
+<td>No</td>
+<td>Request body (JSON format)</td>
+</tr>
+<tr>
+<td><a href="#headers">headers</a></td>
+<td></td>
+<td>No</td>
+<td>Request headers (JSON format)</td>
+</tr>
+<tr>
+<td><a href="#show">show</a></td>
+<td>ALL</td>
+<td>No</td>
+<td>JSONPath to extract specific data</td>
+</tr>
+<tr>
+<td><a href="#req-uuid">req-uuid</a></td>
+<td>req-general</td>
+<td>No</td>
+<td>Unique ID for caching</td>
+</tr>
+<tr>
+<td><a href="#hidden">hidden</a></td>
+<td>FALSE</td>
+<td>No</td>
+<td>Hide the output</td>
+</tr>
+<tr>
+<td><a href="#disabled">disabled</a></td>
+<td></td>
+<td>No</td>
+<td>Disable the request</td>
+</tr>
+<tr>
+<td><a href="#save-as">save-as</a></td>
+<td></td>
+<td>No</td>
+<td>Save response to file</td>
+</tr>
+<tr>
+<td><a href="#auto-update">auto-update</a></td>
+<td>FALSE</td>
+<td>No</td>
+<td>Always fetch fresh data</td>
+</tr>
+<tr>
+<td><a href="#format">format</a></td>
+<td></td>
+<td>No</td>
+<td>Custom output format</td>
+</tr>
+<tr>
+<td><a href="#properties">properties</a></td>
+<td></td>
+<td>No</td>
+<td>Update frontmatter properties</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="security-considerations">🔒 Security Considerations</h2>
+<div class="admonition danger">
+<p class="admonition-title">Important Security Guidelines</p>
+<ul>
+<li><strong>Always use HTTPS</strong>: Use <code>https://</code> URLs to ensure encrypted communication</li>
+<li><strong>Protect API Keys</strong>: Store sensitive tokens in global variables, never hardcode them in notes</li>
+<li><strong>Validate Inputs</strong>: The plugin validates all inputs, but only connect to trusted APIs</li>
+<li><strong>Review Cached Data</strong>: Regularly clear old cached responses from Settings</li>
+</ul>
+</div>
+<h3 id="input-validation">Input Validation</h3>
+<p>All user inputs are automatically validated:</p>
+<ul>
+<li><strong>URLs</strong>: Only <code>http://</code> and <code>https://</code> protocols are allowed</li>
+<li><strong>UUIDs</strong>: Sanitized to alphanumeric, hyphens, and underscores only</li>
+<li><strong>File Paths</strong>: Directory traversal (<code>..</code>) and absolute paths are blocked</li>
+<li><strong>JSONPath</strong>: Expressions are validated to prevent script injection</li>
+<li><strong>Format Strings</strong>: HTML is sanitized to prevent XSS attacks</li>
+</ul>
+<hr />
+<h2 id="variables-data-reuse">📖 Variables &amp; Data Reuse</h2>
+<h3 id="localstorage-variables">LocalStorage &amp; Variables</h3>
+<p>API responses can be stored in <code>localStorage</code> and reused in other codeblocks or notes. To store a response, you must assign it a unique identifier using the <code>req-uuid</code> flag.</p>
+<p>You can access stored responses using the following syntax:</p>
+<pre><code>{{ls.UUID&gt;JSONPath}}
+</code></pre>
+<ul>
+<li><code>UUID</code>: The unique identifier defined in the <code>req-uuid</code> flag (without the <code>req-</code> prefix)</li>
+<li><code>JSONPath</code>: The path to the specific data you want from the response</li>
+</ul>
+<p><strong>Example:</strong>
+If you have a request with <code>req-uuid: user</code>, you can access the user's name like this:</p>
+<pre><code>{{ls.user&gt;$.name}}
+</code></pre>
+<div class="admonition info">
+<p class="admonition-title">Security Note</p>
+<p>UUIDs are automatically sanitized. Only alphanumeric characters, hyphens, and underscores are allowed.</p>
+</div>
+<hr />
+<h3 id="frontmatter-variables">Frontmatter Variables</h3>
+<p>You can reference variables defined in the note's <strong>frontmatter</strong> using:</p>
+<pre><code>{{this.variableName}}
+</code></pre>
+<p><strong>Example:</strong></p>
+<p>Frontmatter:</p>
+<pre><code class="language-yaml">---
+userId: 12345
+title: &quot;My Note&quot;
+---
+</code></pre>
+<p>Usage in request:</p>
+<pre><code class="language-markdown">```req
+url: https://api.example.com/user/{{this.userId}}
+```
+</code></pre>
+<div class="admonition warning">
+<p class="admonition-title">Security Warning</p>
+<p>Avoid storing sensitive API keys in frontmatter. Use global variables instead.</p>
+</div>
+<hr />
+<h3 id="global-variables">Global Variables</h3>
+<p>Define reusable variables in plugin settings (Settings → APIRequest → Global variables). These are stored securely and can be accessed with:</p>
+<pre><code>{{VARIABLE_NAME}}
+</code></pre>
+<p><strong>Example:</strong></p>
+<ol>
+<li>In plugin settings, add:</li>
+<li>Key: <code>API_KEY</code></li>
+<li>
+<p>Value: <code>your-secret-key</code></p>
+</li>
+<li>
+<p>In your request:</p>
+</li>
+</ol>
+<pre><code class="language-markdown">```req
+url: https://api.example.com/data
+headers: {&quot;Authorization&quot;: &quot;Bearer {{API_KEY}}&quot;}
+```
+</code></pre>
+<div class="admonition tip">
+<p class="admonition-title">Best Practice</p>
+<p>Store all API keys and tokens as global variables to keep your notes secure and portable.</p>
+</div>
+<hr />
+<h3 id="special-variables">Special Variables</h3>
+<ul>
+<li><code>{{this.file.name}}</code> - Current file's basename (without extension)</li>
+</ul>
+<hr />
+<h2 id="flag-details">Flag Details</h2>
+<h3 id="url">url</h3>
+<p>The only <strong>required</strong> flag. It specifies the endpoint of the API request.</p>
+<p><strong>Syntax:</strong></p>
+<pre><code class="language-markdown">```req 
+url: https://api.example.com/endpoint
+```
+</code></pre>
+<p><strong>With variables:</strong></p>
+<pre><code class="language-markdown">```req 
+# this is just a comment
+url: https://jsonplaceholder.typicode.com/users/{{this.id}}
+```
+</code></pre>
+<div class="admonition note">
+<p class="admonition-title">Where <code>{{this.id}}</code> is a variable (<code>id</code>) defined in the frontmatter.</p>
+</div>
+<div class="admonition danger">
+<p class="admonition-title">Security</p>
+<p>Only HTTPS and HTTP URLs are allowed. Other protocols (file://, javascript:, etc.) are blocked for security.</p>
+</div>
+<hr />
+<h3 id="method">method</h3>
+<p>Specifies the HTTP request method. The default value is <code>GET</code>.</p>
+<p><strong>Available methods:</strong>
+- GET (default)
+- POST
+- PUT
+- DELETE
+- PATCH
+- HEAD
+- OPTIONS</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-markdown">```req 
+url: https://jsonplaceholder.typicode.com/posts
+method: post
+```
+</code></pre>
+<hr />
+<h3 id="body">body</h3>
+<p>Specifies the body of the request. The data should be in JSON format.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-markdown">```req 
+url: https://jsonplaceholder.typicode.com/posts
+method: post
+body: {&quot;title&quot;: &quot;{{this.filename}}&quot;, &quot;body&quot;: &quot;bar&quot;, &quot;userId&quot;: 1}
+```
+</code></pre>
+<div class="admonition note">
+<p class="admonition-title">Where <code>{{this.filename}}</code> is the name of the working file.</p>
+</div>
+<p><strong>Advanced usage with variables:</strong></p>
+<pre><code class="language-markdown">```req 
+url: https://api.example.com/create
+method: post
+body: {&quot;userId&quot;: {{this.userId}}, &quot;token&quot;: &quot;{{API_TOKEN}}&quot;}
+```
+</code></pre>
+<hr />
+<h3 id="headers">headers</h3>
+<p>Specifies the request headers. The data should be in JSON format.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-markdown">```req 
+url: https://jsonplaceholder.typicode.com/posts
+method: post
+headers: {&quot;Content-type&quot;: &quot;application/json; charset=UTF-8&quot;}
+```
+</code></pre>
+<p><strong>Using cached responses as headers:</strong></p>
+<p>You can use responses from other requests as headers/body/url/show. For example, if you have a request with <code>req-uuid: token</code>, you can use it like this:</p>
+<pre><code class="language-markdown">```req
+url: https://api.todoist.com/rest/v2/tasks
+headers: {&quot;Authorization&quot;: &quot;Bearer {{ls.token&gt;$.access_token}}&quot;}
+show: $..content
+format: - [ ] {}
+req-uuid: todos
+```
+</code></pre>
+<div class="admonition tip">
+<p class="admonition-title">Common Headers</p>
+<ul>
+<li><code>Content-Type: application/json</code> - For JSON data</li>
+<li><code>Authorization: Bearer TOKEN</code> - For API authentication</li>
+<li><code>Accept: application/json</code> - To request JSON responses</li>
+</ul>
+</div>
+<hr />
+<h3 id="show">show</h3>
+<p>Specifies which data from the response to display using JSONPath expressions. See <a href="https://github.com/JSONPath-Plus/JSONPath?tab=readme-ov-file#syntax-through-examples">JSONPath examples</a>, or try the online tool by <a href="https://jsonpath-plus.github.io/JSONPath/demo/">jsonpath-plus</a>.</p>
+<p><strong>Simple example:</strong></p>
+<pre><code class="language-markdown">```req
+url: https://api.chess.com/pub/player/hikaru/stats
+show: $['chess_daily']['last']['rating']
+```
+</code></pre>
+<p><strong>Multiple outputs using brackets:</strong></p>
+<pre><code class="language-markdown">```req
+url: https://api.chess.com/pub/player/hikaru/stats
+show: $.chess_daily[last,best].rating
+```
+</code></pre>
+<p><strong>Multiple outputs using +:</strong></p>
+<pre><code class="language-markdown">```req
+url: https://api.chess.com/pub/player/hikaru/stats
+show: $.chess_daily[last,best].rating + $.chess960_daily[last,best].rating
+```
+</code></pre>
+<p><strong>Looping over arrays:</strong></p>
+<p>Get city from all users:</p>
+<pre><code class="language-markdown">```req 
+url: https://jsonplaceholder.typicode.com/users
+show: $..address.city
+```
+</code></pre>
+<p><strong>Looping over first N elements:</strong></p>
+<pre><code class="language-markdown">```req 
+url: https://jsonplaceholder.typicode.com/users
+show: $..[:3].address.city
+```
+</code></pre>
+<p><strong>Specific array indexes:</strong></p>
+<pre><code class="language-markdown">```req 
+url: https://jsonplaceholder.typicode.com/users
+show: $..[3,2,6].address.city
+```
+</code></pre>
+<p><strong>Last element:</strong></p>
+<p>You can access the last element using <code>(@.length-1)</code> or just <code>[-1:]</code>:</p>
+<pre><code class="language-markdown">```req
+url: https://api.modrinth.com/v2/project/distanthorizons
+show: $.game_versions[(@.length-1)]
+```
+</code></pre>
+<p><strong>Multiple properties:</strong></p>
+<pre><code class="language-markdown">```req 
+url: http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&amp;user=rooyca&amp;api_key={{API_KEY}}&amp;format=json&amp;limit=4
+show: $..recenttracks.track[0:][streamable,name,artist]
+```
+</code></pre>
+<div class="admonition info">
+<p class="admonition-title">Security Note</p>
+<p>JSONPath expressions are validated to prevent script injection. Malicious expressions will be blocked.</p>
+</div>
+<hr />
+<h3 id="req-uuid">req-uuid</h3>
+<p>Specifies the unique identifier for caching the request response in <code>localStorage</code>.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-markdown">```req 
+url: https://jsonplaceholder.typicode.com/users/1
+show: $.name
+req-uuid: test-{{this.username}}
+```
+</code></pre>
+<div class="admonition note">
+<p class="admonition-title">Where <code>{{this.username}}</code> is a variable (<code>username</code>) defined in the frontmatter.</p>
+</div>
+<p><strong>Accessing cached responses:</strong></p>
+<p>Stored responses can be accessed using the <code>req-uuid</code> (which won't trigger a new request):</p>
+<pre><code class="language-markdown">```req 
+url: https://jsonplaceholder.typicode.com/users/1
+req-uuid: name
+```
+</code></pre>
+<p><strong>Using with Dataview:</strong></p>
+<p>Responses can also be accessed using <a href="https://blacksmithgu.github.io/obsidian-dataview/">dataview</a>:</p>
+<pre><code class="language-markdown">```dataviewjs
+dv.paragraph(localStorage.getItem(&quot;req-UUID&quot;))
+```
+</code></pre>
+<div class="admonition info">
+<p class="admonition-title">Always use <code>req-</code> prefix when accessing via localStorage</p>
+<p>When accessing directly through localStorage, use: <code>localStorage.getItem("req-UUID")</code></p>
+</div>
+<p><strong>Removing cached responses:</strong></p>
+<p>From code:</p>
+<pre><code class="language-markdown">```dataviewjs
+localStorage.removeItem(&quot;req-name&quot;)
+```
+</code></pre>
+<p>From settings:
+Go to Settings → APIRequest → Saved API Requests and click on the response you want to delete.</p>
+<div class="admonition tip">
+<p class="admonition-title">Cache Management</p>
+<p>Regularly review and clear old cached responses to free up localStorage space.</p>
+</div>
+<hr />
+<h3 id="hidden">hidden</h3>
+<p>Executes the code block without displaying its output. Useful for background requests that cache data.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-markdown">```req 
+url: https://jsonplaceholder.typicode.com/users/1
+req-uuid: name
+hidden
+```
+</code></pre>
+<div class="admonition tip">
+<p class="admonition-title">Use Case</p>
+<p>Great for fetching authentication tokens or other data you want to cache but not display.</p>
+</div>
+<hr />
+<h3 id="disabled">disabled</h3>
+<p>Disables the request. The codeblock won't be executed. Useful for temporarily disabling requests without deleting them.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-markdown">```req 
+url: https://jsonplaceholder.typicode.com/users/1
+show: $.name
+req-uuid: name
+disabled
+```
+</code></pre>
+<div class="admonition tip">
+<p class="admonition-title">Development Tip</p>
+<p>Use <code>disabled</code> during development to prevent hitting API rate limits.</p>
+</div>
+<hr />
+<h3 id="save-as">save-as</h3>
+<p>Saves the entire response to a file. A file extension is required.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-markdown">```req 
+url: https://jsonplaceholder.typicode.com/posts/1
+save-as: posts/1.json
+```
+</code></pre>
+<div class="admonition warning">
+<p class="admonition-title">Important</p>
+<ul>
+<li>File paths are validated for security</li>
+<li>Directory traversal (<code>..</code>) is blocked</li>
+<li>Absolute paths are not allowed</li>
+<li>The file path is relative to your vault root</li>
+<li>Directories are NOT created automatically</li>
+</ul>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">File Management</p>
+<p>Create the target directory in your vault before using <code>save-as</code>.</p>
+</div>
+<hr />
+<h3 id="auto-update">auto-update</h3>
+<p>Forces the codeblock to fetch fresh data every time, ignoring cached responses.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-markdown">```req 
+url: https://jsonplaceholder.typicode.com/posts/1
+req-uuid: firstPost
+auto-update
+save-as: posts/1.json
+```
+</code></pre>
+<div class="admonition note">
+<p class="admonition-title">When to use</p>
+<p>Use <code>auto-update</code> when you need real-time data or when the cached response becomes stale.</p>
+</div>
+<p><strong>Without <code>req-uuid</code>:</strong> Requests always run fresh by default.<br />
+<strong>With <code>req-uuid</code>:</strong> Without <code>auto-update</code>, cached responses are used.<br />
+<strong>With <code>auto-update</code>:</strong> Ignores cache and always fetches fresh data.</p>
+<hr />
+<h3 id="format">format</h3>
+<p>Specifies a custom format for displaying the response. Supports HTML and uses <code>{}</code> as placeholders.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-markdown">```req 
+url: https://jsonplaceholder.typicode.com/posts/1
+show: $.[title,body]
+format: &lt;h1&gt;{}&lt;/h1&gt; &lt;p&gt;{}&lt;/p&gt;
+```
+</code></pre>
+<div class="admonition note">
+<p class="admonition-title">In this example, the first <code>{}</code> will be replaced with the <em>title</em>, and the second <code>{}</code> will be replaced with the <em>body</em>.</p>
+</div>
+<p><strong>Advanced formatting:</strong></p>
+<pre><code class="language-markdown">```req
+url: https://api.example.com/user/1
+show: $.[name,email,age]
+format: **Name:** {} | **Email:** {} | **Age:** {}
+```
+</code></pre>
+<p><strong>List formatting:</strong></p>
+<pre><code class="language-markdown">```req
+url: https://api.todoist.com/rest/v2/tasks
+headers: {&quot;Authorization&quot;: &quot;Bearer {{TODOIST_TOKEN}}&quot;}
+show: $..content
+format: - [ ] {}
+```
+</code></pre>
+<div class="admonition danger">
+<p class="admonition-title">Security Warning</p>
+<p>Format strings are sanitized to prevent XSS attacks. Script tags, event handlers, and javascript: URIs are automatically removed.</p>
+</div>
+<hr />
+<h3 id="properties">properties</h3>
+<p>Updates frontmatter properties with response data. Requires a JSON response and the <code>show</code> flag.</p>
+<p><strong>Syntax:</strong>
+The data should be property names separated by commas.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-markdown">```req 
+url: https://jsonplaceholder.typicode.com/posts/1
+show: $.[id,title]
+properties: id, title
+```
+</code></pre>
+<p><strong>For internal links, use <code>[[..]]</code> syntax:</strong></p>
+<pre><code class="language-markdown">```req 
+url: https://api.example.com/related
+show: $.[id,name]
+properties: relatedId, [[relatedNote]]
+```
+</code></pre>
+<p>This will create:</p>
+<pre><code class="language-yaml">---
+relatedId: 123
+relatedNote: &quot;[[Note Name]]&quot;
+---
+</code></pre>
+<div class="admonition tip">
+<p class="admonition-title">Use Case</p>
+<p>Great for automatically populating metadata from API responses.</p>
+</div>
+<hr />
+<h2 id="common-patterns">💡 Common Patterns</h2>
+<h3 id="authentication-flow">Authentication Flow</h3>
+<ol>
+<li>Get auth token (hidden):</li>
+</ol>
+<pre><code class="language-markdown">```req
+url: https://api.example.com/auth/login
+method: post
+body: {&quot;username&quot;: &quot;{{this.username}}&quot;, &quot;password&quot;: &quot;{{this.password}}&quot;}
+req-uuid: auth
+hidden
+```
+</code></pre>
+<ol>
+<li>Use token in subsequent requests:</li>
+</ol>
+<pre><code class="language-markdown">```req
+url: https://api.example.com/user/data
+headers: {&quot;Authorization&quot;: &quot;Bearer {{ls.auth&gt;$.token}}&quot;}
+```
+</code></pre>
+<h3 id="error-handling">Error Handling</h3>
+<p>If a request fails, an error message will be displayed:</p>
+<pre><code>Error: Failed to fetch
+</code></pre>
+<p>Common errors:</p>
+<ul>
+<li><strong>Network Error</strong>: Check your internet connection</li>
+<li><strong>401 Unauthorized</strong>: Check your API key/token</li>
+<li><strong>404 Not Found</strong>: Verify the URL is correct</li>
+<li><strong>Invalid JSONPath</strong>: Check your <code>show:</code> expression</li>
+</ul>
+<hr />
+<h2 id="further-reading">📚 Further Reading</h2>
+<ul>
+<li><a href="https://github.com/JSONPath-Plus/JSONPath?tab=readme-ov-file#syntax-through-examples">JSONPath Syntax Examples</a></li>
+<li><a href="https://jsonpath-plus.github.io/JSONPath/demo/">JSONPath Online Tester</a></li>
+<li><a href="../usecase/">Use Cases</a> - Real-world examples</li>
+</ul>
+<hr />
+<h2 id="troubleshooting">❓ Troubleshooting</h2>
+<p><strong>Request not working?</strong></p>
+<ul>
+<li>Check the console (Ctrl+Shift+I) for detailed error messages</li>
+<li>Verify your URL is correct and uses https://</li>
+<li>Check that all required flags are present</li>
+<li>Ensure your JSONPath expression is valid</li>
+</ul>
+<p><strong>Cached data not updating?</strong></p>
+<ul>
+<li>Remove <code>req-uuid</code> to always fetch fresh data</li>
+<li>Or add <code>auto-update</code> flag to force refreshing</li>
+<li>Or manually clear cache in Settings</li>
+</ul>
+<p><strong>Variables not resolving?</strong></p>
+<ul>
+<li>Check frontmatter syntax is correct</li>
+<li>Verify global variables are defined in settings</li>
+<li>Ensure you're using the correct variable syntax</li>
+</ul>
+<hr />
+<div class="admonition tip">
+<p class="admonition-title">Need Help?</p>
+<p>If you encounter issues or have questions, please open an issue on <a href="https://github.com/Rooyca/obsidian-api-request/issues">GitHub</a>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
